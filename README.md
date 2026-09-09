@@ -4,7 +4,7 @@ Aplicación web para la gestión de un cine, desarrollada con **Angular**, **Sup
 Permite a los clientes comprar entradas y productos del Candy Bar, y a los administradores gestionar funciones, salas, cupones, puntos y reportes.
 
 ## 🚀 Tecnologías
-- **Frontend:** Angular 17 (standalone components, signals, lazy loading)
+- **Frontend:** Angular 22 (standalone components, signals, lazy loading)
 - **Backend:** Supabase (PostgreSQL, Auth, Storage)
 - **Infraestructura:** Vercel / Render (CI/CD con GitHub)
 - **Extras:** Chart.js, jsPDF, QRCode.js, Service Workers (PWA)
