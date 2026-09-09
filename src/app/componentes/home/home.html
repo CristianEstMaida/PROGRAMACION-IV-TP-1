@@ -1,0 +1,93 @@
+<div class="home">
+  <header class="home-header">
+    <div class="logo">🎥 CineNova</div>
+    <input type="text" placeholder="Buscar película..." class="search" />
+    <a routerLink="/login" class="login-link">Login</a>
+  </header>
+
+  <section class="carousel">
+    <h2>Cartelera</h2>
+    <div class="movies-list">
+      @for (movie of movies(); track movie.id) {
+        <div class="movie-card">
+          <img [src]="movie.poster" [alt]="movie.title" />
+          <h3>{{ movie.title }}</h3>
+          <p>{{ movie.rating }}</p>
+          <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
+        </div>
+      }
+    </div>
+
+    <div class="carousel-posters">
+      @for (movie of topMovies; track movie.id) {
+        <div class="movie">
+          <img [src]="movie.poster" [alt]="movie.title" />
+          <h3>{{ movie.title }}</h3>
+          <p>{{ movie.rating }}</p>
+          <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="top-movies">
+    <h2>⭐ Top Películas ⭐</h2>
+    <div class="movies-grid">
+      @for (movie of topMovies; track movie.id) {
+        <div class="movie">
+          <img [src]="movie.poster" [alt]="movie.title" />
+          <h3>{{ movie.title }}</h3>
+          <p>{{ movie.rating }}</p>
+        </div>
+      }
+    </div>
+    <button class="view-all">Ver más</button>
+  </section>
+
+  <section class="upcoming">
+    <h2>🎥 Próximamente 🎥</h2>
+    <div class="movies-grid">
+      @for (movie of upcomingMovies; track movie.id) {
+        <div class="movie">
+          <img [src]="movie.poster" [alt]="movie.title" />
+          <h3>{{ movie.title }}</h3>
+          <p>Estreno: {{ movie.date }}</p>
+        </div>
+      }
+    </div>
+    <button class="view-all">Ver todos</button>
+  </section>
+
+  @if (isLoggedIn) {
+    <section class="recommendations">
+      <h2>🎯 Recomendaciones para ti</h2>
+      <div class="movies-grid">
+        @for (rec of recommendedMovies; track rec.id) {
+          <div class="movie">
+            <img [src]="rec.poster" [alt]="rec.title" />
+            <h3>{{ rec.title }}</h3>
+            <p>{{ rec.rating }}</p>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <footer class="home-footer">
+    <div class="footer-content">
+      <div class="logo">🎥 CineNova</div>
+      <nav class="footer-links">
+        <a routerLink="/about">Sobre nosotros</a>
+        <a routerLink="/contact">Contacto</a>
+        <a routerLink="/terms">Términos y condiciones</a>
+        <a routerLink="/privacy">Privacidad</a>
+      </nav>
+      <div class="social">
+        <a href="https://facebook.com" target="_blank">Facebook</a>
+        <a href="https://instagram.com" target="_blank">Instagram</a>
+        <a href="https://twitter.com" target="_blank">Twitter</a>
+      </div>
+    </div>
+    <p class="copy">© 2026 CineNova. Todos los derechos reservados.</p>
+  </footer>
+</div>

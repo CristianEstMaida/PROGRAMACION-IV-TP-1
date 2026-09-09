@@ -1,0 +1,281 @@
+.reserve-container {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #f6efe8, #f5f8ff);
+  font-family: 'Outfit', sans-serif;
+  color: #1d2433;
+}
+
+.reserve-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(19, 31, 56, 0.08);
+}
+
+.back-link {
+  color: #2f66ff;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.reserve-header h2 {
+  font-size: 2rem;
+  margin: 0.2rem 0;
+}
+
+.movie-meta {
+  color: #6f7787;
+  margin-bottom: 1.5rem;
+}
+
+/* Formatos y horarios */
+.schedule-section {
+  margin-bottom: 2rem;
+}
+
+.rule-hint {
+  font-size: 0.85rem;
+  color: #ba4320;
+  margin-bottom: 1rem;
+}
+
+.showtimes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.showtime-card {
+  border: 2px solid #dbe0eb;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.showtime-card:hover {
+  border-color: #2f66ff;
+}
+
+.showtime-card.active {
+  border-color: #ff6a00;
+  background: #fff8f5;
+  box-shadow: 0 4px 12px rgba(255, 106, 0, 0.15);
+}
+
+.badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #fff;
+}
+.badge[data-format="2D"] { background: #2f66ff; }
+.badge[data-format="3D"] { background: #8a2be2; }
+.badge[data-format="4D"] { background: #e45b2f; }
+.badge[data-format="5D"] { background: #b80058; }
+
+.audio-badge {
+  font-size: 0.8rem;
+  color: #6f7787;
+  font-weight: 600;
+}
+
+.showtime-card .time {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.showtime-card .end-time {
+  font-size: 0.75rem;
+  color: #9aa2b1;
+}
+
+.showtime-card .price {
+  font-weight: 700;
+  color: #28a745;
+}
+
+/* Pantalla y Grilla de Butacas */
+.theater-section {
+  background: #0e1d33;
+  padding: 2rem 1rem;
+  border-radius: 14px;
+  color: #fff;
+  margin-bottom: 2rem;
+}
+
+.cinema-screen {
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  background: #fff;
+  color: #0e1d33;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 4px;
+  padding: 0.4rem;
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+}
+
+.room-wrapper {
+  overflow-x: auto; /* Permite scroll horizontal en pantallas chicas */
+  padding-bottom: 1rem;
+}
+
+.theater-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.row-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.row-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 16px;
+  text-align: center;
+  color: #9aa2b1;
+}
+
+.seat-block {
+  display: flex;
+  gap: 4px;
+}
+
+.aisle {
+  width: 18px; /* Pasillo entre columnas */
+}
+
+/* Asientos individuales */
+.seat {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #32435f;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.seat:hover:not(:disabled) {
+  transform: scale(1.2);
+  background: #4c638a;
+}
+
+.seat.selected {
+  background: #28a745 !important;
+  border-color: #28a745;
+}
+
+.seat.occupied {
+  background: #d93025 !important;
+  border-color: #d93025;
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* Leyenda */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.seat.demo {
+  pointer-events: none;
+}
+
+/* Barra de compra */
+.checkout-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-top: 1px solid #dbe0eb;
+  padding-top: 1.5rem;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.95rem;
+}
+
+.summary .total {
+  font-size: 1.3rem;
+  color: #28a745;
+}
+
+.pay-btn {
+  padding: 0.9rem 2rem;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff6a00, #e45b2f);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pay-btn:disabled {
+  background: #c8cfda;
+  cursor: not-allowed;
+}
+
+/* Confirmación */
+.success-card {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  background: #e6ffed;
+  border-radius: 14px;
+  color: #1e7e34;
+}
+
+.success-card h3 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.final-price {
+  font-size: 1.4rem;
+  margin: 1rem 0;
+}
+
+.home-btn {
+  display: inline-block;
+  background: #0e1d33;
+  color: #fff;
+  padding: 0.8rem 1.6rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 700;
+}

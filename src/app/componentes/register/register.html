@@ -1,0 +1,104 @@
+<div class="register">
+  <div class="logo">🎥 CineNova</div>
+  <h2>Tu cuenta para vivir el cine</h2>
+  <p>Accedé a estrenos y funciones exclusivas</p>
+
+  <form (submit)="onSubmit($event)">
+    <!-- Email (con estado asíncrono pending/valid/error) -->
+    <label class="input-icon email"
+      [class.pending]="emailState() === 'pending'"
+      [class.valid]="emailState() === 'valid'"
+      [class.error]="emailState() === 'invalid' || registerError === 'duplicate'">
+      <span class="icon">✉️</span> Correo Electrónico:
+      <div class="field-wrapper">
+        <input 
+          type="email" 
+          [formField]="registerForm.email" 
+          (blur)="onEmailBlur()"
+          placeholder="ejemplo@correo.com" />
+      </div>
+
+      @if (emailState() === 'pending') {
+        <span class="hint">Comprobando correo...</span>
+      }
+      @if (emailState() === 'invalid') {
+        <span class="error">Ingresá un correo electrónico válido</span>
+      }
+      @if (registerError === 'duplicate') {
+        <span class="error">Ese correo electrónico ya está registrado</span>
+      }
+    </label>
+
+    <!-- Contraseña -->
+    <label class="input-icon password"
+      [class.valid]="registerModel().password.length >= 8"
+      [class.error]="registerModel().password.length > 0 && registerModel().password.length < 8">
+      <span class="icon">🔒</span> Contraseña:
+      <div class="field-wrapper">
+        <input type="password" [formField]="registerForm.password" placeholder="Mínimo 8 caracteres" />
+      </div>
+      @if (registerModel().password.length > 0 && registerModel().password.length < 8) {
+        <span class="error">Mínimo 8 caracteres</span>
+      }
+    </label>
+
+    <!-- Confirmar Contraseña -->
+    <label class="input-icon password"
+      [class.valid]="registerModel().confirmPassword && registerModel().password === registerModel().confirmPassword"
+      [class.error]="registerModel().confirmPassword && registerModel().password !== registerModel().confirmPassword">
+      <span class="icon">🔒</span> Confirmar Contraseña:
+      <div class="field-wrapper">
+        <input type="password" [formField]="registerForm.confirmPassword" placeholder="Repetí tu contraseña" />
+      </div>
+      @if (registerModel().confirmPassword && registerModel().password !== registerModel().confirmPassword) {
+        <span class="error">Las contraseñas no coinciden</span>
+      }
+    </label>
+
+    <!-- Nombre -->
+    <label class="input-icon user"
+      [class.valid]="registerModel().nombre.trim().length > 1">
+      <span class="icon">👤</span> Nombre:
+      <div class="field-wrapper">
+        <input type="text" [formField]="registerForm.nombre" placeholder="Tu nombre" />
+      </div>
+    </label>
+
+    <!-- Apellido -->
+    <label class="input-icon user"
+      [class.valid]="registerModel().apellido.trim().length > 1">
+      <span class="icon">👤</span> Apellido:
+      <div class="field-wrapper">
+        <input type="text" [formField]="registerForm.apellido" placeholder="Tu apellido" />
+      </div>
+    </label>
+
+    <!-- Fecha de Nacimiento -->
+    <label class="input-icon date"
+      [class.valid]="registerModel().fechaNacimiento">
+      <span class="icon">📅</span> Fecha de nacimiento:
+      <div class="field-wrapper">
+        <input type="date" [formField]="registerForm.fechaNacimiento" />
+      </div>
+    </label>
+
+    <!-- Términos y condiciones -->
+    <label class="checkbox-label">
+      <input type="checkbox" [formField]="registerForm.aceptaTerminos" />
+      Acepto términos y condiciones
+    </label>
+
+    <button type="submit"
+      [disabled]="emailState() !== 'valid'
+                  || registerModel().password.length < 8 
+                  || registerModel().password !== registerModel().confirmPassword
+                  || !registerModel().nombre.trim() 
+                  || !registerModel().apellido.trim() 
+                  || !registerModel().fechaNacimiento 
+                  || !registerModel().aceptaTerminos">
+      Registrarme
+    </button>
+  </form>
+
+  <a routerLink="/login">¿Ya tenés cuenta? Iniciar sesión</a>
+</div>

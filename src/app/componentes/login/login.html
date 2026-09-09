@@ -1,0 +1,75 @@
+<div class="login-form">
+  <h2>Iniciar Sesión</h2>
+
+  <form (submit)="onSubmit($event)">
+    <!-- Alerta de error si falla la autenticación -->
+    @if (errorMessage()) {
+      <div class="alert-error">
+        ⚠️ {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Email -->
+    <label class="input-icon email"
+      [class.valid]="loginModel().email && loginModel().email.includes('@')"
+      [class.error]="loginModel().email && !loginModel().email.includes('@')">
+      <span class="icon">✉️</span> Correo Electrónico:
+      <div class="field-wrapper">
+        <input 
+          type="email" 
+          [formField]="loginForm.email" 
+          placeholder="ejemplo@correo.com" />
+      </div>
+      @if (loginModel().email && !loginModel().email.includes('@')) {
+        <span class="error">Ingresa un correo electrónico válido</span>
+      }
+    </label>
+
+    <!-- Contraseña -->
+    <label class="input-icon password"
+      [class.valid]="loginModel().password.length >= 8"
+      [class.error]="loginModel().password.length > 0 && loginModel().password.length < 8">
+      <span class="icon">🔒</span> Contraseña:
+      <div class="field-wrapper">
+        <input 
+          type="password" 
+          [formField]="loginForm.password" 
+          placeholder="Mínimo 8 caracteres" />
+      </div>
+      @if (loginModel().password.length > 0 && loginModel().password.length < 8) {
+        <span class="error">Mínimo 8 caracteres</span>
+      }
+    </label>
+
+    <div class="forgot-password">
+      <a routerLink="/reset-password">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <button type="submit"
+      [disabled]="isLoading() 
+                  || !loginModel().email 
+                  || !loginModel().email.includes('@') 
+                  || loginModel().password.length < 8">
+      @if (isLoading()) {
+        Iniciando...
+      } @else {
+        Ingresar
+      }
+    </button>
+
+    <!-- Acceso rápido / Demo para testing -->
+    <div class="quick-access">
+      <span>Accesos rápidos de prueba:</span>
+      <div class="quick-buttons">
+        <button type="button" class="btn-demo" (click)="fillDemoCredentials('admin@cinenova.com', 'admin1234')">
+          👤 Admin
+        </button>
+        <button type="button" class="btn-demo" (click)="fillDemoCredentials('cliente@cinenova.com', 'cliente1234')">
+          🎟️ Cliente
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <a routerLink="/register">¿No tienes cuenta? Registrarme</a>
+</div>

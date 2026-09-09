@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "title": "Película A",
+    "rating": "4.5",
+    "poster": "assets/img/butacas-cine2.jpg",
+    "genre": "Acción",
+    "duration": 120,
+    "synopsis": "Un héroe inesperado debe salvar la ciudad.",
+    "trailerUrl": "https://www.youtube.com/watch?v=trailerA"
+  },
+  {
+    "id": 2,
+    "title": "Película B",
+    "rating": "4.0",
+    "poster": "assets/img/butacas-cine2.jpg",
+    "genre": "Comedia",
+    "duration": 95,
+    "synopsis": "Una historia divertida sobre la amistad.",
+    "trailerUrl": "https://www.youtube.com/watch?v=trailerB"
+  }
+]

@@ -1,0 +1,27 @@
+@if (movie(); as m) {
+  <div class="movie-detail">
+    <div class="poster">
+      <img [src]="m.poster" [alt]="m.title" />
+    </div>
+    <div class="info">
+      <h2>{{ m.title }}</h2>
+      @if (m.rating) {
+        <p class="rating">Clasificación: {{ m.rating }}</p>
+      }
+      @if (m.genre) {
+        <p class="genre">Género: {{ m.genre }}</p>
+      }
+      @if (m.duration) {
+        <p class="duration">Duración: {{ m.duration }} min</p>
+      }
+      <p class="synopsis">{{ m.synopsis }}</p>
+
+      <button class="trailer-btn" (click)="openTrailer(m.trailerUrl)">
+        Ver trailer
+      </button>
+      <button class="reserve-btn" [routerLink]="['/reserve', m.id]">
+        Reservar entradas
+      </button>
+    </div>
+  </div>
+}

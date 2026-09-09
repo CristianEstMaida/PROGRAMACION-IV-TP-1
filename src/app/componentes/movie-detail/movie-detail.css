@@ -1,0 +1,116 @@
+.movie-detail {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 5px 14px rgba(19, 31, 56, 0.08);
+}
+
+.poster img {
+  width: 300px;
+  border-radius: 12px;
+}
+
+.info {
+  flex: 1;
+}
+
+.info h2 {
+  margin-bottom: 0.5rem;
+}
+
+.trailer-btn, .reserve-btn {
+  margin-top: 1rem;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.trailer-btn {
+  background: #e45b2f;
+  color: #fff;
+}
+
+.reserve-btn {
+  background: linear-gradient(135deg, #2f66ff, #1f46bf);
+  color: #fff;
+  margin-left: 1rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+.reviews-btn {
+  background: #0e1d33;
+  color: #fff;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reviews-section {
+  margin-top: 2rem;
+  border-top: 1px solid #dbe0eb;
+  padding-top: 1.5rem;
+}
+
+.add-review {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.add-review input, 
+.add-review select, 
+.add-review textarea {
+  border: 1px solid #dbe0eb;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-family: inherit;
+}
+
+.submit-review-btn {
+  background: #2f66ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.review-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.review-header {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.review-header .date {
+  color: #6f7787;
+  font-size: 0.8rem;
+  margin-left: auto;
+}

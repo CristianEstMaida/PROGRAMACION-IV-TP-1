@@ -1,1 +1,31 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --accent: #e45b2f;
+  --accent-dark: #ba4320;
+  --text: #1d2433;
+  --muted: #6f7787;
+  --surface: #ffffff;
+  --border: #dbe0eb;
+  --focus: #2f66ff;
+  --error: #d93025;
+  --valid: #28a745;
+  --pending: violet;
+  --placeholder: #9aa2b1;
+  --disabled-bg: #c8cfda;
+  --disabled-text: #f0f0f0;
+
+  --font-size-base: 1rem;
+  --font-size-small: 0.85rem;
+  --font-size-link: 0.95rem;
+  --font-size-h2: clamp(1.6rem, 3vw, 2.2rem);
+  --font-size-h2-mobile: 1.55rem;
+  --line-height-base: 1.5;
+  --line-height-h2: 1.1;
+  --letter-spacing-h2: 0.01em;
+  --letter-spacing-button: 0.015em;
+  --radius: 12px;
+
+  --shadow-strong: 0 22px 40px rgba(19, 31, 56, 0.12);
+  --shadow-soft: 0 5px 14px rgba(19, 31, 56, 0.08);
+  --shadow-button-focus: 0 0 0 4px rgba(47, 102, 255, 0.22);
+  --transition-base: 0.2s ease;
+}

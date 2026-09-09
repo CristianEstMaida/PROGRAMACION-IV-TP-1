@@ -1,0 +1,323 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+
+:host {
+  --bg-start: #f6efe8;
+  --bg-end: #f5f8ff;
+  
+  --error-shadow: rgba(217, 48, 37, 0.25);
+  --pending-shadow: rgba(138, 43, 226, 0.25);
+  --valid-shadow: rgba(40, 167, 69, 0.25);
+
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  
+  --padding-input: 0.8rem 2.5rem 0.8rem 0.95rem; /* Espacio a la derecha para los emojis */
+  --padding-form: 1.8rem;
+  --padding-form-mobile: 1.2rem;
+  --padding-button: 0.85rem;
+  --padding-page: 1.5rem;
+  --padding-page-mobile: 1rem;
+  --gap-base: 1rem;
+  --gap-small: 0.45rem;
+  --gap-button: 0.45rem;
+  --gap-h2: 1.25rem;
+  --gap-h2-mobile: 0.95rem;
+  --gap-error: -0.2rem;
+  
+  --shadow-button: 0 8px 18px rgba(228, 91, 47, 0.35);
+  --shadow-button-hover: 0 12px 20px rgba(228, 91, 47, 0.4);
+  --shadow-button-active: 0 6px 12px rgba(228, 91, 47, 0.3);
+  
+  --border-link-hover: rgba(29, 36, 51, 0.45);
+  
+  --animation-translate: 16px;
+  --animation-scale: 0.985;
+
+  --transform-input-focus: -1px;
+  --transform-button-hover: -2px;
+  --transform-button-active: 0;
+}
+
+.register {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--padding-page);
+  background:
+    linear-gradient(135deg, #ff6a00, #e45b2f, #0e1d33),
+    url('/assets/img/butacas-cine.jpg') no-repeat center;
+  background-size: cover;
+  background-blend-mode: multiply;
+}
+
+.register::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.10);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.register form, 
+.register h2, 
+.register .logo {
+  position: relative;
+  z-index: 1;
+}
+
+.register .logo {
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+
+.register h2 + p {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 500;
+}
+
+.register h2 {
+  margin: 0 0 var(--gap-h2);
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-h2);
+  letter-spacing: var(--letter-spacing-h2);
+  font-weight: 700;
+  text-align: center;
+}
+
+.register h2,
+.register h2 + p,
+.register .logo,
+.register > a {
+  color: #fff;
+}
+
+.register form {
+  width: min(100%, 420px);
+  background: var(--surface);
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: var(--radius);
+  padding: var(--padding-form);
+  box-shadow: var(--shadow-strong), var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-base);
+  animation: register-enter 0.45s ease-out;
+}
+
+.register form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-small);
+  color: var(--text);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+}
+
+/* Inputs base */
+.register form input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--padding-input);
+  font-size: var(--font-size-base);
+  color: var(--text);
+  background-color: #fff;
+  box-sizing: border-box;
+  transition: color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.register form input::placeholder {
+  color: var(--placeholder);
+}
+
+.register form input:focus::placeholder {
+  opacity: 0.7;
+}
+
+/* Foco en estado neutro */
+.register form input:focus {
+  outline: none;
+  border-color: #2f66ff;
+  box-shadow: 0 0 0 3px rgba(47, 102, 255, 0.2);
+}
+
+/* Estados e iconos del input */
+.input-icon {
+  position: relative;
+}
+
+/* PENDING (esperando) */
+.input-icon.pending input {
+  border-color: #8a2be2;
+  box-shadow: 0 0 0 2px var(--pending-shadow);
+}
+.input-icon.pending input:focus {
+  box-shadow: 0 0 0 3px var(--pending-shadow);
+}
+
+
+/* VALID (correcto) */
+.input-icon.valid input {
+  border-color: #28a745;
+  box-shadow: 0 0 0 2px var(--valid-shadow);
+}
+.input-icon.valid input:focus {
+  box-shadow: 0 0 0 3px var(--valid-shadow);
+}
+
+
+/* ERROR (inválido) */
+.input-icon.error input {
+  border-color: #d93025;
+  box-shadow: 0 0 0 2px var(--error-shadow);
+}
+.input-icon.error input:focus {
+  box-shadow: 0 0 0 3px var(--error-shadow);
+}
+
+/* El wrapper toma todo el ancho y sirve de ancla */
+.field-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.field-wrapper input {
+  width: 100%;
+}
+
+/* Regla común para los tres iconos */
+.input-icon.valid .field-wrapper::after,
+.input-icon.pending .field-wrapper::after,
+.input-icon.error .field-wrapper::after {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  line-height: 1;
+  pointer-events: none; /* Evita que bloquee clics en el input */
+}
+
+/* Contenido específico según el estado */
+.input-icon.valid .field-wrapper::after {
+  content: "✅";
+}
+
+.input-icon.pending .field-wrapper::after {
+  content: "⏳";
+}
+
+.input-icon.error .field-wrapper::after {
+  content: "❌";
+}
+
+.register form .error {
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--error);
+  margin-top: var(--gap-error);
+  line-height: var(--line-height-base);
+}
+
+/* Botón */
+.register form button {
+  margin-top: var(--gap-button);
+  border: 0;
+  border-radius: var(--radius);
+  padding: var(--padding-button);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  letter-spacing: var(--letter-spacing-button);
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff6a00, #e45b2f, #0e1d33);
+  box-shadow: var(--shadow-button);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), filter var(--transition-base);
+}
+
+.register form button:hover:enabled {
+  transform: translateY(var(--transform-button-hover));
+  box-shadow: var(--shadow-button-hover);
+  filter: saturate(1.08);
+}
+
+.register form button:active:enabled {
+  transform: translateY(var(--transform-button-active));
+  box-shadow: var(--shadow-button-active);
+}
+
+.register form button:disabled {
+  cursor: not-allowed;
+  background: var(--disabled-bg);
+  color: var(--disabled-text);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+
+.register form button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-button-focus);
+}
+
+.register > a {
+  display: inline-block;
+  margin-top: var(--gap-base);
+  font-size: var(--font-size-link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--transition-base), border-color var(--transition-base);
+}
+
+.register > a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  opacity: 0.9;
+}
+
+/* Agrega esto al final de tu register.css */
+.register form .hint {
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: #8a2be2;
+  margin-top: var(--gap-error);
+  line-height: var(--line-height-base);
+}
+
+.checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem !important;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+@keyframes register-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--animation-translate)) scale(var(--animation-scale));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .register {
+    padding: var(--padding-page-mobile);
+  }
+
+  .register form {
+    border-radius: var(--radius);
+    padding: var(--padding-form-mobile);
+  }
+
+  .register h2 {
+    font-size: var(--font-size-h2-mobile);
+    margin-bottom: var(--gap-h2-mobile);
+  }
+}
