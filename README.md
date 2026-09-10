@@ -12,7 +12,7 @@ Permite a los clientes comprar entradas y productos del Candy Bar, y a los admin
 ## 🧱 Arquitectura
 - **Frontend (Angular + PWA):** módulos de Películas, Entradas, Candy Bar, Usuario, Admin
 - **Backend (Supabase):** autenticación, API REST, lógica de negocio
-- **Base de Datos (Supabase):** tablas de usuarios, películas, funciones, entradas, productos, cupones, reseñas, etc.
+- **Base de Datos (PostgreSQL):** tablas de usuarios, películas, funciones, entradas, productos, cupones, reseñas.
 
 📊 Diagramas completos en `/docs/diagrams/`
 
