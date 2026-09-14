@@ -9,7 +9,7 @@
       [class.pending]="emailState() === 'pending'"
       [class.valid]="emailState() === 'valid'"
       [class.error]="emailState() === 'invalid' || registerError === 'duplicate'">
-      <span class="icon">✉️</span> Correo Electrónico:
+      <span class="icon"></span>✉️ Correo Electrónico:
       <div class="field-wrapper">
         <input 
           type="email" 
@@ -33,7 +33,7 @@
     <label class="input-icon password"
       [class.valid]="registerModel().password.length >= 8"
       [class.error]="registerModel().password.length > 0 && registerModel().password.length < 8">
-      <span class="icon">🔒</span> Contraseña:
+      <span class="icon"></span>🔒 Contraseña:
       <div class="field-wrapper">
         <input type="password" [formField]="registerForm.password" placeholder="Mínimo 8 caracteres" />
       </div>
@@ -46,7 +46,7 @@
     <label class="input-icon password"
       [class.valid]="registerModel().confirmPassword && registerModel().password === registerModel().confirmPassword"
       [class.error]="registerModel().confirmPassword && registerModel().password !== registerModel().confirmPassword">
-      <span class="icon">🔒</span> Confirmar Contraseña:
+      <span class="icon"></span>🔒 Confirmar Contraseña:
       <div class="field-wrapper">
         <input type="password" [formField]="registerForm.confirmPassword" placeholder="Repetí tu contraseña" />
       </div>
@@ -58,7 +58,7 @@
     <!-- Nombre -->
     <label class="input-icon user"
       [class.valid]="registerModel().nombre.trim().length > 1">
-      <span class="icon">👤</span> Nombre:
+      <span class="icon"></span>👤 Nombre:
       <div class="field-wrapper">
         <input type="text" [formField]="registerForm.nombre" placeholder="Tu nombre" />
       </div>
@@ -67,7 +67,7 @@
     <!-- Apellido -->
     <label class="input-icon user"
       [class.valid]="registerModel().apellido.trim().length > 1">
-      <span class="icon">👤</span> Apellido:
+      <span class="icon"></span>👤 Apellido:
       <div class="field-wrapper">
         <input type="text" [formField]="registerForm.apellido" placeholder="Tu apellido" />
       </div>
@@ -76,7 +76,7 @@
     <!-- Fecha de Nacimiento -->
     <label class="input-icon date"
       [class.valid]="registerModel().fechaNacimiento">
-      <span class="icon">📅</span> Fecha de nacimiento:
+      <span class="icon"></span>📅 Fecha de nacimiento:
       <div class="field-wrapper">
         <input type="date" [formField]="registerForm.fechaNacimiento" />
       </div>

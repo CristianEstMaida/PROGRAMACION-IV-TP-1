@@ -1,8 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MoviesService } from '../../services/movies.service';
 import { Movie, MovieDetailModel, UpcomingMovie } from '../../models/movie';
+import { Auth } from '../../services/auth';
 
 @Component({
   standalone: true,
@@ -30,7 +31,10 @@ export class Home implements OnInit {
     { id: 6, title: 'Película Recomendada B', rating: '★★★☆☆', poster: '/assets/img/butacas-cine2.jpg' }
   ];
 
-  constructor(private moviesService: MoviesService) {}
+
+  constructor(private moviesService: MoviesService,
+    private auth: Auth, private router: Router
+  ) {}
 
   ngOnInit() {
     this.moviesService.getAllMovies().subscribe({
@@ -45,5 +49,14 @@ export class Home implements OnInit {
 
   openTrailer(url: string) {
     window.open(url, '_blank');
+  }
+
+async logout() {
+     try {
+      await this.auth.signOut(); // cerrar sesión en Supabase
+      this.router.navigate(['/login']); // redirigir al login
+    } catch (err) {
+      console.error('Error al cerrar sesión', err);
+    }
   }
 }

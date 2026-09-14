@@ -47,21 +47,6 @@ export class Reserve implements OnInit {
   });
 
   purchaseSuccess = signal<boolean>(false);
-//   selectedDate = signal<string>('Hoy - 19:30');
-//   ticketCount = signal<number>(1);
-//   ticketPrice = 4500;
-
-  // Asientos disponibles/ocupados (true = libre, false = ocupado)
-//   seats = signal<{ id: string; selected: boolean }[]>([
-//     { id: 'A1', selected: false }, { id: 'A2', selected: false }, { id: 'A3', selected: false }, { id: 'A4', selected: false },
-//     { id: 'B1', selected: false }, { id: 'B2', selected: false }, { id: 'B3', selected: false }, { id: 'B4', selected: false },
-//     { id: 'C1', selected: false }, { id: 'C2', selected: false }, { id: 'C3', selected: false }, { id: 'C4', selected: false }
-//   ]);
-
-//   totalPrice = computed(() => this.selectedSeatsCount() * this.ticketPrice);
-//   selectedSeatsCount = computed(() => this.seats().filter(s => s.selected).length);
-
-//   purchaseSuccess = signal<boolean>(false);
 
   constructor(
     private route: ActivatedRoute,

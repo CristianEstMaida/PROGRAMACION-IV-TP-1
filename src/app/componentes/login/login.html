@@ -13,7 +13,7 @@
     <label class="input-icon email"
       [class.valid]="loginModel().email && loginModel().email.includes('@')"
       [class.error]="loginModel().email && !loginModel().email.includes('@')">
-      <span class="icon">✉️</span> Correo Electrónico:
+      <span class="icon"></span>✉️ Correo Electrónico:
       <div class="field-wrapper">
         <input 
           type="email" 
@@ -29,7 +29,7 @@
     <label class="input-icon password"
       [class.valid]="loginModel().password.length >= 8"
       [class.error]="loginModel().password.length > 0 && loginModel().password.length < 8">
-      <span class="icon">🔒</span> Contraseña:
+      <span class="icon"></span>🔒 Contraseña:
       <div class="field-wrapper">
         <input 
           type="password" 

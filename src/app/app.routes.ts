@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
-
+import { authGuard } from './guards/auth-guard';
+import { roleGuard } from './guards/role-guard';
 export const routes: Routes = [
     {
         path: '',
@@ -14,11 +15,25 @@ export const routes: Routes = [
         path: 'register',
         loadComponent: () => import('./componentes/register/register').then(m => m.Register)
     },
-    { path: 'movie/:id', loadComponent: () => import('./componentes/movie-detail/movie-detail').then(m => m.MovieDetail) },
-    { path: 'reserve/:id', loadComponent: () => import('./componentes/reserve/reserve').then(m => m.Reserve) },
+    { 
+        path: 'movie/:id',
+        loadComponent: () => import('./componentes/movie-detail/movie-detail').then(m => m.MovieDetail),
+        canMatch: [authGuard]
+    },
+    // {
+    //     path: 'movies/add',
+    //     canMatch: [roleGuard],
+    //     data: { role: 'user' } // solo usuarios comunes
+    // },
+    { 
+        path: 'reserve/:id',
+        loadComponent: () => import('./componentes/reserve/reserve').then(m => m.Reserve),
+        
+    },
     {
         path: 'home',
-        loadComponent: () => import('./componentes/home/home').then(m => m.Home)
+        loadComponent: () => import('./componentes/home/home').then(m => m.Home),
+        canMatch: [authGuard] // solo logueados
     },
     {
         path: 'reset-password',
