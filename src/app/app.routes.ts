@@ -4,7 +4,7 @@ import { roleGuard } from './guards/role-guard';
 export const routes: Routes = [
     {
         path: '',
-        redirectTo: 'login',
+        redirectTo: 'home',
         pathMatch: 'full'
     },
     {
@@ -28,12 +28,12 @@ export const routes: Routes = [
     { 
         path: 'reserve/:id',
         loadComponent: () => import('./componentes/reserve/reserve').then(m => m.Reserve),
-        
+        canMatch: [authGuard]
     },
     {
         path: 'home',
         loadComponent: () => import('./componentes/home/home').then(m => m.Home),
-        canMatch: [authGuard] // solo logueados
+        //canMatch: [authGuard]
     },
     {
         path: 'reset-password',

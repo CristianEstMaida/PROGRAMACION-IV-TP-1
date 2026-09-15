@@ -1,29 +1,12 @@
 # Documentación Técnica - Trabajo Práctico CineApp
 
 ## 1. Introducción
-Este documento describe el desarrollo de una aplicación de cine, incluyendo requerimientos, diseño de interfaz, arquitectura, base de datos y decisiones técnicas.  
-Se trabaja en **sprints semanales**, con entregables incrementales.
+Este documento describe el desarrollo técnico de la aplicación CineApp, incluyendo diseño de interfaz, arquitectura, base de datos y decisiones de implementación.  
+El proyecto se trabaja en **sprints semanales**, con entregables incrementales.
 
 ---
 
-## 2. Requerimientos
-
-### Funcionales
-- Alta/Baja/Modificación de películas (ABM).
-- Visualización de cartelera y detalle de película.
-- Gestión de funciones (fecha, hora, sala).
-- Administración de salas y butacas.
-- Compra de entradas vinculadas a funciones.
-
-### No Funcionales
-- Formularios sin scroll.
-- Botones sin gradiente.
-- Estilos propios (no usar librerías externas para datepicker).
-- Consistencia visual entre login y register.
-
----
-
-## 3. Diseño de UI/UX
+## 2. Diseño de UI/UX
 - Mockups en Figma de pantallas principales:
   - Login / Register
   - Home (cartelera)
@@ -33,10 +16,13 @@ Se trabaja en **sprints semanales**, con entregables incrementales.
   - Alineación de inputs con etiquetas.
   - Uso de la misma imagen de fondo en login/register.
   - Tipografía consistente.
+  - Formularios sin scroll.
+  - Botones sin gradiente.
+  - CSS propio (sin librerías externas para datepicker).
 
 ---
 
-## 4. Arquitectura y Servicios
+## 3. Arquitectura y Servicios
 - **Frontend**: Angular con Signals y componentes standalone.
 - **Backend/DB**: Supabase (Auth + Postgres).
 - **Servicios**:
@@ -46,7 +32,7 @@ Se trabaja en **sprints semanales**, con entregables incrementales.
 
 ---
 
-## 5. Base de Datos
+## 4. Base de Datos
 ### Tablas principales
 - **Películas**: id, título, género, duración, descripción.
 - **Funciones**: id, película_id, sala_id, fecha, hora.
@@ -62,14 +48,18 @@ Se trabaja en **sprints semanales**, con entregables incrementales.
 
 ---
 
-## 6. Decisiones Técnicas
+## 5. Decisiones Técnicas
 - Angular Signals para manejo de estado → más simple y reactivo.
 - Supabase Auth para autenticación → rápido de integrar.
+- Postgres como motor de BD → integración nativa con Supabase.
+- Separación de servicios → modularidad y mantenibilidad.
 - Estilos propios → mayor control visual y consistencia.
+- Formularios sin scroll, botones sin gradiente, inputs alineados con etiquetas.
+- Consistencia visual entre login y register.
 
 ---
 
-## 7. Sprints
+## 7. Sprints Técnicos
 
 ### Sprint 1
 - **Objetivo**: Alta de película (ABM básico).
@@ -166,7 +156,7 @@ Se trabaja en **sprints semanales**, con entregables incrementales.
 - **Mockup**: [demo final]
 ---
 
-## 8. Documentación
+## 7. Documentación
 - Capturas de cada sprint.
 - Fragmentos de código relevantes.
 - Justificación de decisiones técnicas.

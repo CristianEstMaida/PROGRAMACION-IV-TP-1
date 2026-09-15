@@ -2,13 +2,34 @@
   <header class="home-header">
     <div class="logo">🎥 CineNova</div>
     <input type="text" placeholder="Buscar película..." class="search" />
-    <a routerLink="/login" class="login-link">Login</a>
-    <button class="logout" (click)="logout()">Logout</button>
+    <div class="auth-buttons">
+      <a routerLink="/login" class="login-link">Login</a>
+      <button class="logout" (click)="logout()">Logout</button>
+    </div>
   </header>
 
   <section class="carousel">
-    <h2>Cartelera</h2>
-    <div class="movies-list">
+    <h2>🎬 Cartelera</h2>
+
+    <button class="carousel-btn prev" (click)="prevSlide()">‹</button>
+
+    <div class="carousel-track"
+    (mouseenter)="pauseAutoplay()"
+    (mouseleave)="resumeAutoplay()"
+    [style.transform]="'translateX(-' + currentOffset() + 'px)'">
+      @for (movie of movies(); track movie.id) {
+        <div class="movie-card">
+          <img [src]="movie.poster" [alt]="movie.title" />
+          <h3>{{ movie.title }}</h3>
+          <p>{{ movie.rating }}</p>
+          <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
+        </div>
+      }
+    </div>
+
+    <button class="carousel-btn next" (click)="nextSlide()">›</button>
+
+    <!-- <div class="movies-list">
       @for (movie of movies(); track movie.id) {
         <div class="movie-card">
           <img [src]="movie.poster" [alt]="movie.title" />
@@ -28,14 +49,14 @@
           <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
         </div>
       }
-    </div>
+    </div> -->
   </section>
 
   <section class="top-movies">
     <h2>⭐ Top Películas ⭐</h2>
     <div class="movies-grid">
       @for (movie of topMovies; track movie.id) {
-        <div class="movie">
+        <div class="movie-card">
           <img [src]="movie.poster" [alt]="movie.title" />
           <h3>{{ movie.title }}</h3>
           <p>{{ movie.rating }}</p>
@@ -49,7 +70,7 @@
     <h2>🎥 Próximamente 🎥</h2>
     <div class="movies-grid">
       @for (movie of upcomingMovies; track movie.id) {
-        <div class="movie">
+        <div class="movie-card">
           <img [src]="movie.poster" [alt]="movie.title" />
           <h3>{{ movie.title }}</h3>
           <p>Estreno: {{ movie.date }}</p>
@@ -64,7 +85,7 @@
       <h2>🎯 Recomendaciones para ti</h2>
       <div class="movies-grid">
         @for (rec of recommendedMovies; track rec.id) {
-          <div class="movie">
+          <div class="movie-card">
             <img [src]="rec.poster" [alt]="rec.title" />
             <h3>{{ rec.title }}</h3>
             <p>{{ rec.rating }}</p>
