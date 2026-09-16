@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ConfirmDeleteDirective } from '../../directivas/confirm-delete.directive';
 
 interface Usuario {
   id: number;
@@ -12,7 +13,7 @@ interface Usuario {
 @Component({
   selector: 'app-usuarios-admin',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmDeleteDirective],
   templateUrl: './usuarios-admin.component.html',
   styleUrls: ['./usuarios-admin.component.css']
 })

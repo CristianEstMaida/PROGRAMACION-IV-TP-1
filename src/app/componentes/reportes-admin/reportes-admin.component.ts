@@ -19,7 +19,7 @@ export class ReportesAdminComponent {
   candyData = [200, 150, 80];
 
   facturacionLabels = ['Lunes', 'Martes', 'Miércoles'];
-  facturacionData = [50000, 75000, 62000];
+  facturacionData = [200000, 350000, 250000];
 
   // Exportar a PDF
   exportToPDF() {

@@ -29,7 +29,7 @@
         <td>{{ f.sala }}</td>
         <td>{{ f.horario }}</td>
         <td>{{ f.formato }}</td>
-        <td>${{ f.precio }}</td>
+        <td>{{ f.precio | currency:'ARS':'symbol':'1.0-0' }}</td>
         <td>
           <button (click)="eliminarFuncion(f.id)">🗑️ Eliminar</button>
         </td>

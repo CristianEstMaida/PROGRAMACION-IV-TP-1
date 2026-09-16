@@ -35,7 +35,8 @@
           <button (click)="toggleActivo(u)">
             {{ u.activo ? 'Desactivar' : 'Activar' }}
           </button>
-          <button (click)="eliminarUsuario(u.id)">🗑️ Eliminar</button>
+          <button [appConfirmDelete]="'¿Seguro que deseas eliminar a ' + u.nombre + '?'" 
+          (confirmed)="eliminarUsuario(u.id)">🗑️ Eliminar</button>
         </td>
       </tr>
     </tbody>

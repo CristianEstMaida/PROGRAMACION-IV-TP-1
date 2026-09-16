@@ -19,7 +19,7 @@
     [style.transform]="'translateX(-' + currentOffset() + 'px)'">
       @for (movie of movies(); track movie.id) {
         <div class="movie-card">
-          <img [src]="movie.poster" [alt]="movie.title" />
+          <img [src]="movie.poster" appFallback [alt]="movie.title" />
           <h3>{{ movie.title }}</h3>
           <p>{{ movie.rating }}</p>
           <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
@@ -29,27 +29,7 @@
 
     <button class="carousel-btn next" (click)="nextSlide()">›</button>
 
-    <!-- <div class="movies-list">
-      @for (movie of movies(); track movie.id) {
-        <div class="movie-card">
-          <img [src]="movie.poster" [alt]="movie.title" />
-          <h3>{{ movie.title }}</h3>
-          <p>{{ movie.rating }}</p>
-          <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
-        </div>
-      }
-    </div>
-
-    <div class="carousel-posters">
-      @for (movie of topMovies; track movie.id) {
-        <div class="movie">
-          <img [src]="movie.poster" [alt]="movie.title" />
-          <h3>{{ movie.title }}</h3>
-          <p>{{ movie.rating }}</p>
-          <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
-        </div>
-      }
-    </div> -->
+    
   </section>
 
   <section class="top-movies">
@@ -57,7 +37,7 @@
     <div class="movies-grid">
       @for (movie of topMovies; track movie.id) {
         <div class="movie-card">
-          <img [src]="movie.poster" [alt]="movie.title" />
+          <img [src]="movie.poster" appFallback [alt]="movie.title" />
           <h3>{{ movie.title }}</h3>
           <p>{{ movie.rating }}</p>
         </div>
@@ -71,7 +51,7 @@
     <div class="movies-grid">
       @for (movie of upcomingMovies; track movie.id) {
         <div class="movie-card">
-          <img [src]="movie.poster" [alt]="movie.title" />
+          <img [src]="movie.poster" appFallback [alt]="movie.title" />
           <h3>{{ movie.title }}</h3>
           <p>Estreno: {{ movie.date }}</p>
         </div>

@@ -16,10 +16,10 @@
     </thead>
     <tbody>
       <tr *ngFor="let c of cupones">
-        <td>{{ c.codigo }}</td>
-        <td>{{ c.descuento }}%</td>
-        <td>{{ c.fechaInicio }}</td>
-        <td>{{ c.fechaFin }}</td>
+        <td><strong>{{ c.codigo | uppercase }}</strong></td>
+        <td>{{ c.descuento / 100 | percent:'1.0-0' }}</td>
+        <td>{{ c.fechaInicio | date:'dd/MM/yyyy' }}</td>
+        <td>{{ c.fechaFin | date:'dd/MM/yyyy' }}</td>
         <td>
           <span [ngClass]="c.activo ? 'activo' : 'inactivo'">
             {{ c.activo ? 'Activo' : 'Inactivo' }}
