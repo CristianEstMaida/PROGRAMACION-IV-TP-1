@@ -1,0 +1,79 @@
+.reportes {
+  background: #0d1522;
+  border: 1px solid #1c2b42;
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reportes h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* Grilla de gráficos superiores en dos columnas */
+.charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Contenedor de botones de exportación */
+.export-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #162337;
+}
+
+/* Botones con degradado, bisel superior y relieve */
+.export-buttons button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 0.65rem 1.3rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.export-buttons button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.export-buttons button:active {
+  transform: translateY(0);
+}
+
+/* Botón Exportar a PDF (Rojo vino / Caramelo) */
+.export-buttons button:nth-of-type(1) {
+  background: linear-gradient(180deg, #d32f2f 0%, #8e0000 100%);
+}
+
+/* Botón Exportar a Excel (Verde esmeralda / Bosque) */
+.export-buttons button:nth-of-type(2) {
+  background: linear-gradient(180deg, #2e7d32 0%, #1b5e20 100%);
+}

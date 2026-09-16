@@ -1,0 +1,31 @@
+<section class="candy-bar-admin">
+  <h2>Gestión de Candy Bar</h2>
+
+  <button (click)="agregarProducto()">➕ Agregar Producto</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of productos">
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.categoria }}</td>
+        <td>${{ p.precio }}</td>
+        <td>{{ p.stock }}</td>
+        <td>
+          <button (click)="actualizarStock(p, 10)">➕ Stock</button>
+          <button (click)="actualizarStock(p, -10)">➖ Stock</button>
+          <button (click)="actualizarPrecio(p, p.precio + 100)">💲 +100</button>
+          <button (click)="eliminarProducto(p.id)">🗑️ Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

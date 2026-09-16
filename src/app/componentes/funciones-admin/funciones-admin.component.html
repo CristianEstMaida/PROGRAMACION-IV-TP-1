@@ -1,0 +1,39 @@
+<section class="funciones-admin">
+  <h2>Gestión de Funciones</h2>
+
+  <form #form="ngForm" (ngSubmit)="agregarFuncion(form.value.pelicula, form.value.horario, form.value.formato, form.value.precio)">
+    <input type="text" name="pelicula" ngModel placeholder="Película" required />
+    <input type="time" name="horario" ngModel required />
+    <select name="formato" ngModel>
+      <option value="2D">2D</option>
+      <option value="3D">3D</option>
+    </select>
+    <input type="number" name="precio" ngModel placeholder="Precio" required />
+    <button type="submit">➕ Agregar Función</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Pelicula</th>
+        <th>Sala</th>
+        <th>Horario</th>
+        <th>Formato</th>
+        <th>Precio</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let f of funciones">
+        <td>{{ f.pelicula }}</td>
+        <td>{{ f.sala }}</td>
+        <td>{{ f.horario }}</td>
+        <td>{{ f.formato }}</td>
+        <td>${{ f.precio }}</td>
+        <td>
+          <button (click)="eliminarFuncion(f.id)">🗑️ Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

@@ -232,7 +232,8 @@
   letter-spacing: var(--letter-spacing-button);
   color: #fff;
   cursor: pointer;
-  background: linear-gradient(135deg, #ff6a00, #e45b2f, #0e1d33);
+  background: #ff6a00;
+  /* background: linear-gradient(135deg, #ff6a00, #e45b2f, #0e1d33); */
   box-shadow: var(--shadow-button);
   transition: transform var(--transition-base), box-shadow var(--transition-base), filter var(--transition-base);
 }

@@ -1,0 +1,29 @@
+<section class="fidelizacion-admin">
+  <h2>Gestión de Fidelización</h2>
+
+  <button (click)="agregarCliente()">➕ Agregar Cliente</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Puntos</th>
+        <th>Nivel</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of clientes">
+        <td>{{ c.nombre }}</td>
+        <td>{{ c.email }}</td>
+        <td>{{ c.puntos }}</td>
+        <td>{{ c.nivel }}</td>
+        <td>
+          <button (click)="sumarPuntos(c, 50)">➕ 50 Puntos</button>
+          <button (click)="eliminarCliente(c.id)">🗑️ Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

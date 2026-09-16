@@ -1,0 +1,108 @@
+/* .chart-container {
+  background: #1E1E1E;
+  padding: 1rem;
+  border-radius: 8px;
+  color: #fff;
+} */
+
+/* .chart-container {
+  background: #0d1522;
+  border: 1px solid #1c2b42;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  height: 280px;
+} */
+/* 
+.admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #121212;
+  color: #fff;
+} */
+
+/* .layout {
+  display: flex;
+  flex: 1;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.metrics {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.metric-card mat-icon {
+  font-size: 32px;
+  margin-bottom: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
+}
+
+.charts {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+} */
+
+/* app-chart-admin {
+  flex: 1;
+  background: #1E1E1E;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+} */
+/* .chart-container { */
+  /* background: #0d1522; */
+  /* border: 1px solid #1c2b42; */
+  /* border-radius: 12px;
+  padding: 1.25rem; */
+  /* box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4); */
+  /* position: relative;
+  height: 280px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column; */
+/* } */
+
+/* .chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+} */
+

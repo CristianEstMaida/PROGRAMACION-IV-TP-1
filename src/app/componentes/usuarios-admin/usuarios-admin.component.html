@@ -1,0 +1,43 @@
+<section class="usuarios-admin">
+  <h2>Gestión de Usuarios</h2>
+
+  <button (click)="agregarUsuario()">➕ Agregar Usuario</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of usuarios">
+        <td>{{ u.nombre }}</td>
+        <td>{{ u.email }}</td>
+        <td>
+            <select [value]="u.rol" (change)="cambiarRolDesdeEvento(u, $event)">
+
+            <!-- <select #selRol [value]="u.rol" (change)="cambiarRol(u, selRol.value)"> -->
+                <option value="admin">Admin</option>
+                <option value="operador">Operador</option>
+                <option value="cliente">Cliente</option>
+            </select>
+        </td>
+        <td>
+          <span [ngClass]="u.activo ? 'activo' : 'inactivo'">
+            {{ u.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td>
+          <button (click)="toggleActivo(u)">
+            {{ u.activo ? 'Desactivar' : 'Activar' }}
+          </button>
+          <button (click)="eliminarUsuario(u.id)">🗑️ Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

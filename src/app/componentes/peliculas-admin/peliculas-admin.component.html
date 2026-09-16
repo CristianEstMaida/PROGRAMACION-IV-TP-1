@@ -1,0 +1,34 @@
+<section class="peliculas-admin">
+  <h2>Gestión de Películas</h2>
+
+  <input type="text" [(ngModel)]="filtro" placeholder="Buscar película..." />
+
+  <button (click)="agregarPelicula()">➕ Agregar Película</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Género</th>
+        <th>Idioma</th>
+        <th>Formato</th>
+        <th>Duración</th>
+        <th>Restricción</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of peliculasFiltradas">
+        <td>{{ p.titulo }}</td>
+        <td>{{ p.genero }}</td>
+        <td>{{ p.idioma }}</td>
+        <td>{{ p.formato }}</td>
+        <td>{{ p.duracion }} min</td>
+        <td>{{ p.restriccionEdad }}</td>
+        <td>
+          <button (click)="eliminarPelicula(p.id)">🗑️ Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

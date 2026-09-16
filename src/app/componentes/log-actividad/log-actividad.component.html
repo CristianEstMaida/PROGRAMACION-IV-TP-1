@@ -1,0 +1,21 @@
+<section class="log-actividad">
+  <h2>Log de Actividad</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Acción</th>
+        <th>Detalle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let log of logs">
+        <td>{{ log.fecha }}</td>
+        <td>{{ log.usuario }}</td>
+        <td>{{ log.accion }}</td>
+        <td>{{ log.detalle }}</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

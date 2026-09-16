@@ -1,0 +1,28 @@
+<section class="salas-admin">
+  <h2>Gestión de Salas</h2>
+
+  <button (click)="agregarSala()">➕ Agregar Sala</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Filas</th>
+        <th>Columnas</th>
+        <th>Tipo</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of salas">
+        <td>{{ s.nombre }}</td>
+        <td>{{ s.filas }}</td>
+        <td>{{ s.columnas }}</td>
+        <td>{{ s.tipo }}</td>
+        <td>
+          <button (click)="eliminarSala(s.id)">🗑️ Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>

@@ -1,0 +1,73 @@
+.log-actividad {
+  background: #0d1522;
+  border: 1px solid #1c2b42;
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.log-actividad h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.5px;
+}
+
+/* Tabla integrada estilo panel */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 0.5rem;
+}
+
+th {
+  background: #111a28;
+  color: #cbd5e1;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid #20314b;
+  text-align: left;
+}
+
+td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #162337;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+tr:hover td {
+  background: #121c2d;
+}
+
+/* Columna Fecha (apagada y monoespaciada para lectura técnica) */
+td:nth-child(1) {
+  color: #94a3b8;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+/* Columna Usuario (destacado blanco seminegrita) */
+td:nth-child(2) {
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Columna Acción (píldora luminosa estilo badge del boceto) */
+td:nth-child(3) {
+  font-weight: 700;
+  color: #ff9800;
+}
+
+/* Columna Detalle */
+td:nth-child(4) {
+  color: #cbd5e1;
+}

@@ -28,4 +28,24 @@
   --shadow-soft: 0 5px 14px rgba(19, 31, 56, 0.08);
   --shadow-button-focus: 0 0 0 4px rgba(47, 102, 255, 0.22);
   --transition-base: 0.2s ease;
+
+   /* 🎨 Paleta principal */
+  --color-bg: #121212;
+  --color-surface: #1E1E1E;
+  --color-sidebar: #1A1A1A;
+  --color-primary: #FF9800;
+  --color-secondary: #4CAF50;
+  --color-accent: #2196F3;
+  --color-text: #FFFFFF;
+  --color-text-muted: #CCCCCC;
+
+  /* 🌟 Sombras y bordes */
+  --shadow-default: 0 2px 6px rgba(0,0,0,0.4);
+  --radius-default: 8px;
+
+  /* 🔤 Tipografía */
+  --font-family: 'Roboto', sans-serif;
+  --font-size-base: 16px;
+  --font-size-title: 1.2rem;
+  --font-size-heading: 1.5rem;
 }

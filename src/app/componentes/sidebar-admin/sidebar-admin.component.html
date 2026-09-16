@@ -1,0 +1,14 @@
+<nav class="sidebar">
+  <div class="logo">
+    🎬 <span>CINE ADMIN</span>
+  </div>
+
+  <ul class="menu">
+    <li *ngFor="let item of menuItems" routerLinkActive="active">
+      <a [routerLink]="item.route">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+</nav>

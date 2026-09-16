@@ -1,0 +1,45 @@
+.usuarios-admin {
+  background: #1E1E1E;
+  padding: 1.5rem;
+  border-radius: 8px;
+  color: #fff;
+}
+
+button {
+  margin: 0.3rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #FF9800;
+  color: #fff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th, td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid #333;
+}
+
+th {
+  background: #2C2C2C;
+}
+
+.activo {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.inactivo {
+  color: #E53935;
+  font-weight: bold;
+}

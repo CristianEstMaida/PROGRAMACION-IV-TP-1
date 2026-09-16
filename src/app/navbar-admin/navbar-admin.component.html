@@ -1,0 +1,24 @@
+<header class="navbar-admin">
+  <div class="navbar-brand">
+    <span>Panel de Administración</span>
+  </div>
+
+  <div class="navbar-actions">
+    <button type="button" class="nav-icon-btn" title="Notificaciones">
+      <mat-icon>notifications</mat-icon>
+    </button>
+    <button type="button" class="nav-icon-btn" title="Configuración">
+      <mat-icon>settings</mat-icon>
+    </button>
+
+    <div class="user-profile">
+      <mat-icon>account_circle</mat-icon>
+      <span>{{ adminName }}</span>
+    </div>
+
+    <button type="button" class="btn-logout" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Salir</span>
+    </button>
+  </div>
+</header>

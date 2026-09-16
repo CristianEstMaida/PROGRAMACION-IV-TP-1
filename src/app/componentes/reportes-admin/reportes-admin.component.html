@@ -1,0 +1,31 @@
+<section class="reportes">
+  <h2>Reportes de Administración</h2>
+
+  <div class="charts">
+    <app-chart-admin 
+      title="Películas más vistas" 
+      [labels]="peliculasLabels" 
+      [data]="peliculasData" 
+      chartType="bar">
+    </app-chart-admin>
+
+    <app-chart-admin 
+      title="Ventas Candy Bar" 
+      [labels]="candyLabels" 
+      [data]="candyData" 
+      chartType="bar">
+    </app-chart-admin>
+  </div>
+
+  <app-chart-admin 
+    title="Facturación Diaria" 
+    [labels]="facturacionLabels" 
+    [data]="facturacionData" 
+    chartType="line">
+  </app-chart-admin>
+
+  <div class="export-buttons">
+    <button (click)="exportToPDF()">📄 Exportar a PDF</button>
+    <button (click)="exportToExcel()">📊 Exportar a Excel</button>
+  </div>
+</section>

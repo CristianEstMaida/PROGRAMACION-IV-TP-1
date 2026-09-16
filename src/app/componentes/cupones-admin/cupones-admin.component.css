@@ -1,0 +1,140 @@
+.cupones-admin {
+  background: #0d1522;
+  border: 1px solid #1c2b42;
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.cupones-admin h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.5px;
+}
+
+/* Botón Agregar Cupón */
+.cupones-admin > button {
+  background: linear-gradient(180deg, #d32f2f 0%, #8e0000 100%);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.65rem 1.3rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.cupones-admin > button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.cupones-admin > button:active {
+  transform: translateY(0);
+}
+
+/* Tabla integrada */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1.2rem;
+}
+
+th {
+  background: #111a28;
+  color: #cbd5e1;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid #20314b;
+  text-align: left;
+}
+
+td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #162337;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+tr:hover td {
+  background: #121c2d;
+}
+
+/* Badges de estado con iluminación suave */
+.activo,
+.inactivo {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.activo {
+  background: rgba(46, 125, 50, 0.2);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+
+.inactivo {
+  background: rgba(198, 40, 40, 0.2);
+  color: #ef5350;
+  border: 1px solid rgba(239, 83, 80, 0.4);
+}
+
+/* Contenedor de acciones */
+td:last-child {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Botones de acción tipo píldora */
+td button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 4px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+td button:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+td button:active {
+  transform: translateY(0);
+}
+
+/* Botón Activar / Desactivar (Azul) */
+td button:nth-of-type(1) {
+  background: linear-gradient(180deg, #1976d2 0%, #0d47a1 100%);
+}
+
+/* Botón Eliminar (Rojo oscuro) */
+td button:nth-of-type(2) {
+  background: linear-gradient(180deg, #c62828 0%, #7f0000 100%);
+}

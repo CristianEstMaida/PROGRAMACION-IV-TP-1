@@ -1,0 +1,51 @@
+<div class="admin-dashboard">
+  <app-navbar-admin></app-navbar-admin>
+  <div class="layout">
+    <app-sidebar-admin></app-sidebar-admin>
+
+    <section class="content">
+       
+      <div class="metrics">
+        <div class="metric-card" *ngFor="let m of metrics" [style.background]="m.color">
+          <mat-icon>{{ m.icon }}</mat-icon>
+          <h3>{{ m.title }}</h3>
+          <p>{{ m.value }}</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button *ngFor="let a of quickActions"
+                [style.background]="a.color"
+                [routerLink]="a.route"
+                class="action-btn">
+          <mat-icon>{{ a.icon }}</mat-icon>
+          {{ a.label }}
+        </button>
+      </div>
+
+      <div class="charts">
+         <app-chart-admin 
+            title="Películas más vistas" 
+            [labels]="['Avatar 2','Titanic','Matrix']" 
+            [data]="[120, 90, 75]" 
+            chartType="bar">
+        </app-chart-admin>
+
+        <app-chart-admin 
+            title="Ventas Candy Bar" 
+            [labels]="['Pochoclos','Bebidas','Combos']" 
+            [data]="[200, 150, 80]" 
+            chartType="bar">
+          </app-chart-admin>
+      </div>
+
+        <app-chart-admin 
+            title="Facturación Diaria" 
+            [labels]="['Lunes','Martes','Miércoles']" 
+            [data]="[50000, 75000, 62000]" 
+            chartType="line">
+        </app-chart-admin>
+         <router-outlet></router-outlet>
+    </section>
+  </div>
+</div>

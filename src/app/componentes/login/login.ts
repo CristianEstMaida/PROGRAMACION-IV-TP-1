@@ -66,7 +66,12 @@ export class Login {
       }
 
       // Login exitoso -> redirigir al Home
-      this.router.navigate(['/home']);
+      
+      if (credentials.email === 'admin@cinenova.com') {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/home']);
+      }
     } catch (err: any) {
       this.errorMessage.set('Ocurrió un error inesperado al iniciar sesión.');
     } finally {

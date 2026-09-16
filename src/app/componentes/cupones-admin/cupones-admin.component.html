@@ -1,0 +1,37 @@
+<section class="cupones-admin">
+  <h2>Gestión de Cupones</h2>
+
+  <button (click)="agregarCupon()">➕ Agregar Cupón</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Descuento</th>
+        <th>Inicio</th>
+        <th>Fin</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of cupones">
+        <td>{{ c.codigo }}</td>
+        <td>{{ c.descuento }}%</td>
+        <td>{{ c.fechaInicio }}</td>
+        <td>{{ c.fechaFin }}</td>
+        <td>
+          <span [ngClass]="c.activo ? 'activo' : 'inactivo'">
+            {{ c.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td>
+          <button (click)="toggleActivo(c)">
+            {{ c.activo ? 'Desactivar' : 'Activar' }}
+          </button>
+          <button (click)="eliminarCupon(c.id)">🗑️ Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>
