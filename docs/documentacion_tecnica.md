@@ -34,12 +34,6 @@ El proyecto se trabaja en **sprints semanales**, con entregables incrementales.
 
 ## 4. Base de Datos
 ### Tablas
-
-- **Funciones**: id, película_id, sala_id, fecha, hora.
-- **Salas**: id, nombre, capacidad.
-- **Butacas**: id, sala_id, número, estado.
-- **Entradas**: id, función_id, usuario_id, butaca_id.
-
 - **Películas**: id (PK)
   titulo
   sinopsis
