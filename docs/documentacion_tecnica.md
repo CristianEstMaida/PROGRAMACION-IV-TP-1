@@ -103,7 +103,7 @@ rol (cliente, empleado, admin)
 puntos (fidelización)
 credito (saldo por cancelaciones)
 
-- **Reseñas**-
+- **Reseñas**:
 id (PK)
 usuario_id (FK)
 pelicula_id (FK)
