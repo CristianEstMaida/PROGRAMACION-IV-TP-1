@@ -193,6 +193,9 @@ notificado (boolean)
 - Una sala tiene muchas butacas.
 - Una función se vincula a una sala y a una película.
 - Una entrada se vincula a una función y a una butaca.
+- Un usuario puede tener muchas entradas, reseñas, cupones y canjes.
+- Un combo puede incluir muchos productos.
+- Una compra puede incluir entradas y productos del candy bar.
 
 ---
 
