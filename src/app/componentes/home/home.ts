@@ -1,18 +1,49 @@
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MoviesService } from '../../services/movies.service';
 import { Movie, MovieDetailModel, UpcomingMovie } from '../../models/movie';
 import { Auth } from '../../services/auth';
+import { MatIconModule } from '@angular/material/icon';
+import { ImageFallbackDirective } from '../../directivas/appImageFallback.directive';
 
 @Component({
   standalone: true,
   selector: 'app-home',
   templateUrl: './home.html',
   styleUrls: ['./home.css'],
-  imports: [CommonModule, RouterLink]
+  imports: [CommonModule, RouterLink, MatIconModule, CurrencyPipe, ImageFallbackDirective],
 })
 export class Home implements OnInit, OnDestroy {
+  peliculas = [
+    {
+      id: 1,
+      titulo: 'Avatar: El Sentido del Agua',
+      genero: 'Ciencia Ficción',
+      duracion: 192,
+      precio: 3500,
+      formato: '3D IMAX',
+      poster: '/assets/img/avatar.jpg'
+    },
+    {
+      id: 2,
+      titulo: 'Titanic',
+      genero: 'Drama / Romance',
+      duracion: 195,
+      precio: 2800,
+      formato: '2D Remaster',
+      poster: '/assets/img/titanic.jpg'
+    },
+    {
+      id: 3,
+      titulo: 'Interestelar',
+      genero: 'Ciencia Ficción',
+      duracion: 169,
+      precio: 3000,
+      formato: '2D',
+      poster: '/assets/img/interstellar.jpg'
+    }
+  ];
   movies = signal<MovieDetailModel[]>([]);
 
   topMovies: Movie[] = [

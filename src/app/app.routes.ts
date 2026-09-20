@@ -18,7 +18,7 @@ export const routes: Routes = [
     { 
         path: 'movie/:id',
         loadComponent: () => import('./componentes/movie-detail/movie-detail').then(m => m.MovieDetail),
-        canMatch: [authGuard]
+        
     },
     // {
     //     path: 'movies/add',
@@ -39,22 +39,7 @@ export const routes: Routes = [
         path: 'reset-password',
         loadComponent: () => import('./componentes/reset-password/reset-password').then(m => m.ResetPassword)
     },
-    // {
-    //     path: 'admin',
-    //     component: AdminDashboardComponent,
-    //     children: [
-    //     { path: 'peliculas', component: PeliculasAdminComponent },
-    //     { path: 'funciones', component: FuncionesAdminComponent },
-    //     { path: 'salas', component: SalasAdminComponent },
-    //     { path: 'usuarios', component: UsuariosAdminComponent },
-    //     { path: 'candy-bar', component: CandyBarAdminComponent },
-    //     { path: 'cupones', component: CuponesAdminComponent },
-    //     { path: 'fidelizacion', component: FidelizacionAdminComponent },
-    //     { path: 'reportes', component: ReportesAdminComponent },
-    //     { path: 'log', component: LogActividadComponent },
-    //     ],
-    // },
-    // 🔐 Admin protegido con guard
+    
     {
         path: 'admin',
         loadComponent: () =>
