@@ -1,234 +1,156 @@
-<!-- <div class="home">
+<div class="home-container">
+  <!-- Navbar superior -->
   <header class="home-header">
-    <div class="logo">🎥 CineNova</div>
-    <input type="text" placeholder="Buscar película..." class="search" />
+    <div class="logo">🎬 CineNova</div>
+    
+    <div class="search-box-header">
+      <input 
+        type="text" 
+        [ngModel]="busqueda()" 
+        (ngModelChange)="busqueda.set($event)"
+        placeholder="Buscar película por título..." 
+        class="search-input" />
+    </div>
+
     <div class="auth-buttons">
-      <a routerLink="/login" class="login-link">Login</a>
-      <button class="logout" (click)="logout()">Logout</button>
+      @if (isLoggedIn) {
+        <button type="button" class="btn-admin" routerLink="/admin">Panel Admin</button>
+        <button type="button" class="btn-logout" (click)="logout()">Salir</button>
+      } @else {
+        <a routerLink="/login" class="login-link">Iniciar Sesión</a>
+      }
     </div>
   </header>
 
-  <section class="carousel">
-    <h2>🎬 Cartelera</h2>
-
-    <button class="carousel-btn prev" (click)="prevSlide()">‹</button>
-
-    <div class="carousel-track"
-    (mouseenter)="pauseAutoplay()"
-    (mouseleave)="resumeAutoplay()"
-    [style.transform]="'translateX(-' + currentOffset() + 'px)'">
-      @for (movie of movies(); track movie.id) {
-        <div class="movie-card">
-          <img [src]="movie.poster" appFallback [alt]="movie.title" />
-          <h3>{{ movie.title }}</h3>
-          <p>{{ movie.rating }}</p>
-          <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
-        </div>
-      }
+  <!-- Hero Destacado -->
+  <section class="hero-banner">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <span class="hero-badge">ESTRENO DE LA SEMANA</span>
+      <h1 class="hero-title">Avatar: El Sentido del Agua</h1>
+      <p class="hero-desc">
+        Ambientada más de una década después de los acontecimientos de la primera película, cuenta la historia de la familia Sully.
+      </p>
+      <div class="hero-actions">
+        <button type="button" class="btn-primary" (click)="scrollToCartelera()">
+          <mat-icon>theaters</mat-icon> Ver Cartelera
+        </button>
+        <!-- Lleva primero a leer ficha y reseñas -->
+        <a [routerLink]="['/movie', 1]" class="btn-secondary">
+          <mat-icon>visibility</mat-icon> Ver Ficha y Reseñas
+        </a>
+      </div>
     </div>
-
-    <button class="carousel-btn next" (click)="nextSlide()">›</button>
-
-    
   </section>
 
-  <section class="top-movies">
-    <h2>⭐ Top Películas ⭐</h2>
-    <div class="movies-grid">
-      @for (movie of topMovies; track movie.id) {
-        <div class="movie-card">
-          <img [src]="movie.poster" appFallback [alt]="movie.title" />
-          <h3>{{ movie.title }}</h3>
-          <p>{{ movie.rating }}</p>
-        </div>
-      }
-    </div>
-    <button class="view-all">Ver más</button>
-  </section>
+  <!-- Top 3 Más Vendidas (Podio) -->
+  @if (topPeliculas().length > 0) {
+    <section class="top-section">
+      <div class="section-title-wrap">
+        <h2>⭐ Top 3 Películas Más Populares</h2>
+        <p class="section-subtitle">Las más elegidas por nuestra audiencia</p>
+      </div>
 
-  <section class="upcoming">
-    <h2>🎥 Próximamente 🎥</h2>
-    <div class="movies-grid">
-      @for (movie of upcomingMovies; track movie.id) {
-        <div class="movie-card">
-          <img [src]="movie.poster" appFallback [alt]="movie.title" />
-          <h3>{{ movie.title }}</h3>
-          <p>Estreno: {{ movie.date }}</p>
-        </div>
-      }
-    </div>
-    <button class="view-all">Ver todos</button>
-  </section>
-
-  @if (isLoggedIn) {
-    <section class="recommendations">
-      <h2>🎯 Recomendaciones para ti</h2>
-      <div class="movies-grid">
-        @for (rec of recommendedMovies; track rec.id) {
-          <div class="movie-card">
-            <img [src]="rec.poster" [alt]="rec.title" />
-            <h3>{{ rec.title }}</h3>
-            <p>{{ rec.rating }}</p>
-          </div>
+      <div class="podium-grid">
+        @for (m of topPeliculas(); track m.id; let idx = $index) {
+          <article class="top-card" [class.rank-1]="idx === 0">
+            <span class="podium-rank">#{{ idx + 1 }}</span>
+            <div class="poster-box">
+              <img [src]="m.poster" appFallback [alt]="m.titulo" />
+              <span class="badge-format">{{ m.formato }}</span>
+            </div>
+            <div class="card-info">
+              <h3>{{ m.titulo }}</h3>
+              <p class="meta">{{ m.duracion_minutos }} min · ⭐ {{ m.promedio_estrellas }}/5</p>
+              <div class="card-action">
+                <span class="sales-tag">{{ m.total_ventas }} entradas vendidas</span>
+                <a [routerLink]="['/movie', m.id]" class="btn-action">Ver Ficha</a>
+              </div>
+            </div>
+          </article>
         }
       </div>
     </section>
   }
 
-  
-</div> -->
+  <!-- Grilla En Cartelera con Filtros -->
+  <section class="cartelera-section" id="cartelera">
+    <div class="section-header-flex">
+      <div>
+        <h2>🎟️ En Cartelera</h2>
+        <p class="section-subtitle">Consultá los detalles y opiniones antes de reservar tus butacas</p>
+      </div>
 
-<div class="home-container">
-  <!-- Hero / Película destacada -->
-   <header class="home-header">
-    <div class="logo">🎥 CineNova</div>
-    <input type="text" placeholder="Buscar película..." class="search" />
-    <div class="auth-buttons">
-      <a routerLink="/login" class="login-link">Login</a>
-      <button class="logout" (click)="logout()">Logout</button>
-    </div>
-  </header>
-  <header class="hero-banner">
-    
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <span class="hero-badge">ESTRENO DESTACADO</span>
-      <h1 class="hero-title">Avatar: El Sentido del Agua</h1>
-      <p class="hero-desc">
-        Ambientada más de una década después de los acontecimientos de la primera película, 
-        cuenta la historia de la familia Sully.
-      </p>
-      <div class="hero-actions">
-        <button type="button" class="btn-primary" routerLink="/cartelera">
-          <mat-icon>confirmation_number</mat-icon>
-          Comprar Entradas
-        </button>
-        <button type="button" class="btn-secondary">
-          <mat-icon>play_arrow</mat-icon>
-          Ver Tráiler
-        </button>
+      <div class="filter-pills">
+        <button class="pill" [class.active]="filtroFormato() === 'Todas'" (click)="setFiltro('Todas')">Todas</button>
+        <button class="pill" [class.active]="filtroFormato() === '2D'" (click)="setFiltro('2D')">2D</button>
+        <button class="pill" [class.active]="filtroFormato() === '3D'" (click)="setFiltro('3D')">3D</button>
+        <button class="pill" [class.active]="filtroFormato() === '4D'" (click)="setFiltro('4D')">4D</button>
+        <button class="pill" [class.active]="filtroFormato() === '5D'" (click)="setFiltro('5D')">5D</button>
       </div>
     </div>
-  </header>
 
-  <!-- Filtros y Búsqueda -->
-  <section class="filters-bar">
-    <div class="search-box">
-      <mat-icon>search</mat-icon>
-      <input type="text" placeholder="Buscar por película, actor o género..." />
-    </div>
-    <div class="filter-pills">
-      <button class="pill active">Todas</button>
-      <button class="pill">2D / 3D</button>
-      <button class="pill">Acción</button>
-      <button class="pill">Ciencia Ficción</button>
-    </div>
-  </section>
-
-  <section class="carousel">
-    <h2>🎬 Cartelera</h2>
-
-    <button class="carousel-btn prev" (click)="prevSlide()">‹</button>
-
-    <div class="carousel-track"
-    (mouseenter)="pauseAutoplay()"
-    (mouseleave)="resumeAutoplay()"
-    [style.transform]="'translateX(-' + currentOffset() + 'px)'">
-      @for (movie of movies(); track movie.id) {
-        <div class="movie-card">
-          <img [src]="movie.poster" appFallback [alt]="movie.title" />
-          <h3>{{ movie.title }}</h3>
-          <p>{{ movie.rating }}</p>
-          <a [routerLink]="['/movie', movie.id]" class="detail-link">Ver detalle</a>
-        </div>
-      }
-    </div>
-
-    <button class="carousel-btn next" (click)="nextSlide()">›</button>
-
-    
-  </section>
-
-  <!-- Cartelera en Cartas con Relieve -->
-  <section class="movies-section">
-    <h2>En Cartelera</h2>
     <div class="movies-grid">
-      
-      <article class="movie-card" *ngFor="let pelicula of peliculas">
-        <div class="poster-wrapper">
-          <img [src]="pelicula.poster" [alt]="pelicula.titulo" appFallback />
-          <span class="format-tag">{{ pelicula.formato || '2D / 3D' }}</span>
-        </div>
-        <div class="movie-info">
-          <h3>{{ pelicula.titulo }}</h3>
-          <p class="genre">{{ pelicula.genero }} · {{ pelicula.duracion }} min</p>
-          <div class="card-footer">
-            <span class="price">{{ pelicula.precio | currency:'ARS':'symbol':'1.0-0' }}</span>
-            <button class="btn-buy" [routerLink]="['/movie', pelicula.id]">
-              Reservar
-            </button>
+      @for (p of carteleraFiltrada(); track p.id) {
+        <article class="movie-card">
+          <div class="poster-box">
+            <img [src]="p.poster" [alt]="p.titulo" appFallback />
+            <span class="badge-format">{{ p.formato }}</span>
+            <span class="badge-rating">{{ p.restriccion_edad }}</span>
           </div>
-        </div>
-      </article>
-    </div>
-  </section>
-<section class="top-movies">
-    <h2>⭐ Top Películas ⭐</h2>
-    <div class="movies-grid">
-      @for (movie of topMovies; track movie.id) {
-        <div class="movie-card">
-          <img [src]="movie.poster" appFallback [alt]="movie.title" />
-          <h3>{{ movie.title }}</h3>
-          <p>{{ movie.rating }}</p>
-        </div>
-      }
-    </div>
-    <button class="view-all">Ver más</button>
-  </section>
-
-  <section class="upcoming">
-    <h2>🎥 Próximamente 🎥</h2>
-    <div class="movies-grid">
-      @for (movie of upcomingMovies; track movie.id) {
-        <div class="movie-card">
-          <img [src]="movie.poster" appFallback [alt]="movie.title" />
-          <h3>{{ movie.title }}</h3>
-          <p>Estreno: {{ movie.date }}</p>
+          <div class="card-info">
+            <h3>{{ p.titulo }}</h3>
+            <p class="meta">{{ p.duracion_minutos }} min · ⭐ {{ p.promedio_estrellas }}/5</p>
+            <div class="card-action">
+              <span class="price">${{ p.precio }}</span>
+              <!-- Flujo correcto: ingresa a ver detalle y reseñas antes de reservar -->
+              <a [routerLink]="['/movie', p.id]" class="btn-action">Ver Ficha</a>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-state">
+          <p>No se encontraron películas con ese criterio de búsqueda.</p>
         </div>
       }
     </div>
-    <button class="view-all">Ver todos</button>
   </section>
 
-  @if (isLoggedIn) {
-    <section class="recommendations">
-      <h2>🎯 Recomendaciones para ti</h2>
+  <!-- Próximamente -->
+  @if (proximosEstrenos().length > 0) {
+    <section class="upcoming-section">
+      <div class="section-title-wrap">
+        <h2>🎥 Próximos Estrenos</h2>
+        <p class="section-subtitle">Activá un recordatorio para enterarte cuando abra la preventa</p>
+      </div>
+
       <div class="movies-grid">
-        @for (rec of recommendedMovies; track rec.id) {
-          <div class="movie-card">
-            <img [src]="rec.poster" [alt]="rec.title" />
-            <h3>{{ rec.title }}</h3>
-            <p>{{ rec.rating }}</p>
-          </div>
+        @for (m of proximosEstrenos(); track m.id) {
+          <article class="movie-card upcoming-card">
+            <div class="poster-box">
+              <img [src]="m.poster" appFallback [alt]="m.titulo" />
+              <span class="badge-format">Estreno</span>
+            </div>
+            <div class="card-info">
+              <h3>{{ m.titulo }}</h3>
+              <p class="meta">Llega el: {{ m.fecha_estreno | date:'dd/MM/yyyy' }}</p>
+              <div class="card-action">
+                <button type="button" class="btn-alert" (click)="suscribirAlerta(m.id)">
+                  🔔 Recordarme
+                </button>
+              </div>
+            </div>
+          </article>
         }
       </div>
     </section>
-    }
+  }
+
+  <!-- Footer -->
   <footer class="home-footer">
     <div class="footer-content">
-      <div class="logo">🎥 CineNova</div>
-      <nav class="footer-links">
-        <a routerLink="/about">Sobre nosotros</a>
-        <a routerLink="/contact">Contacto</a>
-        <a routerLink="/terms">Términos y condiciones</a>
-        <a routerLink="/privacy">Privacidad</a>
-      </nav>
-      <div class="social">
-        <a href="https://facebook.com" target="_blank">Facebook</a>
-        <a href="https://instagram.com" target="_blank">Instagram</a>
-        <a href="https://twitter.com" target="_blank">Twitter</a>
-      </div>
+      <div class="logo">🎬 CineNova</div>
+      <p class="copy">© 2026 CineNova. Todos los derechos reservados.</p>
     </div>
-    <p class="copy">© 2026 CineNova. Todos los derechos reservados.</p>
   </footer>
 </div>

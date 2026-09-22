@@ -64,7 +64,7 @@
 
                   <!-- Columna central: 20 butacas -->
                   <div class="seat-block center-block">
-                    @for (seat of getCenterSeats(r); track seat.id) {
+                    @for (seat of getCenterSeats(r); track seat.dbId) {
                       <button 
                         type="button"
                         class="seat"
@@ -84,7 +84,7 @@
 
                   <!-- Columna derecha: 4 butacas -->
                   <div class="seat-block right-block">
-                    @for (seat of getRightSeats(r); track seat.id) {
+                    @for (seat of getRightSeats(r); track seat.dbId) {
                       <button 
                         type="button"
                         class="seat"

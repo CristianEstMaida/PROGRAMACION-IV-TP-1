@@ -32,7 +32,7 @@ export class Auth {
     aceptaTerminos: boolean;
   }) {
     const { error } = await this.supabase
-      .from('usuarios')
+      .from('perfiles')
       .insert(profile);
 
     if (error) throw error;
@@ -64,7 +64,7 @@ export class Auth {
    // Nuevo método: obtiene el rol desde la tabla usuarios
   async getUserRole(userId: string): Promise<string | null> {
     const { data, error } = await this.supabase
-      .from('usuarios')
+      .from('perfiles')
       .select('rol')
       .eq('id', userId)
       .single();

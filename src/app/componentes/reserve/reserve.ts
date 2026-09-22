@@ -229,8 +229,15 @@ export class Reserve implements OnInit {
   //   });
   // }
 
+    
+
   // 1. Validar restricción de edad exigida en consigna (+13, +16, +18)
   const restriccion = this.movie()?.rating || 'ATP';
+
+  if (!user && restriccion !== 'ATP') {
+  const confirmaMayor = confirm(`Esta película es para mayores de ${restriccion}. ¿Confirmás que el asistente cumple con la edad o ingresará con un adulto?`);
+  if (!confirmaMayor) return;
+}
   if (user && restriccion !== 'ATP') {
     const esApto = await this.validarRestriccionEdad(user, restriccion);
     if (!esApto) {

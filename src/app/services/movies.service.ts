@@ -45,6 +45,53 @@ export class MoviesService {
   //   );
   // }
 
+  // 1. Películas en Cartelera (estrenadas hoy o antes)
+  async getCartelera() {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data, error } = await this.supabase
+      .from('peliculas')
+      .select('*')
+      .lte('fecha_estreno', hoy)
+      .order('id', { ascending: true });
+    return error ? [] : data;
+  }
+
+  // 2. Próximos Estrenos (fecha_estreno en el futuro)
+  async getProximamente() {
+    const hoy = new Date().toISOString().split('T')[0];
+    const { data, error } = await this.supabase
+      .from('peliculas')
+      .select('*')
+      .gt('fecha_estreno', hoy)
+      .order('fecha_estreno', { ascending: true });
+    return error ? [] : data;
+  }
+
+  // 3. Top 3 Más Vendidas
+  async getTopPeliculas() {
+    const { data, error } = await this.supabase
+      .from('top_peliculas_mas_vistas')
+      .select('*');
+    return error ? [] : data;
+  }
+
+async activarAlerta(peliculaId: number, usuarioId: string) {
+  const { data, error } = await this.supabase
+    .from('alertas')
+    .upsert(
+      { pelicula_id: peliculaId, usuario_id: usuarioId },
+      { onConflict: 'usuario_id,pelicula_id' }
+    )
+    .select();
+
+  if (error) {
+    console.error('Error al guardar alerta en Supabase:', error);
+    return { error };
+  }
+
+  return { data, error: null };
+}
+
   async getMovieById(id: number): Promise<PeliculaBD | null> {
     const { data, error } = await this.supabase
       .from('peliculas')
@@ -55,7 +102,7 @@ export class MoviesService {
     if (error || !data) return null;
     return data;
   }
-  
+
   getAllMovies(): Observable<MovieDetailModel[]> {
     return this.http.get<MovieDetailModel[]>('assets/movies.json');
   }
