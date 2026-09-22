@@ -46,9 +46,22 @@ export class UsuariosAdminComponent {
   cambiarRol(usuario: Usuario, nuevoRol: string) {
     usuario.rol = nuevoRol;
   }
+
+//   async cambiarRol(usuario: any, nuevoRol: string) {
+//   const { error } = await this.supabase
+//     .from('perfiles')
+//     .update({ rol: nuevoRol })
+//     .eq('id', usuario.id);
+
+//   if (!error) usuario.rol = nuevoRol;
+// }
   cambiarRolDesdeEvento(usuario: Usuario, event: Event) {
     const value = (event.target as HTMLSelectElement).value;
     this.cambiarRol(usuario, value);
     }
+//     async cargarUsuarios() {
+//   const { data } = await this.supabase.from('perfiles').select('*');
+//   if (data) this.usuarios.set(data);
+// }
 
 }

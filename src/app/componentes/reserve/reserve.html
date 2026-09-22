@@ -46,7 +46,7 @@
 
                   <!-- Columna izquierda: 4 butacas -->
                   <div class="seat-block left-block">
-                    @for (seat of getLeftSeats(r); track seat.id) {
+                    @for (seat of getLeftSeats(r); track seat.dbId) {
                       <button 
                         type="button"
                         class="seat"

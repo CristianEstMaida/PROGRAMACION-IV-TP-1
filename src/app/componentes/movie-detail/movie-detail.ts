@@ -35,29 +35,45 @@ export class MovieDetail implements OnInit {
     private moviesService: MoviesService
   ) {}
 
-  ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      const rawId = params.get('id');
+  async ngOnInit() {
+    // this.route.paramMap.subscribe(async params => {
+      const rawId = this.route.snapshot.paramMap.get('id');
+      // const rawId = params.get('id');
       const id = Number(rawId);
+      if (!id) return;
 
-      if (!id || isNaN(id)) {
-        console.error('El parámetro ID no es válido:', rawId);
-        return;
+      // if (!id || isNaN(id)) {
+      //   console.error('El parámetro ID no es válido:', rawId);
+      //   return;
+      // }
+
+      const data = await this.moviesService.getMovieById(id);
+      if (data) {
+        this.movie.set({
+          id: data.id,
+          title: data.titulo,
+          rating: data.restriccion_edad,
+          poster: data.imagen_url || '/assets/img/butacas-cine.jpg',
+          genre: 'General',
+          duration: data.duracion_minutos,
+          synopsis: data.sinopsis || '',
+          trailerUrl: ''
+        });
       }
 
-      this.moviesService.getMovieById(id).subscribe({
-        next: (data) => {
-          if (data) {
-            this.movie.set(data);
-          } else {
-            console.error('Película no encontrada para el ID:', id);
-          }
-        },
-        error: (err) => {
-          console.error('Error cargando película:', err);
-        }
-      });
-    });
+      // this.moviesService.getMovieById(id).subscribe({
+      //   next: (data) => {
+      //     if (data) {
+      //       this.movie.set(data);
+      //     } else {
+      //       console.error('Película no encontrada para el ID:', id);
+      //     }
+      //   },
+      //   error: (err) => {
+      //     console.error('Error cargando película:', err);
+      //   }
+      // });
+    // });
   }
 
   toggleReviews() {
