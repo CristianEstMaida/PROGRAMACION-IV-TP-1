@@ -291,3 +291,146 @@
   border-color: #ff8f00;
   box-shadow: 0 0 6px rgba(255, 179, 0, 0.4);
 }
+
+
+/* Sección Candy Bar Integrado */
+.candy-checkout-section {
+  margin-bottom: 2rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.candy-checkout-section h3 {
+  margin: 0 0 0.3rem;
+  color: #0e1d33;
+}
+
+.candy-checkout-section .hint {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 1.2rem;
+}
+
+.candy-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.candy-card {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.candy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.candy-info strong {
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.candy-cat {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.candy-price {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.qty-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qty-selector button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #94a3b8;
+  background: #f1f5f9;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.qty-selector span {
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Sección Cupones y Crédito */
+.discount-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.coupon-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.coupon-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.coupon-input-group input {
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.coupon-input-group button {
+  background: #0e1d33;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.coupon-msg {
+  font-size: 0.8rem;
+  color: #dc2626;
+}
+
+.coupon-msg.success {
+  color: #16a34a;
+}
+
+.credit-box {
+  align-self: center;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #065f46;
+}
+
+.discount-tag {
+  color: #dc2626;
+  font-size: 0.9rem;
+}

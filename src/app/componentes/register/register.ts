@@ -21,6 +21,9 @@ export class Register {
     nombre: '',
     apellido: '',
     fechaNacimiento: '',
+    tipo_sangre: 'O+',
+    color_ojos: 'Marrones',
+    dias_vacaciones: 14,
     aceptaTerminos: false
   });
 
@@ -61,16 +64,9 @@ export class Register {
     // 2. Validación de formato tras 600ms
     setTimeout(() => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const isValid = emailRegex.test(emailVal);
-
-      if (isValid) {
-        this.emailState.set('valid');
-      } else {
-        this.emailState.set('invalid');
-      }
-
+      this.emailState.set(emailRegex.test(emailVal) ? 'valid' : 'invalid');
       this.cdr.detectChanges();
-    }, 600);
+    }, 400);
   }
 
   async onSubmit(event: Event) {
@@ -91,6 +87,9 @@ export class Register {
           nombre: data.nombre,
           apellido: data.apellido,
           fecha_nacimiento: data.fechaNacimiento,
+          tipo_sangre: data.tipo_sangre,
+          color_ojos: data.color_ojos,
+          dias_vacaciones: Number(data.dias_vacaciones),
           rol: 'cliente',
           puntos: 0,
           credito: 0,

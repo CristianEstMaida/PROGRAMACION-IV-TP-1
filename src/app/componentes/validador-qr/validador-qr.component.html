@@ -1,0 +1,45 @@
+<section class="validador-panel">
+  <div class="validador-header">
+    <h2>Control de Acceso y Validación de Entradas</h2>
+    <p>Ingresá el código alfanumérico del ticket o escanealo con el lector</p>
+  </div>
+
+  <form (submit)="$event.preventDefault(); validarCodigo()" class="search-form">
+    <div class="input-wrap">
+      <input 
+        type="text" 
+        [ngModel]="codigoEntrada()" 
+        (ngModelChange)="codigoEntrada.set($event)"
+        name="codigo"
+        placeholder="Ej: TICKET-1-12-1695412345" 
+        required 
+        autofocus />
+      <button type="submit" [disabled]="cargando() || !codigoEntrada().trim()">
+        {{ cargando() ? 'Comprobando...' : 'Validar Ingreso' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Mensaje de Error -->
+  @if (mensajeError()) {
+    <div class="alert error-box">
+      <span class="icon">⚠️</span>
+      <p>{{ mensajeError() }}</p>
+    </div>
+  }
+
+  <!-- Mensaje de Éxito -->
+  @if (resultado(); as res) {
+    <div class="alert success-box">
+      <div class="status-badge">ACCESO CONCEDIDO</div>
+      <h3>{{ res.funciones?.peliculas?.titulo }}</h3>
+      <div class="ticket-details">
+        <p><strong>Sala:</strong> {{ res.funciones?.salas?.nombre }} ({{ res.funciones?.tipo_funcion }})</p>
+        <p><strong>Horario:</strong> {{ res.funciones?.fecha_hora | date:'HH:mm' }} hs</p>
+        <p><strong>Butaca:</strong> Fila {{ res.butacas?.fila }} - Asiento {{ res.butacas?.numero }}</p>
+        <p class="qr-hash"><strong>Código:</strong> {{ res.qr_code }}</p>
+      </div>
+      <p class="burned-notice">El ticket ha quedado marcado como USADO en el sistema.</p>
+    </div>
+  }
+</section>

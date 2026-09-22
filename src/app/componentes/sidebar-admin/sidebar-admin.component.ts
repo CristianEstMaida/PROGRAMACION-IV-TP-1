@@ -20,6 +20,7 @@ export class SidebarAdminComponent {
     { label: 'Cupones', icon: 'confirmation_number', route: '/admin/cupones' },
     { label: 'Fidelización', icon: 'stars', route: '/admin/fidelizacion' },
     { label: 'Reportes', icon: 'bar_chart', route: '/admin/reportes' },
-    { label: 'Log de Actividad', icon: 'history', route: '/admin/log' }
+    { label: 'Log de Actividad', icon: 'history', route: '/admin/log' },
+    { label: 'Validar Entradas', icon: 'qr_code_scanner', route: '/admin/validar-qr' },
   ];
 }

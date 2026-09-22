@@ -1,0 +1,71 @@
+<div class="mis-peliculas-container">
+  <!-- Encabezado de Perfil y Balance -->
+  <header class="profile-summary">
+    <div class="user-greeting">
+      <h2>Mi Cuenta: {{ usuarioNombre() }}</h2>
+      <p>Historial de entradas, compras y programa de fidelización</p>
+    </div>
+    <div class="balance-cards">
+      <div class="bal-card points">
+        <span class="label">Puntos Acumulados</span>
+        <span class="val">⭐ {{ puntosFidelizacion() }}</span>
+      </div>
+      <div class="bal-card credit">
+        <span class="label">Crédito Disponible</span>
+        <span class="val">${{ creditoDisponible() }} ARS</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Listado de Entradas / Películas -->
+  <section class="tickets-section">
+    <h3>Tus Entradas y Funciones</h3>
+
+    @if (cargando()) {
+      <p class="loading-text">Cargando tus entradas...</p>
+    } @else {
+      <div class="tickets-grid">
+        @for (item of entradas(); track item.id) {
+          <article class="ticket-card" [class.cancelled]="item.estado === 'cancelada'">
+            <div class="poster-col">
+              <img [src]="item.pelicula.imagen_url" [alt]="item.pelicula.titulo" />
+              <span class="status-badge" [attr.data-status]="item.estado">
+                {{ item.estado | uppercase }}
+              </span>
+            </div>
+
+            <div class="details-col">
+              <h4>{{ item.pelicula.titulo }}</h4>
+              <p class="meta-line">
+                <span><strong>Sala:</strong> {{ item.funcion.sala }} ({{ item.funcion.tipo_funcion }})</span>
+                <span><strong>Horario:</strong> {{ item.funcion.fecha_hora | date:'dd/MM/yyyy HH:mm' }} hs</span>
+                <span><strong>Ubicación:</strong> {{ item.butaca }}</span>
+              </p>
+              <p class="code-line">Código: <code>{{ item.qr_code }}</code></p>
+              <p class="price-paid">Importe: ${{ item.precio_pagado }} ARS</p>
+
+              <div class="ticket-actions">
+                <a [routerLink]="['/movie', item.pelicula.id]" class="btn-review">
+                  ★ Dejar o Ver Reseña
+                </a>
+
+                @if (item.puedeCancelar) {
+                  <button type="button" class="btn-cancel" (click)="cancelarEntrada(item)">
+                    Cancelar Reserva (Devolución a Crédito)
+                  </button>
+                } @else if (item.estado === 'validada') {
+                  <span class="cancel-deadline-info">No cancelable (menos de 2 hs para la función)</span>
+                }
+              </div>
+            </div>
+          </article>
+        } @empty {
+          <div class="empty-box">
+            <p>Todavía no compraste ninguna entrada.</p>
+            <a routerLink="/home" class="btn-primary">Explorar Cartelera</a>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

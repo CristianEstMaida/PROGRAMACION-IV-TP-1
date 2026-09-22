@@ -1,27 +1,89 @@
 @if (movie(); as m) {
-  <div class="movie-detail">
-    <div class="poster">
-      <img [src]="m.poster" [alt]="m.title" />
-    </div>
-    <div class="info">
-      <h2>{{ m.title }}</h2>
-      @if (m.rating) {
-        <p class="rating">Clasificación: {{ m.rating }}</p>
-      }
-      @if (m.genre) {
-        <p class="genre">Género: {{ m.genre }}</p>
-      }
-      @if (m.duration) {
-        <p class="duration">Duración: {{ m.duration }} min</p>
-      }
-      <p class="synopsis">{{ m.synopsis }}</p>
+  <div class="movie-detail-container">
+    <div class="movie-detail">
+      <div class="poster">
+        <img [src]="m.poster" [alt]="m.title" />
+      </div>
+      <div class="info">
+        <h2>{{ m.title }}</h2>
+        
+        <div class="rating-header-box">
+          <span class="stars-gold">★ {{ promedioEstrellas() }} / 5</span>
+          <span class="reviews-count">({{ reviews().length }} reseñas de espectadores)</span>
+        </div>
 
-      <button class="trailer-btn" (click)="openTrailer(m.trailerUrl)">
-        Ver trailer
-      </button>
-      <button class="reserve-btn" [routerLink]="['/reserve', m.id]">
-        Reservar entradas
-      </button>
+        @if (m.rating) {
+          <p class="rating"><strong>Clasificación:</strong> {{ m.rating }}</p>
+        }
+        @if (m.genre) {
+          <p class="genre"><strong>Formato:</strong> {{ m.genre }}</p>
+        }
+        @if (m.duration) {
+          <p class="duration"><strong>Duración:</strong> {{ m.duration }} min</p>
+        }
+        <p class="synopsis">{{ m.synopsis }}</p>
+
+        <div class="actions">
+          <button class="reserve-btn" [routerLink]="['/reserve', m.id]">
+            Sacar Entradas
+          </button>
+          <button class="reviews-btn" (click)="toggleReviews()">
+            {{ showReviews() ? 'Ocultar Reseñas' : 'Ver Reseñas' }}
+          </button>
+        </div>
+      </div>
     </div>
+
+    <!-- Sección Reseñas y Calificaciones -->
+    @if (showReviews()) {
+      <section class="reviews-section">
+        <h3>Opiniones de la Audiencia</h3>
+
+        <!-- Formulario para dejar reseña -->
+        <div class="add-review">
+          <h4>Dejá tu opinión antes o después de tu función</h4>
+          <div class="review-inputs-row">
+            <label>
+              Puntuación:
+              <select [value]="nuevaPuntuacion()" (change)="nuevaPuntuacion.set(+anyVal($event))">
+                <option [value]="5">⭐⭐⭐⭐⭐ (Excelente)</option>
+                <option [value]="4">⭐⭐⭐⭐ (Muy buena)</option>
+                <option [value]="3">⭐⭐⭐ (Buena)</option>
+                <option [value]="2">⭐⭐ (Regular)</option>
+                <option [value]="1">⭐ (Mala)</option>
+              </select>
+            </label>
+          </div>
+          <textarea 
+            rows="3" 
+            [value]="nuevoComentario()"
+            (input)="nuevoComentario.set(anyVal($event))"
+            placeholder="Escribí un comentario corto sobre la película..."></textarea>
+          <button 
+            type="button" 
+            class="submit-review-btn" 
+            [disabled]="enviandoResena() || !nuevoComentario().trim()"
+            (click)="publicarResena()">
+            {{ enviandoResena() ? 'Publicando...' : 'Publicar Reseña' }}
+          </button>
+        </div>
+
+        <!-- Listado de reseñas desde Supabase -->
+        <div class="reviews-list">
+          @for (r of reviews(); track r.id) {
+            <article class="review-card">
+              <div class="review-header">
+                <strong>{{ r.autor_nombre }}</strong>
+                <span class="review-stars">★ {{ r.puntuacion }}/5</span>
+                <span class="date">{{ r.creado_en | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <p class="review-comment">{{ r.comentario }}</p>
+            </article>
+          } @empty {
+            <p class="no-reviews">Aún no hay opiniones cargadas para esta película. ¡Sé el primero en dejar una!</p>
+          }
+        </div>
+      </section>
+    }
   </div>
 }

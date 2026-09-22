@@ -1,22 +1,19 @@
 <div class="reserve-container">
   @if (movie(); as m) {
     <div class="reserve-layout">
-      <!-- Encabezado con detalles de la película -->
       <header class="reserve-header">
-        <a [routerLink]="['/movie', m.id]" class="back-link">← Volver al Detalle</a>
+        <a [routerLink]="['/movie', m.id]" class="back-link">← Volver al Detalle y Reseñas</a>
         <h2>{{ m.title }}</h2>
         <p class="movie-meta">
           Duración: <strong>{{ m.duration }} min</strong> | 
-          Género: <strong>{{ m.genre }}</strong>
+          Clasificación: <strong>{{ m.rating }}</strong>
         </p>
       </header>
 
       @if (!purchaseSuccess()) {
-        <!-- Selección de funciones y formatos -->
+        <!-- 1. Horarios y Salas -->
         <section class="schedule-section">
-          <h3>Seleccioná formato y horario</h3>
-          <p class="rule-hint">⏱️ Cada función inicia al menos 30 min después de finalizar la anterior.</p>
-          
+          <h3>1. Seleccioná formato y horario</h3>
           <div class="showtimes-grid">
             @for (st of showtimes(); track st.id) {
               <button 
@@ -24,104 +21,147 @@
                 class="showtime-card"
                 [class.active]="selectedShowtime()?.id === st.id"
                 (click)="selectShowtime(st)">
-                <span class="badge" [attr.data-format]="st.format">{{ st.format }}</span>
-                <span class="audio-badge">{{ st.audio }}</span>
+                <span class="badge">{{ st.format }}</span>
+                <span class="room">{{ st.roomName }}</span>
                 <span class="time">{{ st.startTime }} hs</span>
-                <span class="end-time">Termina: {{ st.endTime }} hs</span>
                 <span class="price">${{ st.price }}</span>
               </button>
             }
           </div>
         </section>
 
-        <!-- Sala de cine -->
+        <!-- 2. Mapa de Butacas -->
         <section class="theater-section">
+          <h3>2. Seleccioná tus butacas</h3>
           <div class="cinema-screen">PANTALLA</div>
-
           <div class="room-wrapper">
             <div class="theater-grid">
               @for (r of getRows(); track r) {
                 <div class="row-container">
                   <span class="row-label">{{ r }}</span>
-
-                  <!-- Columna izquierda: 4 butacas -->
                   <div class="seat-block left-block">
                     @for (seat of getLeftSeats(r); track seat.dbId) {
                       <button 
-                        type="button"
+                        type="button" 
                         class="seat"
                         [class.occupied]="seat.occupied"
                         [class.selected]="seat.selected"
+                        [class.vip]="seat.row === 'R' || seat.row === 'S' || seat.row === 'T'"
+                        [class.accessible]="seat.row === 'J' || seat.row === 'K'"
                         [disabled]="seat.occupied"
-                        [title]="seat.id"
-                        (click)="toggleSeat(seat)">
+                        (click)="toggleSeat(seat)"
+                        [title]="'Fila ' + seat.row + ' Butaca ' + seat.number">
                       </button>
                     }
                   </div>
-
-                  <!-- Pasillo izquierdo -->
                   <div class="aisle"></div>
-
-                  <!-- Columna central: 20 butacas -->
                   <div class="seat-block center-block">
                     @for (seat of getCenterSeats(r); track seat.dbId) {
                       <button 
-                        type="button"
+                        type="button" 
                         class="seat"
-                        [class.accessible]="seat.row === 'J' || seat.row === 'K'"
-                        [class.vip]="seat.row === 'R' || seat.row === 'S' || seat.row === 'T'"
                         [class.occupied]="seat.occupied"
                         [class.selected]="seat.selected"
+                        [class.vip]="seat.row === 'R' || seat.row === 'S' || seat.row === 'T'"
+                        [class.accessible]="seat.row === 'J' || seat.row === 'K'"
                         [disabled]="seat.occupied"
-                        [title]="seat.id"
-                        (click)="toggleSeat(seat)">
+                        (click)="toggleSeat(seat)"
+                        [title]="'Fila ' + seat.row + ' Butaca ' + seat.number">
                       </button>
                     }
                   </div>
-
-                  <!-- Pasillo derecho -->
                   <div class="aisle"></div>
-
-                  <!-- Columna derecha: 4 butacas -->
                   <div class="seat-block right-block">
                     @for (seat of getRightSeats(r); track seat.dbId) {
                       <button 
-                        type="button"
+                        type="button" 
                         class="seat"
                         [class.occupied]="seat.occupied"
                         [class.selected]="seat.selected"
+                        [class.vip]="seat.row === 'R' || seat.row === 'S' || seat.row === 'T'"
+                        [class.accessible]="seat.row === 'J' || seat.row === 'K'"
                         [disabled]="seat.occupied"
-                        [title]="seat.id"
-                        (click)="toggleSeat(seat)">
+                        (click)="toggleSeat(seat)"
+                        [title]="'Fila ' + seat.row + ' Butaca ' + seat.number">
                       </button>
                     }
                   </div>
-
                   <span class="row-label">{{ r }}</span>
                 </div>
               }
             </div>
           </div>
 
-          <!-- Leyenda de butacas -->
           <div class="legend">
-            <span class="legend-item"><span class="seat demo"></span> Libre</span>
-            <span class="legend-item"><span class="seat demo selected"></span> Tu selección</span>
+            <span class="legend-item"><span class="seat demo"></span> Estándar</span>
+            <span class="legend-item"><span class="seat demo accessible"></span> Accesible (J, K)</span>
+            <span class="legend-item"><span class="seat demo vip"></span> VIP +30% (R, S, T)</span>
+            <span class="legend-item"><span class="seat demo selected"></span> Selección</span>
             <span class="legend-item"><span class="seat demo occupied"></span> Ocupada</span>
           </div>
         </section>
 
-        <!-- Resumen y botón de pago -->
+        <!-- 3. Candy Bar en la misma orden -->
+        <section class="candy-checkout-section">
+          <h3>3. ¿Deseás agregar Candy Bar a tu orden?</h3>
+          <p class="hint">Podrás retirar todo en el mostrador presentando el mismo código QR.</p>
+          <div class="candy-cards-grid">
+            @for (p of candyItems(); track p.id) {
+              <div class="candy-card">
+                <div class="candy-info">
+                  <strong>{{ p.nombre }}</strong>
+                  <span class="candy-cat">{{ p.categoria }}</span>
+                  <span class="candy-price">${{ p.precio }}</span>
+                </div>
+                <div class="qty-selector">
+                  <button type="button" (click)="decrementCandy(p)">-</button>
+                  <span>{{ p.cantidad }}</span>
+                  <button type="button" (click)="incrementCandy(p)">+</button>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+
+        <!-- 4. Cupones y Crédito a Favor -->
+        <section class="discount-section">
+          <div class="coupon-box">
+            <label>Cupón de descuento:</label>
+            <div class="coupon-input-group">
+              <input 
+                type="text" 
+                [value]="codigoCuponInput()"
+                (input)="codigoCuponInput.set($any($event.target).value)"
+                
+                placeholder="Ej: BIENVENIDA20, SENIOR50" />
+              <button type="button" (click)="validarCupon()">Aplicar</button>
+            </div>
+            @if (mensajeCupon()) {
+              <span class="coupon-msg" [class.success]="cuponAplicado()">{{ mensajeCupon() }}</span>
+            }
+          </div>
+
+          @if (creditoDisponible() > 0) {
+            <div class="credit-box">
+              <label>
+                <input type="checkbox" [checked]="usarCredito()" (change)="usarCredito.set(!usarCredito())" />
+                Usar crédito disponible por cancelaciones: <strong>${{ creditoDisponible() }} ARS</strong>
+              </label>
+            </div>
+          }
+        </section>
+
+        <!-- 5. Barra de Pago -->
         <footer class="checkout-bar">
           <div class="summary">
-            <span>Función: <strong>{{ selectedShowtime()?.format }} ({{ selectedShowtime()?.audio }}) - {{ selectedShowtime()?.startTime }} hs</strong></span>
-            <span>Butacas seleccionadas ({{ selectedSeats().length }}): 
-              <strong>
-                @for (s of selectedSeats(); track s.id) { {{ s.id }} }
-                @empty { Ninguna }
-              </strong>
-            </span>
-            <span class="total">Total: <strong>${{ totalPrice() }} ARS</strong></span>
+            <span>Butacas ({{ selectedSeats().length }}): <strong>${{ totalButacas() }} ARS</strong></span>
+            @if (totalCandy() > 0) {
+              <span>Candy Bar: <strong>+${{ totalCandy() }} ARS</strong></span>
+            }
+            @if (descuentoCuponMonto() > 0) {
+              <span class="discount-tag">Descuento Cupón: <strong>-${{ descuentoCuponMonto() }} ARS</strong></span>
+            }
+            <span class="total">Total a Pagar: <strong>${{ totalFinal() }} ARS</strong></span>
           </div>
           <button 
             type="button" 
@@ -132,19 +172,12 @@
           </button>
         </footer>
       } @else {
-        <!-- Confirmación de compra -->
         <div class="success-card">
-          <h3>🎉 ¡Entradas reservadas con éxito!</h3>
-          <p>Película: <strong>{{ m.title }}</strong></p>
-          <p>Formato: <strong>{{ selectedShowtime()?.format }} ({{ selectedShowtime()?.audio }})</strong></p>
-          <p>Horario: <strong>{{ selectedShowtime()?.startTime }} hs</strong></p>
-          <p>Butacas: 
-            <strong>
-              @for (s of selectedSeats(); track s.id) { {{ s.id }} }
-            </strong>
-          </p>
-          <p class="final-price">Abonado: <strong>${{ totalPrice() }} ARS</strong></p>
-          <a routerLink="/home" class="home-btn">Volver a Cartelera</a>
+          <h3>🎉 ¡Reserva y Compra Confirmada!</h3>
+          <p>Tu entrada y tus productos de Candy Bar han sido registrados.</p>
+          <p class="final-price">Total Abonado: <strong>${{ totalFinal() }} ARS</strong></p>
+          <p class="hint">Descargaste automáticamente el archivo PDF con tu código QR único.</p>
+          <a routerLink="/home" class="home-btn">Volver a la Cartelera</a>
         </div>
       }
     </div>

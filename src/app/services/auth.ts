@@ -26,6 +26,9 @@ export class Auth {
     nombre: string;
     apellido: string;
     fecha_nacimiento: string;
+    tipo_sangre?: string;
+    color_ojos?: string;
+    dias_vacaciones?: number;
     rol: string;
     puntos: number;
     credito: number;

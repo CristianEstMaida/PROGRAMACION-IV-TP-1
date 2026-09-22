@@ -1,39 +1,43 @@
 <section class="funciones-admin">
-  <h2>Gestión de Funciones</h2>
+  <h2>Gestión y Programación de Funciones</h2>
+  <p class="subtitle">Asignación automática de salas respetando 30 min de limpieza entre proyecciones.</p>
 
-  <form #form="ngForm" (ngSubmit)="agregarFuncion(form.value.peliculaId, form.value.salaId, form.value.horario, form.value.formato, form.value.precio)">
-    <!-- <input type="text" name="pelicula" ngModel placeholder="Película" required /> -->
-     <select name="peliculaId" ngModel required>
+  @if (mensajeError()) {
+    <div class="alert-box error">{{ mensajeError() }}</div>
+  }
+  @if (mensajeExito()) {
+    <div class="alert-box success">{{ mensajeExito() }}</div>
+  }
+
+  <form #form="ngForm" (ngSubmit)="agregarFuncion(form.value.peliculaId, form.value.fecha, form.value.horario, form.value.formato, form.value.precio)" class="funciones-form">
+    
+    <select name="peliculaId" ngModel required>
       <option value="" disabled selected>Seleccioná Película</option>
-      <option *ngFor="let p of peliculas()" [value]="p.id">{{ p.titulo }}</option>
+      <option *ngFor="let p of peliculas()" [value]="p.id">{{ p.titulo }} ({{ p.duracion_minutos }} min)</option>
     </select>
-    <!-- <input type="time" name="horario" ngModel required />
-    <select name="formato" ngModel>
+
+    <input type="date" name="fecha" ngModel required />
+    <input type="time" name="horario" ngModel required />
+
+    <select name="formato" ngModel required>
+      <option value="" disabled selected>Formato</option>
       <option value="2D">2D</option>
       <option value="3D">3D</option>
-    </select> -->
-    <!-- <input type="number" name="precio" ngModel placeholder="Precio" required /> -->
-     <!-- Select de Sala -->
-  <select name="salaId" ngModel required>
-    <option value="" disabled selected>Seleccioná Sala</option>
-    <option *ngFor="let s of salas()" [value]="s.id">{{ s.nombre }}</option>
-  </select>
+      <option value="4D">4D</option>
+      <option value="5D">5D</option>
+    </select>
 
-  <input type="time" name="horario" ngModel required />
-  <select name="formato" ngModel required>
-    <option value="2D">2D</option>
-    <option value="3D">3D</option>
-  </select>
+    <input type="number" name="precio" ngModel placeholder="Precio $" required />
 
-  <input type="number" name="precio" ngModel placeholder="Precio" required />
-    <button type="submit">➕ Agregar Función</button>
+    <button type="submit">⚡ Asignar y Crear Función</button>
   </form>
 
   <table>
     <thead>
       <tr>
-        <th>Pelicula</th>
-        <th>Sala</th>
+        <th>Película</th>
+        <th>Sala Asignada</th>
+        <th>Fecha</th>
         <th>Horario</th>
         <th>Formato</th>
         <th>Precio</th>
@@ -42,13 +46,14 @@
     </thead>
     <tbody>
       <tr *ngFor="let f of funciones()">
-        <td>{{ f.pelicula }}</td>
-        <td>{{ f.sala }}</td>
-        <td>{{ f.horario }}</td>
+        <td><strong>{{ f.pelicula }}</strong></td>
+        <td><span class="sala-tag">{{ f.sala }}</span></td>
+        <td>{{ f.fecha }}</td>
+        <td>{{ f.horario }} hs</td>
         <td>{{ f.formato }}</td>
         <td>{{ f.precio | currency:'ARS':'symbol':'1.0-0' }}</td>
         <td>
-          <button (click)="eliminarFuncion(f.id)">🗑️ Eliminar</button>
+          <button (click)="eliminarFuncion(f.id)">Eliminar</button>
         </td>
       </tr>
     </tbody>

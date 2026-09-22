@@ -39,7 +39,11 @@ export const routes: Routes = [
         path: 'reset-password',
         loadComponent: () => import('./componentes/reset-password/reset-password').then(m => m.ResetPassword)
     },
-    
+    {
+        path: 'mis-peliculas',
+        loadComponent: () => import('./componentes/mis-peliculas/mis-peliculas.component').then(m => m.MisPeliculasComponent),
+        canMatch: [authGuard]
+    },
     {
         path: 'admin',
         loadComponent: () =>
@@ -95,6 +99,10 @@ export const routes: Routes = [
             path: 'log',
             loadComponent: () =>
             import('./componentes/log-actividad/log-actividad.component').then(m => m.LogActividadComponent),
+        },
+        {
+            path: 'validar-qr',
+            loadComponent: () => import('./componentes/validador-qr/validador-qr.component').then(m => m.ValidadorQrComponent)
         },
         ],
     },

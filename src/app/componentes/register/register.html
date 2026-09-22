@@ -82,6 +82,45 @@
       </div>
     </label>
 
+    <!-- Tipo de Sangre -->
+    <label class="input-icon user valid">
+      <span>Tipo de Sangre:</span>
+      <div class="field-wrapper">
+        <select [formField]="registerForm.tipo_sangre" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border);">
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+          <option value="O+" selected>O+</option>
+          <option value="O-">O-</option>
+        </select>
+      </div>
+    </label>
+
+    <!-- Color de Ojos -->
+    <label class="input-icon user valid">
+      <span>Color de Ojos:</span>
+      <div class="field-wrapper">
+        <select [formField]="registerForm.color_ojos" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border);">
+          <option value="Marrones" selected>Marrones</option>
+          <option value="Azules">Azules</option>
+          <option value="Verdes">Verdes</option>
+          <option value="Miel / Pardos">Miel / Pardos</option>
+          <option value="Negros">Negros</option>
+        </select>
+      </div>
+    </label>
+
+    <!-- Días de Vacaciones por Año -->
+    <label class="input-icon user valid">
+    <span>Días de Vacaciones Anuales:</span>
+    <div class="field-wrapper">
+      <input type="number" [formField]="registerForm.dias_vacaciones" placeholder="Ej: 14" />
+    </div>
+  </label>
+
     <!-- Términos y condiciones -->
     <label class="checkbox-label">
       <input type="checkbox" [formField]="registerForm.aceptaTerminos" />

@@ -10,7 +10,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let log of logs">
+      <tr *ngFor="let log of logs()">
         <td>{{ log.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
         <td>{{ log.usuario }}</td>
         <td>{{ log.accion }}</td>

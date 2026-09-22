@@ -14,6 +14,10 @@
 
     <div class="auth-buttons">
       @if (isLoggedIn) {
+        <!-- Botón directo a Mis Películas -->
+      <a routerLink="/mis-peliculas" class="btn-secondary" style="padding: 0.5rem 0.9rem; font-size: 0.85rem;">
+        Mis Películas
+      </a>
         <button type="button" class="btn-admin" routerLink="/admin">Panel Admin</button>
         <button type="button" class="btn-logout" (click)="logout()">Salir</button>
       } @else {
