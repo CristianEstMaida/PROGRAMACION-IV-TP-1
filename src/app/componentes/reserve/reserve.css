@@ -279,3 +279,15 @@
   text-decoration: none;
   font-weight: 700;
 }
+/* Butaca Accesible (Azul celeste) */
+.seat.accessible {
+  background: #00bcd4;
+  border-color: #00838f;
+}
+
+/* Butaca VIP (Dorado brillante) */
+.seat.vip {
+  background: #ffb300;
+  border-color: #ff8f00;
+  box-shadow: 0 0 6px rgba(255, 179, 0, 0.4);
+}

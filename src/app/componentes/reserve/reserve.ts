@@ -5,6 +5,8 @@ import { MoviesService } from '../../services/movies.service';
 import { MovieDetailModel } from '../../models/movie';
 import { Auth } from '../../services/auth';
 import { SupabaseService } from '../../services/supabase.service';
+import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 
 // export interface Seat {
 //   id: string;      // ej: "A-1"
@@ -69,8 +71,14 @@ export class Reserve implements OnInit {
   // Precios y totales
   selectedSeats = computed(() => this.seats().filter(s => s.selected));
   totalPrice = computed(() => {
-    const currentPrice = this.selectedShowtime()?.price ?? 0;
-    return this.selectedSeats().length * currentPrice;
+  const basePrice = this.selectedShowtime()?.price ?? 0;
+  
+  // Si la butaca es de las últimas 3 filas (R, S, T), tiene un recargo VIP del 30%
+  return this.selectedSeats().reduce((acc, seat) => {
+    const isVip = ['R', 'S', 'T'].includes(seat.row);
+    const seatPrice = isVip ? basePrice * 1.3 : basePrice;
+    return acc + seatPrice;
+  }, 0);
   });
 
   purchaseSuccess = signal<boolean>(false);
@@ -214,24 +222,64 @@ export class Reserve implements OnInit {
     // Obtener usuario autenticado (o null si es venta pública)
     const user = await this.auth.getCurrentUser();
 
+  //   if (user) {
+  //   await this.supabase.rpc('incrementar_puntos', { 
+  //     user_id: user.id, 
+  //     puntos_ganados: this.totalPrice() 
+  //   });
+  // }
+
+  // 1. Validar restricción de edad exigida en consigna (+13, +16, +18)
+  const restriccion = this.movie()?.rating || 'ATP';
+  if (user && restriccion !== 'ATP') {
+    const esApto = await this.validarRestriccionEdad(user, restriccion);
+    if (!esApto) {
+      alert(`No cumplís con la restricción de edad (${restriccion}) para comprar esta entrada.`);
+      return;
+    }
+  }
+
+  // 2. Insertar entradas en Supabase
+  const qrBase = `TICKET-${currentShow.id}-${Date.now()}`;
+
     // Armar inserts en la tabla entradas
     const inserts = chosen.map(seat => ({
       funcion_id: currentShow.id,
       butaca_id: seat.dbId,
       usuario_id: user ? user.id : null,
       estado: 'validada',
-      qr_code: `TICKET-${currentShow.id}-${seat.dbId}-${Date.now()}`
+      qr_code: `${qrBase}-${seat.dbId}`
     }));
 
     const { error } = await this.supabase.from('entradas').insert(inserts);
 
-    if (!error) {
-      this.purchaseSuccess.set(true);
-    } else {
-      console.error('Error al registrar entradas:', error.message);
-      alert('Ocurrió un error al procesar la reserva. Intenta nuevamente.');
+   if (!error) {
+    // 3. Sumar puntos al perfil del usuario
+    if (user) {
+      const { data: perfil } = await this.supabase
+        .from('perfiles')
+        .select('puntos')
+        .eq('id', user.id)
+        .single();
+      
+        const nuevosPuntos = (perfil?.puntos || 0) + Math.round(this.totalPrice());
+        await this.supabase.from('perfiles').update({ puntos: nuevosPuntos }).eq('id', user.id);
     }
+
+        // 4. Descargar PDF con el código QR generado
+    await this.descargarEntradaPDF(
+      this.movie()?.title || 'Película',
+      currentShow,
+      chosen,
+      qrBase
+    );
+
+    this.purchaseSuccess.set(true);
+  } else {
+    console.error('Error al registrar entradas:', error.message);
+    alert('Ocurrió un error al procesar la reserva. Intenta nuevamente.');
   }
+}
   // Genera el cronograma respetando: duración + 30 min de limpieza/pausa
   // generateSchedule(durationMin: number) {
   //   const totalSlot = durationMin + 30; 
@@ -331,4 +379,50 @@ export class Reserve implements OnInit {
   //   if (this.selectedSeats().length === 0) return;
   //   this.purchaseSuccess.set(true);
   // }
+  async validarRestriccionEdad(user: any, restriccion: string): Promise<boolean> {
+  if (!restriccion || restriccion === 'ATP') return true;
+
+  // Obtener fecha de nacimiento del perfil en Supabase
+  const { data: perfil } = await this.supabase
+    .from('perfiles')
+    .select('fecha_nacimiento')
+    .eq('id', user.id)
+    .single();
+
+  if (!perfil?.fecha_nacimiento) return false;
+
+  const fechaNac = new Date(perfil.fecha_nacimiento);
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - fechaNac.getFullYear();
+  const m = hoy.getMonth() - fechaNac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < fechaNac.getDate())) edad--;
+
+  const minimaRequerida = parseInt(restriccion.replace('+', ''), 10);
+  return edad >= minimaRequerida;
+}
+
+
+async descargarEntradaPDF(pelicula: string, funcion: ShowTime, butacas: Seat[], qrTexto: string) {
+  const doc = new jsPDF();
+  const qrDataUrl = await QRCode.toDataURL(qrTexto);
+
+  doc.setFontSize(20);
+  doc.text('CineNova - Entrada Oficial', 20, 25);
+
+  doc.setFontSize(12);
+  doc.text(`Película: ${pelicula}`, 20, 40);
+  doc.text(`Sala: ${funcion.roomName} (${funcion.format})`, 20, 50);
+  doc.text(`Horario: ${funcion.startTime} hs`, 20, 60);
+  doc.text(`Butacas: ${butacas.map(b => b.id).join(', ')}`, 20, 70);
+
+  // Advertencia de edad si aplica
+  if (this.movie()?.rating && this.movie()?.rating !== 'ATP') {
+    doc.setTextColor(200, 0, 0);
+    doc.text(`Restricción ${this.movie()?.rating}: Debe ingresar acompañado por un adulto.`, 20, 80);
+    doc.setTextColor(0, 0, 0);
+  }
+
+  doc.addImage(qrDataUrl, 'PNG', 20, 95, 60, 60);
+  doc.save(`entrada-${pelicula.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+}
 }

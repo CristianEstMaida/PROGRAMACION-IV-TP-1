@@ -164,7 +164,7 @@
           <p class="genre">{{ pelicula.genero }} · {{ pelicula.duracion }} min</p>
           <div class="card-footer">
             <span class="price">{{ pelicula.precio | currency:'ARS':'symbol':'1.0-0' }}</span>
-            <button class="btn-buy" [routerLink]="['/funciones', pelicula.id]">
+            <button class="btn-buy" [routerLink]="['/movie', pelicula.id]">
               Reservar
             </button>
           </div>

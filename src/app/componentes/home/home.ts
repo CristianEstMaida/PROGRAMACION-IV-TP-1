@@ -96,17 +96,36 @@ export class Home implements OnInit, OnDestroy {
     private auth: Auth, private router: Router
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    const data = await this.moviesService.obtenerPeliculas();
+    if (data && data.length > 0) {
+      const mapeadas = data.map(p => ({
+        id: p.id,
+        title: p.titulo,
+        rating: p.restriccion_edad || 'ATP',
+        genre: p.formato || 'Acción',
+        duration: p.duracion_minutos,
+        price: 3500,
+        format: p.formato,
+        poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
+        synopsis: p.sinopsis || '',
+        trailerUrl: ''
+      }));
+
+      // Alimenta tanto al carrusel como a la grilla inferior
+      this.movies.set(mapeadas);
+      this.peliculas = mapeadas as any;
+    }
 
 
-    this.moviesService.getAllMovies().subscribe({
-      next: (data: MovieDetailModel[]) => {
-        this.movies.set(data);
-      },
-      error: (err: any) => {
-        console.error('Error cargando películas', err);
-      }
-    });
+    // this.moviesService.getAllMovies().subscribe({
+    //   next: (data: MovieDetailModel[]) => {
+    //     this.movies.set(data);
+    //   },
+    //   error: (err: any) => {
+    //     console.error('Error cargando películas', err);
+    //   }
+    // });
 
      // autoplay cada 5 segundos
     // this.autoplayInterval = setInterval(() => {

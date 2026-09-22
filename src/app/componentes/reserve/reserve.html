@@ -68,6 +68,8 @@
                       <button 
                         type="button"
                         class="seat"
+                        [class.accessible]="seat.row === 'J' || seat.row === 'K'"
+                        [class.vip]="seat.row === 'R' || seat.row === 'S' || seat.row === 'T'"
                         [class.occupied]="seat.occupied"
                         [class.selected]="seat.selected"
                         [disabled]="seat.occupied"
