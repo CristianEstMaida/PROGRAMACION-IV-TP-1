@@ -31,30 +31,32 @@ Cumple con todos los requerimientos transaccionales: venta de entradas con reser
 
 ## 🧱 Arquitectura del Sistema
 
+```
 src/app/
 ├── componentes/
-│   ├── home/                 # Cartelera principal, podio Top 3 y filtros por formato (2D, 3D, 4D, 5D)
-│   ├── movie-detail/         # Ficha técnica, sinopsis y reseñas con promedio de estrellas
-│   ├── reserve/              # Mapa de sala (28 butacas/fila, VIP y adaptadas), Candy Bar y Cupones
-│   ├── mis-peliculas/        # Historial de entradas, saldo de crédito, puntos y cancelación (<= 2 hs)
-│   ├── validador-qr/         # Terminal de operador para escanear/ingresar código QR y quemar ticket
-│   ├── admin-dashboard/      # Panel general de administración con métricas y gráficos
-│   ├── funciones-admin/      # Algoritmo de asignación automática de salas (duración + 30 min)
-│   ├── peliculas-admin/      # ABM de títulos, formatos e idiomas
-│   ├── candy-bar-admin/      # ABM de catálogo de alimentos, combos y stock
-│   ├── cupones-admin/        # Configuración de cupones (bienvenida y mayores de 50 años)
-│   └── log-actividad/        # Auditoría de acciones administrativas y operativas en tiempo real
+│   ├── home/              # Cartelera principal, podio Top 3 y filtros por formato (2D, 3D, 4D, 5D)
+│   ├── movie-detail/      # Ficha técnica, sinopsis y reseñas con promedio de estrellas
+│   ├── reserve/           # Mapa de sala (28 butacas/fila, VIP y adaptadas), Candy Bar y Cupones
+│   ├── mis-peliculas/     # Historial de entradas, saldo de crédito, puntos y cancelación (<= 2 hs)
+│   ├── validador-qr/      # Terminal de operador para escanear/ingresar código QR y quemar ticket
+│   ├── admin-dashboard/   # Panel general de administración con métricas y gráficos
+│   ├── funciones-admin/   # Algoritmo de asignación automática de salas (duración + 30 min)
+│   ├── peliculas-admin/   # ABM de títulos, formatos e idiomas
+│   ├── candy-bar-admin/   # ABM de catálogo de alimentos, combos y stock
+│   ├── cupones-admin/     # Configuración de cupones (bienvenida y mayores de 50 años)
+│   └── log-actividad/     # Auditoría de acciones administrativas y operativas en tiempo real
 ├── services/
-│   ├── auth.ts               # Sesión, recuperación de contraseña y perfiles extendidos
-│   ├── movies.service.ts     # Consulta a Supabase de cartelera, top vistas y alertas de preventa
-│   └── supabase.service.ts   # Inicialización y singleton del cliente Supabase
+│   ├── auth.ts            # Sesión, recuperación de contraseña y perfiles extendidos
+│   ├── movies.service.ts  # Consulta a Supabase de cartelera, top vistas y alertas de preventa
+│   └── supabase.service.ts# Inicialización y singleton del cliente Supabase
 ├── directivas/
-│   ├── appImageFallback      # Manejo de imágenes rotas de películas
-│   ├── appAutoFocus          # Foco automático en buscadores
-│   └── confirm-delete        # Interceptor de confirmación para bajas
+│   ├── appImageFallback   # Manejo de imágenes rotas de películas
+│   ├── appAutoFocus       # Foco automático en buscadores
+│   └── confirm-delete     # Interceptor de confirmación para bajas
 └── guards/
-├── auth-guard.ts         # Protección de checkout y perfil personal
-└── role-guard.ts         # Restricción estricta para roles admin y operador
+    ├── auth-guard.ts      # Protección de checkout y perfil personal
+    └── role-guard.ts      # Restricción estricta para roles admin y operador
+```
 
 
 ---
