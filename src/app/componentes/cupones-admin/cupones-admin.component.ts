@@ -1,14 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Cupon } from '../../models/cupon';
 
-interface Cupon {
-  id: number;
-  codigo: string;
-  descuento: number; // porcentaje
-  fechaInicio: string;
-  fechaFin: string;
-  activo: boolean;
-}
+
 
 @Component({
   selector: 'app-cupones-admin',

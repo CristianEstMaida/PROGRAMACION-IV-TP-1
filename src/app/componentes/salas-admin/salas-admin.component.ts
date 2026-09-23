@@ -1,13 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface Sala {
-  id: number;
-  nombre: string;
-  filas: number;
-  columnas: number;
-  tipo: string; // estándar, VIP, accesible
-}
+import { Sala } from '../../models/sala';
 
 @Component({
   selector: 'app-salas-admin',
@@ -18,8 +11,30 @@ interface Sala {
 })
 export class SalasAdminComponent {
   salas: Sala[] = [
-    { id: 1, nombre: 'Sala 1', filas: 10, columnas: 12, tipo: 'Estándar' },
-    { id: 2, nombre: 'Sala 2', filas: 8, columnas: 10, tipo: 'VIP' }
+    { 
+      id: 1, 
+      nombre: 'Sala 1 - Principal 5D', 
+      filas: 20, 
+      columnas: 28, 
+      capacidad: 560, 
+      tipo: '5D / Gran Formato' 
+    },
+    { 
+      id: 2, 
+      nombre: 'Sala 2 - Confort', 
+      filas: 10, 
+      columnas: 12, 
+      capacidad: 120, 
+      tipo: 'Estándar' 
+    },
+    { 
+      id: 3, 
+      nombre: 'Sala 3 - MacroXE', 
+      filas: 8, 
+      columnas: 10, 
+      capacidad: 80, 
+      tipo: 'VIP' 
+    }
   ];
 
   agregarSala() {
@@ -28,6 +43,7 @@ export class SalasAdminComponent {
       nombre: `Sala ${this.salas.length + 1}`,
       filas: 10,
       columnas: 12,
+      capacidad: 120,
       tipo: 'Estándar'
     };
     this.salas.push(nueva);
