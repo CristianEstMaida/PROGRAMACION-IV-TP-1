@@ -74,13 +74,47 @@
     </label>
 
     <!-- Fecha de Nacimiento -->
-    <label class="input-icon date"
-      [class.valid]="registerModel().fechaNacimiento">
-      <span class="icon"></span>📅 Fecha de nacimiento:
-      <div class="field-wrapper">
-        <input type="date" [formField]="registerForm.fechaNacimiento" />
+    <!-- Fecha de Nacimiento (sin datepicker, alineada) -->
+    <div class="custom-date-group">
+      <span>📅 Fecha de Nacimiento:</span>
+      <div class="date-inputs-row">
+        <input 
+          type="number" 
+          placeholder="Día" 
+          [(ngModel)]="diaNac" 
+          (input)="actualizarFechaNacimiento()"
+          name="dia"
+          class="date-part-input" />
+
+        <select 
+          [(ngModel)]="mesNac" 
+          (change)="actualizarFechaNacimiento()"
+          name="mes"
+          class="date-part-input">
+          <option value="" disabled selected>Mes</option>
+          <option value="01">Enero</option>
+          <option value="02">Febrero</option>
+          <option value="03">Marzo</option>
+          <option value="04">Abril</option>
+          <option value="05">Mayo</option>
+          <option value="06">Junio</option>
+          <option value="07">Julio</option>
+          <option value="08">Agosto</option>
+          <option value="09">Septiembre</option>
+          <option value="10">Octubre</option>
+          <option value="11">Noviembre</option>
+          <option value="12">Diciembre</option>
+        </select>
+
+        <input 
+          type="number" 
+          placeholder="Año" 
+          [(ngModel)]="anioNac" 
+          (input)="actualizarFechaNacimiento()"
+          name="anio"
+          class="date-part-input" />
       </div>
-    </label>
+    </div>
 
     <!-- Tipo de Sangre -->
     <label class="input-icon user valid">

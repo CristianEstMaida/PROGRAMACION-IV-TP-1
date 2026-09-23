@@ -21,25 +21,30 @@ export class Auth {
     return data;
   }
 
-  async insertProfile(profile: {
-    id: string;
-    nombre: string;
-    apellido: string;
-    fecha_nacimiento: string;
-    tipo_sangre?: string;
-    color_ojos?: string;
-    dias_vacaciones?: number;
-    rol: string;
-    puntos: number;
-    credito: number;
-    aceptaTerminos: boolean;
-  }) {
-    const { error } = await this.supabase
-      .from('perfiles')
-      .insert(profile);
+async insertProfile(profile: {
+  id: string;
+  email: string;
+  nombre: string;
+  apellido: string;
+  fecha_nacimiento: string;
+  tipo_sangre?: string;
+  color_ojos?: string;
+  dias_vacaciones?: number;
+  rol: string;
+  puntos: number;
+  credito: number;
+}) {
+  // .upsert actualiza si el trigger ya creó el registro con el ID de Auth
+  const { data, error } = await this.supabase
+    .from('perfiles')
+    .upsert(profile, { onConflict: 'id' });
 
-    if (error) throw error;
+  if (error) {
+    console.error('Error detallado al guardar perfil en Supabase:', error);
+    throw error;
   }
+  return data;
+}
 
   resetPasswordForEmail(email: string) {
     return this.supabase.auth.resetPasswordForEmail(email, {

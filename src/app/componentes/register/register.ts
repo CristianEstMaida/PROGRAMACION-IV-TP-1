@@ -14,6 +14,10 @@ import { RegisterData } from '../../models/register-data';
   imports: [FormField, RouterLink, CommonModule, FormsModule]
 })
 export class Register {
+  // Variables locales para los inputs normales
+  diaNac: string = '';
+  mesNac: string = '';
+  anioNac: string = '';
   registerModel = signal<RegisterData>({
     email: '',
     password: '',
@@ -26,6 +30,25 @@ export class Register {
     dias_vacaciones: 14,
     aceptaTerminos: false
   });
+
+  actualizarFechaNacimiento() {
+    const diaNum = Number(this.diaNac);
+    const anioNum = Number(this.anioNac);
+    const m = this.mesNac;
+
+    // Validar rango real de día y año
+    const esDiaValido = diaNum >= 1 && diaNum <= 31;
+    const esAnioValido = anioNum >= 1920 && anioNum <= new Date().getFullYear();
+
+    if (esDiaValido && m && esAnioValido && this.anioNac.toString().length === 4) {
+      const d = diaNum.toString().padStart(2, '0');
+      const a = anioNum.toString();
+      const fechaIso = `${a}-${m}-${d}`;
+      this.registerModel.update(model => ({ ...model, fechaNacimiento: fechaIso }));
+    } else {
+      this.registerModel.update(model => ({ ...model, fechaNacimiento: '' }));
+    }
+  }
 
   registerForm = form(this.registerModel, (schemaPath) => {
     required(schemaPath.email, { message: 'Email es obligatorio' });
@@ -71,10 +94,14 @@ export class Register {
 
   async onSubmit(event: Event) {
     event.preventDefault();
+    
+    // Forzar la actualización de la fecha de nacimiento antes de enviar
+    this.actualizarFechaNacimiento();
+
     const data = this.registerModel();
 
     if (data.password !== data.confirmPassword) {
-      console.error('Las contraseñas no coinciden');
+      alert('Las contraseñas no coinciden');
       return;
     }
 
@@ -84,27 +111,28 @@ export class Register {
       if (result.user) {
         await this.auth.insertProfile({
           id: result.user.id,
-          nombre: data.nombre,
-          apellido: data.apellido,
+          email: data.email.trim(),
+          nombre: data.nombre.trim(),
+          apellido: data.apellido.trim(),
           fecha_nacimiento: data.fechaNacimiento,
           tipo_sangre: data.tipo_sangre,
           color_ojos: data.color_ojos,
-          dias_vacaciones: Number(data.dias_vacaciones),
+          dias_vacaciones: Number(data.dias_vacaciones) || 14,
           rol: 'cliente',
           puntos: 0,
-          credito: 0,
-          aceptaTerminos: data.aceptaTerminos
+          credito: 0
         });
 
         this.registerError = null;
         this.router.navigate(['/home']);
       }
     } catch (error: any) {
+      console.error('Error en el registro:', error);
       if (error?.message?.includes('User already registered')) {
         this.registerError = 'duplicate';
       } else {
         this.registerError = 'other';
-        console.error(error?.message || error);
+        alert('Ocurrió un error al registrar el perfil: ' + (error?.message || error));
       }
       this.cdr.detectChanges();
     }
