@@ -12,196 +12,74 @@ CineNova es una aplicación web progresiva orientada al sector cinematográfico 
 
 ---
 
-## 2. Arquitectura de Software
+## 2. Stack Tecnológico
 
-La aplicación sigue una arquitectura desacoplada basada en componentes independientes, servicios de dominio y persistencia gestionada en la nube:
-
-[ Cliente Web / PWA (Angular 22) ]│├── State Management: Angular Signals (signal, computed, effect)├── Directivas de Interfaz: ImageFallback, AutoFocus, ConfirmDelete├── Routing & RBAC: canMatch con authGuard y roleGuard└── Generación de Documentos: jsPDF + QRCode.js + XLSX│▼ (HTTPS / WebSockets)[ Supabase Cloud (BaaS) ]│├── Autenticación: Supabase Auth (JWT + Session Storage)├── Motor Relacional: PostgreSQL con Constraints y Foreign Keys├── Vistas de Agregación: top_peliculas_mas_vistas└── Auditoría: Tablas inmutables de logs_actividad
-### Principios y Patrones Aplicados
-
-- **Standalone Components:** Eliminación total de módulos tradicionales (`NgModules`), favoreciendo la modularidad, el lazy loading atómico por componente (`loadComponent`) y la reducción del bundle inicial.
-- **Reactividad Fina con Signals:** Todo el estado volátil del frontend (búsqueda en vivo de películas, filtros de cartelera por formato 2D/3D/4D/5D, cálculo de recargo VIP, adición de combos de confitería y aplicación de cupones) se procesa mediante Signals primitivos y computados.
-- **Persistencia Transaccional:** La transacción de compra unifica entradas y líneas de Candy Bar bajo un identificador alfanumérico común (`ticket_codigo` / `qr_code`), garantizando que la entrega del pedido físico en sala y confitería dependa de un único elemento comprobable.
-- **Control de Acceso Basado en Roles (RBAC):** Restricción jerárquica de vistas protegidas (`cliente`, `operador`, `admin`) gestionadas a nivel de router antes de resolver la carga de los componentes.
+- **Frontend:** Angular (Standalone Components, Signals reactivos, Control Flow `@if` / `@for`).
+- **Backend & Base de Datos:** Supabase (PostgreSQL, Supabase Auth con JWT).
+- **Herramientas y Librerías:**
+  - `jspdf` & `jspdf-autotable`: Generación y descarga de comprobantes en PDF.
+  - `qrcode`: Generación del código QR vectorial unificado.
+  - `chart.js`: Gráficos interactivos en panel de control.
+  - `xlsx`: Exportación de reportes a Excel.
+  - `@angular/service-worker`: Soporte PWA instalable y funcionamiento offline básico.
+- **Deploy:** Vercel (Frontend) + Supabase Cloud (Base de datos).
 
 ---
 
-## 3. Modelo de Datos (PostgreSQL DDL)
+## 3. Matriz de Requerimientos y Cumplimiento
 
-El esquema implementa restricciones de clave foránea, borrados en cascada selectivos y reglas de integridad para todos los módulos.
+| Requerimiento (Correos del Cliente) | Estado | Implementación Técnica |
+| :--- | :---: | :--- |
+| **Campos de Registro Excéntricos** (01/01/2020) | ✅ | Formulario en `Register` que persiste `tipo_sangre`, `color_ojos` y `dias_vacaciones` en tabla `perfiles`. |
+| **Venta Anónima y Registrada** (01/01/2020) | ✅ | En `Reserve`, la columna `usuario_id` en `entradas` es opcional (acepta nulos para compras sin sesión). |
+| **Distribución de Sala y Butacas VIP** (01/01 y 12/02) | ✅ | Sala de 20 filas (A-T) x 28 butacas (4-20-4). Filas J y K adaptadas para discapacidad. Filas R, S y T con recargo del +30%. |
+| **Reseñas y Calificaciones** (16/01/2020) | ✅ | En `MovieDetail`, lectura y carga de comentarios en tabla `resenas` calculando el promedio en estrellas. |
+| **Candy Bar Integrado y QR Único** (30/01/2020) | ✅ | Selección de combos en el checkout, persistencia en `compras_candy` y generación de PDF con un solo QR. |
+| **Cupones Dinámicos** (01/01 y 30/01) | ✅ | Descuento del 20% en primera compra (`BIENVENIDA20`) y 30% para clientes $\ge 50$ años (`SENIOR50`). |
+| **Asignación Automática de Salas** (06/02/2020) | ✅ | En `FuncionesAdmin`, el sistema busca sala libre validando solapamientos con duración + 30 min de limpieza. |
+| **Control de Acceso y Quema de Tickets** (06/02/2020) | ✅ | En `ValidadorQrComponent`, el operador valida el código; la entrada pasa a `usada` y queda invalidada. |
+| **Historial y Cancelaciones** (08/03 y 10/03) | ✅ | En `MisPeliculasComponent`, cancelación si faltan $\ge 2$ horas con acreditación del importe a saldo en cuenta (`credito`). |
+| **Fidelización por Puntos** (08/03/2020) | ✅ | Acreditación de 1 punto por cada peso abonado en compras realizadas por usuarios registrados. |
+| **Log de Auditoría** (10/03/2020) | ✅ | Tabla `logs_actividad` consultada en tiempo real ante eventos administrativos y validaciones de accesos. |
 
-```sql
--- 1. Perfiles de Usuario (Extensión de auth.users)
-CREATE TABLE public.perfiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  nombre VARCHAR(80) NOT NULL,
-  apellido VARCHAR(80) NOT NULL,
-  fecha_nacimiento DATE NOT NULL,
-  tipo_sangre VARCHAR(10),
-  color_ojos VARCHAR(30),
-  dias_vacaciones INT DEFAULT 14,
-  rol VARCHAR(20) DEFAULT 'cliente' CHECK (rol IN ('cliente', 'operador', 'admin')),
-  puntos INT DEFAULT 0,
-  credito NUMERIC(10, 2) DEFAULT 0.00,
-  creado_en TIMESTAMPTZ DEFAULT NOW()
-);
+---
 
--- 2. Películas
-CREATE TABLE public.peliculas (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  titulo VARCHAR(150) NOT NULL,
-  sinopsis TEXT,
-  duracion_minutos INT NOT NULL,
-  imagen_url TEXT,
-  formato VARCHAR(20) DEFAULT '2D',
-  idioma VARCHAR(50) DEFAULT 'Castellano',
-  restriccion_edad VARCHAR(10) DEFAULT 'ATP',
-  es_estreno BOOLEAN DEFAULT false,
-  fecha_estreno DATE,
-  creado_en TIMESTAMPTZ DEFAULT NOW()
-);
+## 4. Estructura de la Base de Datos (Supabase)
 
--- 3. Salas y Butacas
-CREATE TABLE public.salas (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL,
-  capacidad INT NOT NULL DEFAULT 560
-);
+- **`perfiles`:** Datos extendidos del usuario (`nombre`, `apellido`, `tipo_sangre`, `color_ojos`, `dias_vacaciones`, `puntos`, `credito`, `rol`).
+- **`peliculas`:** Títulos, sinopsis, duración, formato (2D, 3D, 4D, 5D), clasificación por edad y póster.
+- **`funciones`:** Relación película-sala con ventana temporal (`fecha_hora` a `fecha_fin`).
+- **`salas` y `butacas`:** Configuración geométrica de la sala y clasificación (`normal`, `adaptada`, `vip`).
+- **`entradas`:** Código alfanumérico único (`qr_code`), precio abonado y estados (`validada`, `usada`, `cancelada`).
+- **`productos` y `compras_candy`:** Artículos del Candy Bar vinculados al código del ticket.
+- **`cupones`:** Descuentos configurables con restricciones de primera compra o edad mínima.
+- **`resenas`:** Puntuación (1-5) y opiniones de espectadores.
+- **`logs_actividad`:** Registro inmutable de acciones de administración y validación.
 
-CREATE TABLE public.butacas (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  sala_id BIGINT REFERENCES public.salas(id) ON DELETE CASCADE,
-  fila VARCHAR(2) NOT NULL,
-  numero INT NOT NULL,
-  tipo VARCHAR(20) DEFAULT 'normal' CHECK (tipo IN ('normal', 'adaptada', 'vip')),
-  CONSTRAINT uq_butaca_posicion UNIQUE(sala_id, fila, numero)
-);
+---
 
--- 4. Funciones
-CREATE TABLE public.funciones (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  pelicula_id BIGINT REFERENCES public.peliculas(id) ON DELETE CASCADE,
-  sala_id BIGINT REFERENCES public.salas(id) ON DELETE RESTRICT,
-  fecha_hora TIMESTAMPTZ NOT NULL,
-  fecha_fin TIMESTAMPTZ NOT NULL,
-  precio NUMERIC(10, 2) NOT NULL,
-  tipo_funcion VARCHAR(20) DEFAULT '2D',
-  estado VARCHAR(20) DEFAULT 'activa' CHECK (estado IN ('activa', 'cancelada', 'finalizada')),
-  creado_en TIMESTAMPTZ DEFAULT NOW()
-);
+## 5. Reglas de Negocio Clave
 
--- 5. Entradas (Soporte para compra registrada y anónima)
-CREATE TABLE public.entradas (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  funcion_id BIGINT REFERENCES public.funciones(id) ON DELETE RESTRICT,
-  butaca_id BIGINT REFERENCES public.butacas(id) ON DELETE RESTRICT,
-  usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  precio_pagado NUMERIC(10, 2) NOT NULL,
-  qr_code VARCHAR(120) UNIQUE NOT NULL,
-  estado VARCHAR(20) DEFAULT 'validada' CHECK (estado IN ('validada', 'usada', 'cancelada')),
-  fecha_compra TIMESTAMPTZ DEFAULT NOW()
-);
+1. **Recargo VIP:** Las butacas de las filas R, S y T calculan automáticamente:  
+   $$\text{Precio Final} = \text{Precio Base} \times 1.30$$
+2. **Intervalo Técnico de Sala:** Para programar una función, ninguna sala puede tener funciones activas dentro del rango:  
+   $$[\text{Inicio}, \; \text{Inicio} + \text{Duración} + 30 \text{ min}]$$
+3. **Plazo de Cancelación:** La anulación de tickets solo se admite si:  
+   $$\text{Fecha/Hora Función} - \text{Fecha/Hora Actual} \ge 2 \text{ horas}$$  
+   El valor pagado se suma al campo `credito` del perfil para utilizarse como forma de pago en la próxima compra.
+4. **Validación de Ticket:** Al validar un ticket en `/admin/validar-qr`, el estado cambia a `usada`. Si se intenta escanear nuevamente, el sistema rechaza el acceso.
 
--- 6. Catálogo y Consumos de Candy Bar
-CREATE TABLE public.productos (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  nombre VARCHAR(100) NOT NULL,
-  categoria VARCHAR(50) DEFAULT 'Combos',
-  precio NUMERIC(10, 2) NOT NULL,
-  stock INT DEFAULT 100,
-  imagen_url TEXT
-);
+---
 
-CREATE TABLE public.compras_candy (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  ticket_codigo VARCHAR(120) NOT NULL,
-  producto_id BIGINT REFERENCES public.productos(id) ON DELETE RESTRICT,
-  cantidad INT NOT NULL DEFAULT 1,
-  precio_unitario NUMERIC(10, 2) NOT NULL,
-  usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  estado VARCHAR(30) DEFAULT 'pendiente_entrega' CHECK (estado IN ('pendiente_entrega', 'entregado', 'cancelado')),
-  creado_en TIMESTAMPTZ DEFAULT NOW()
-);
+## 6. Instalación y Ejecución Local
 
--- 7. Cupones de Descuento
-CREATE TABLE public.cupones (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  nombre VARCHAR(100),
-  codigo VARCHAR(50) UNIQUE NOT NULL,
-  descuento_porcentaje INT NOT NULL DEFAULT 10,
-  solo_primera_compra BOOLEAN DEFAULT false,
-  edad_minima INT DEFAULT 0,
-  activo BOOLEAN DEFAULT true,
-  fecha_expiracion DATE DEFAULT (CURRENT_DATE + interval '1 year')
-);
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/CristianEstMaida/Programacion-IV-TP-1.git
+cd Programacion-IV-TP-1
 
--- 8. Reseñas y Calificaciones
-CREATE TABLE public.resenas (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  pelicula_id BIGINT REFERENCES public.peliculas(id) ON DELETE CASCADE,
-  usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  autor_nombre VARCHAR(120) NOT NULL,
-  puntuacion INT NOT NULL CHECK (puntuacion >= 1 AND puntuacion <= 5),
-  comentario TEXT NOT NULL,
-  creado_en TIMESTAMPTZ DEFAULT NOW()
-);
+# 2. Instalar dependencias
+npm install
 
--- 9. Alertas de Estreno
-CREATE TABLE public.alertas (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  usuario_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  pelicula_id BIGINT REFERENCES public.peliculas(id) ON DELETE CASCADE,
-  notificado BOOLEAN DEFAULT false,
-  creado_en TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT uq_usuario_alerta UNIQUE (usuario_id, pelicula_id)
-);
-
--- 10. Auditoría de Actividad
-CREATE TABLE public.logs_actividad (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  usuario VARCHAR(100) NOT NULL,
-  accion VARCHAR(100) NOT NULL,
-  detalle TEXT,
-  fecha TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Vista de Rendimiento Comercial
-CREATE OR REPLACE VIEW public.top_peliculas_mas_vistas AS
-SELECT 
-  p.id,
-  p.titulo,
-  p.imagen_url,
-  p.formato,
-  COUNT(e.id) AS total_entradas_vendidas
-FROM public.peliculas p
-JOIN public.funciones f ON f.pelicula_id = p.id
-JOIN public.entradas e ON e.funcion_id = f.id
-WHERE e.estado != 'cancelada'
-GROUP BY p.id, p.titulo, p.imagen_url, p.formato
-ORDER BY total_entradas_vendidas DESC
-LIMIT 3;
-4. Algoritmos de Negocio Críticos4.1 Asignación Dinámica de Salas sin SolapamientoEl motor administrativo programa funciones calculando automáticamente la sala libre en lugar de permitir selecciones arbitrarias del operador.Datos de entrada: Película seleccionada, Fecha, Horario de inicio (T_inicio)
-1. Recuperar duración de la película (D) en minutos.
-2. Definir ventana de ocupación:
-   T_fin_bloque = T_inicio + D + 30 minutos (tiempo técnico de limpieza y ventilación).
-3. Obtener el conjunto de salas S = {s1, s2, ..., sn}.
-4. Para cada sala s in S:
-   Buscar colisiones con funciones activas existentes (F_existente):
-   ¿Existe conflicto? = (T_inicio < F_fin_bloque) Y (T_fin_bloque > F_inicio)
-5. Si no hay colisión:
-   Asignar sala s a la nueva función y guardar. Terminar.
-6. Si todas las salas colisionan:
-   Rechazar la operación e informar conflicto horario al administrador.
-4.2 Política de Cancelación y Reintegro a Saldo VirtualPara prescindir de reembolsos bancarios externos complejos:Condiciones requeridas: Entrada en estado 'validada' y usuario autenticado.
-1. Calcular tiempo restante:
-   Delta_T = MarcaTemporal(Funcion) - MarcaTemporal(Actual)
-2. Evaluar restricción de plazo:
-   Si Delta_T >= 2 horas:
-     a. Marcar entrada como 'cancelada' (la butaca queda libre en el mapa).
-     b. Actualizar perfil: credito_actual = credito_actual + precio_pagado.
-     c. Registrar evento en logs_actividad.
-     d. Emitir confirmación al cliente.
-   Si Delta_T < 2 horas:
-     Bloquear la solicitud indicando que el límite de cancelación expiró.
-4.3 Mapa Geométrico de Sala y Reglas de TarificaciónLa sala se modela bajo una matriz física estricta:Dimensiones: 20 filas (A a T) con 28 butacas por fila, distribuidas en 3 bloques (4 butacas pasillo izquierdo, 20 butacas bloque central, 4 butacas pasillo derecho).Filas J y K (Adaptadas): Configuración inclusiva con distribución (2 - 10 - 2) para acceso de sillas de ruedas.Filas R, S y T (Zona VIP): Butacas reclinables ejecutivas con un recargo automático del +30% sobre la tarifa base de la función:$$\text{Precio Butaca VIP} = \text{Precio Base} \times 1.30$$5. Módulos y Rutas de la AplicaciónRutaComponenteAccesoResponsabilidad Técnica/homeHomePúblicoCartelera, podio Top 3, buscador reactivo y filtros de formato./movie/:idMovieDetailPúblicoFicha técnica, sinopsis y reseñas con promedio de estrellas./reserve/:idReserveHíbridoMapa de butacas, Candy Bar, cupones, uso de crédito y PDF/QR./mis-peliculasMisPeliculasComponentClienteHistorial de compras, puntos acumulados y cancelación (2 hs)./admin/validar-qrValidadorQrComponentOperador / AdminLector de cámara o ingreso de código alfanumérico para quema de QR./admin/funcionesFuncionesAdminComponentAdminProgramación con asignación automática de salas./admin/peliculasPeliculasAdminComponentAdminABM de títulos, formatos e imágenes./admin/candy-barCandyBarAdminComponentAdminGestión de productos, combos y control de stock./admin/cuponesCuponesAdminComponentAdminConfiguración de descuentos, vigencias y reglas de edad./admin/logLogActividadComponentAdminConsulta de eventos de auditoría y trazabilidad./loginLoginPúblicoAutenticación de usuarios vía Supabase Auth./registerRegisterPúblicoAlta de perfiles con registro de salud y estilo de vida.6. Procedimiento de Despliegue y PWACompilación de Producción:Bashng build --configuration production
-Estrategia del Service Worker (ngsw-config.json):AssetGroups / App Shell: Estrategia prefetch para bundles JavaScript, hojas de estilo CSS y recursos tipográficos Outfit.DataGroups / API Supabase: Estrategia freshness con timeout de 3 segundos para garantizar cartelera actualizada, degradando a caché si se pierde la conexión.Distribución en Plataforma Cloud:Vinculación del repositorio en Vercel con reglas de redirección para SPA en vercel.json (rewrites: [{ "source": "/(.*)", "destination": "/index.html" }]).
+# 3. Iniciar entorno de desarrollo
+ng serve -o```

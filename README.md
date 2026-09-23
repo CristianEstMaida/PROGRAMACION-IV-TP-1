@@ -1,4 +1,13 @@
-# 🎬 CineNova – Sistema de Gestión Cinematográfica
+# Programación IV – TP1: Sistema de Gestión de Cine (CineNova)
+
+**Alumno:** Cristian Esteban Maida  
+**Carrera:** Tecnicatura Universitaria en Programación (UTN - FRA)  
+**Materia:** Programación IV  
+**Año:** 2026
+
+---
+
+## 1. Descripción del Proyecto
 
 Aplicación web integral y progresiva (PWA) para la gestión comercial y operativa de un complejo de cines, desarrollada con **Angular**, **Supabase** y arquitectura orientada a componentes reactivos.
 
