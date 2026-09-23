@@ -1,210 +1,207 @@
-# Documentación Técnica - Trabajo Práctico CineApp
+# 🎬 CineNova – Documentación Técnica y Manual de Arquitectura
 
-## 1. Introducción
-Este documento describe el desarrollo técnico de la aplicación CineApp, incluyendo diseño de interfaz, arquitectura, base de datos y decisiones de implementación.  
-El proyecto se trabaja en **sprints semanales**, con entregables incrementales.
-
----
-
-## 2. Diseño de UI/UX
-- Mockups en Figma de pantallas principales:
-  - Login / Register
-  - Home (cartelera)
-  - Detalle de película
-  - Compra de entradas
-- Decisiones de estilo:
-  - Alineación de inputs con etiquetas.
-  - Uso de la misma imagen de fondo en login/register.
-  - Tipografía consistente.
-  - Formularios sin scroll.
-  - Botones sin gradiente.
-  - CSS propio (sin librerías externas para datepicker).
+**Proyecto:** Sistema de Gestión y Venta Cinematográfica (CineApp)  
+**Cátedra:** Programación IV – Tecnicatura Universitaria en Programación (UTN-FRA)  
+**Stack Tecnológico:** Angular Standalone, Signals, Supabase (PostgreSQL), PWA, jsPDF, Chart.js  
 
 ---
 
-## 3. Arquitectura y Servicios
-- **Frontend**: Angular con Signals y componentes standalone.
-- **Backend/DB**: Supabase (Auth + Postgres).
-- **Servicios**:
-  - `MovieService` → gestión de películas.
-  - `AuthService` → login/register.
-  - `TicketService` → compra de entradas.
+## 1. Visión General del Sistema
+
+CineNova es una aplicación web progresiva orientada al sector cinematográfico que resuelve tanto la experiencia de cara al público (*B2C*) como la administración y control operativo interno (*B2B*). El sistema contempla la venta de entradas con reserva de butacas en tiempo real, integración directa del catálogo de Candy Bar en la misma transacción, validación de reglas de negocio para cupones dinámicos, fidelización por puntos, cancelaciones con reintegro a saldo a favor, asignación automatizada de salas y control de acceso con quema de tickets mediante código QR.
 
 ---
 
-## 4. Base de Datos
-### Tablas
-- **Películas**: id (PK)
-  titulo
-  sinopsis
-  duracion (minutos)
-  imagen_url
-  formato (2D, 3D, 4D, 5D)
-  idioma (Castellano, Subtitulado)
-  restriccion_edad (+13, +16, +18, ATP)
-  fecha_estreno
+## 2. Arquitectura de Software
 
-- **Géneros**: id (PK)
-nombre
-Película_Género (N:M)
-pelicula_id (FK)
-genero_id (FK)
+La aplicación sigue una arquitectura desacoplada basada en componentes independientes, servicios de dominio y persistencia gestionada en la nube:
 
-- **Funciones**:
-id (PK)
-pelicula_id (FK)
-sala_id (FK)
-fecha
-hora
-precio
-tipo_funcion (normal, preventa)
-estado (activa, cancelada)
+[ Cliente Web / PWA (Angular 22) ]│├── State Management: Angular Signals (signal, computed, effect)├── Directivas de Interfaz: ImageFallback, AutoFocus, ConfirmDelete├── Routing & RBAC: canMatch con authGuard y roleGuard└── Generación de Documentos: jsPDF + QRCode.js + XLSX│▼ (HTTPS / WebSockets)[ Supabase Cloud (BaaS) ]│├── Autenticación: Supabase Auth (JWT + Session Storage)├── Motor Relacional: PostgreSQL con Constraints y Foreign Keys├── Vistas de Agregación: top_peliculas_mas_vistas└── Auditoría: Tablas inmutables de logs_actividad
+### Principios y Patrones Aplicados
 
-- **Salas**:
-id (PK)
-nombre
-capacidad
-
-- **Butacas**:
-id (PK)
-sala_id (FK)
-fila
-numero
-tipo (normal, accesible, VIP)
-estado (libre, ocupada, reservada)
-
-- **Entradas**:
-id (PK)
-funcion_id (FK)
-usuario_id (FK, nullable si compra anónima)
-butaca_id (FK)
-qr_code
-pdf_url
-estado (pendiente, validada, cancelada)
-fecha_compra
-
-- **Usuarios y Fidelización**:
-- **Usuarios**:
-id (PK)
-nombre
-apellido
-email
-fecha_nacimiento
-tipo_sangre
-color_ojos
-dias_vacaciones
-rol (cliente, empleado, admin)
-puntos (fidelización)
-credito (saldo por cancelaciones)
-
-- **Reseñas**:
-id (PK)
-usuario_id (FK)
-pelicula_id (FK)
-estrellas (1–5)
-comentario
-fecha
-
-- **Canjes**:
-id (PK)
-usuario_id (FK)
-tipo_recompensa (entrada, producto)
-puntos_usados
-fecha
-
-- **Cupones y Promociones**:
-- **Cupones**:
-id (PK)
-nombre
-porcentaje_descuento
-edad_minima (nullable)
-activo
-Usuario_Cupon (N:M)
-usuario_id (FK)
-cupon_id (FK)
-
-- **Combos**:
-id (PK)
-nombre
-precio
-descripcion
-Combo_Producto (N:M)
-combo_id (FK)
-producto_id (FK)
-
-- **Candy Bar**:
-
-- **Productos**:
-id (PK)
-nombre
-categoria
-precio
-imagen_url
-
-- **Compras**:
-id (PK)
-usuario_id (FK, nullable si anónimo)
-fecha
-total
-estado (pendiente, validada, cancelada)
-Compra_Producto (N:M)
-compra_id (FK)
-producto_id (FK)
-cantidad
-
-- **Administración y Reportes**:
-
-- **Logs de Actividad**:
-id (PK)
-usuario_admin_id (FK)
-accion
-entidad_afectada
-fecha_hora
-
-- **Reportes**:
-Facturación diaria
-Entradas vendidas por día
-Películas más vistas (semana/mes)
-Producto más vendido (Candy Bar)
-
-- **Próximos Estrenos y Alertas**:
-
-- **Estrenos**:
-id (PK)
-pelicula_id (FK)
-fecha_estreno
-preventa_activa (boolean)
-precio_preventa
-
-- **Alertas**:
-id (PK)
-usuario_id (FK)
-pelicula_id (FK)
-notificado (boolean)
-
-### Relaciones
-- Una película tiene muchas funciones.
-- Una sala tiene muchas butacas.
-- Una función se vincula a una sala y a una película.
-- Una entrada se vincula a una función y a una butaca.
-- Un usuario puede tener muchas entradas, reseñas, cupones y canjes.
-- Un combo puede incluir muchos productos.
-- Una compra puede incluir entradas y productos del candy bar.
+- **Standalone Components:** Eliminación total de módulos tradicionales (`NgModules`), favoreciendo la modularidad, el lazy loading atómico por componente (`loadComponent`) y la reducción del bundle inicial.
+- **Reactividad Fina con Signals:** Todo el estado volátil del frontend (búsqueda en vivo de películas, filtros de cartelera por formato 2D/3D/4D/5D, cálculo de recargo VIP, adición de combos de confitería y aplicación de cupones) se procesa mediante Signals primitivos y computados.
+- **Persistencia Transaccional:** La transacción de compra unifica entradas y líneas de Candy Bar bajo un identificador alfanumérico común (`ticket_codigo` / `qr_code`), garantizando que la entrega del pedido físico en sala y confitería dependa de un único elemento comprobable.
+- **Control de Acceso Basado en Roles (RBAC):** Restricción jerárquica de vistas protegidas (`cliente`, `operador`, `admin`) gestionadas a nivel de router antes de resolver la carga de los componentes.
 
 ---
 
-## 5. Decisiones Técnicas
-- Angular Signals para manejo de estado → más simple y reactivo.
-- Supabase Auth para autenticación → rápido de integrar.
-- Postgres como motor de BD → integración nativa con Supabase.
-- Separación de servicios → modularidad y mantenibilidad.
-- Estilos propios → mayor control visual y consistencia.
-- Formularios sin scroll, botones sin gradiente, inputs alineados con etiquetas.
-- Consistencia visual entre login y register.
+## 3. Modelo de Datos (PostgreSQL DDL)
 
----
+El esquema implementa restricciones de clave foránea, borrados en cascada selectivos y reglas de integridad para todos los módulos.
 
-## 7. Documentación
-- Capturas de cada sprint.
-- Fragmentos de código relevantes.
-- Justificación de decisiones técnicas.
+```sql
+-- 1. Perfiles de Usuario (Extensión de auth.users)
+CREATE TABLE public.perfiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  nombre VARCHAR(80) NOT NULL,
+  apellido VARCHAR(80) NOT NULL,
+  fecha_nacimiento DATE NOT NULL,
+  tipo_sangre VARCHAR(10),
+  color_ojos VARCHAR(30),
+  dias_vacaciones INT DEFAULT 14,
+  rol VARCHAR(20) DEFAULT 'cliente' CHECK (rol IN ('cliente', 'operador', 'admin')),
+  puntos INT DEFAULT 0,
+  credito NUMERIC(10, 2) DEFAULT 0.00,
+  creado_en TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Películas
+CREATE TABLE public.peliculas (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  titulo VARCHAR(150) NOT NULL,
+  sinopsis TEXT,
+  duracion_minutos INT NOT NULL,
+  imagen_url TEXT,
+  formato VARCHAR(20) DEFAULT '2D',
+  idioma VARCHAR(50) DEFAULT 'Castellano',
+  restriccion_edad VARCHAR(10) DEFAULT 'ATP',
+  es_estreno BOOLEAN DEFAULT false,
+  fecha_estreno DATE,
+  creado_en TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Salas y Butacas
+CREATE TABLE public.salas (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  nombre VARCHAR(50) NOT NULL,
+  capacidad INT NOT NULL DEFAULT 560
+);
+
+CREATE TABLE public.butacas (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  sala_id BIGINT REFERENCES public.salas(id) ON DELETE CASCADE,
+  fila VARCHAR(2) NOT NULL,
+  numero INT NOT NULL,
+  tipo VARCHAR(20) DEFAULT 'normal' CHECK (tipo IN ('normal', 'adaptada', 'vip')),
+  CONSTRAINT uq_butaca_posicion UNIQUE(sala_id, fila, numero)
+);
+
+-- 4. Funciones
+CREATE TABLE public.funciones (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  pelicula_id BIGINT REFERENCES public.peliculas(id) ON DELETE CASCADE,
+  sala_id BIGINT REFERENCES public.salas(id) ON DELETE RESTRICT,
+  fecha_hora TIMESTAMPTZ NOT NULL,
+  fecha_fin TIMESTAMPTZ NOT NULL,
+  precio NUMERIC(10, 2) NOT NULL,
+  tipo_funcion VARCHAR(20) DEFAULT '2D',
+  estado VARCHAR(20) DEFAULT 'activa' CHECK (estado IN ('activa', 'cancelada', 'finalizada')),
+  creado_en TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. Entradas (Soporte para compra registrada y anónima)
+CREATE TABLE public.entradas (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  funcion_id BIGINT REFERENCES public.funciones(id) ON DELETE RESTRICT,
+  butaca_id BIGINT REFERENCES public.butacas(id) ON DELETE RESTRICT,
+  usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  precio_pagado NUMERIC(10, 2) NOT NULL,
+  qr_code VARCHAR(120) UNIQUE NOT NULL,
+  estado VARCHAR(20) DEFAULT 'validada' CHECK (estado IN ('validada', 'usada', 'cancelada')),
+  fecha_compra TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Catálogo y Consumos de Candy Bar
+CREATE TABLE public.productos (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  categoria VARCHAR(50) DEFAULT 'Combos',
+  precio NUMERIC(10, 2) NOT NULL,
+  stock INT DEFAULT 100,
+  imagen_url TEXT
+);
+
+CREATE TABLE public.compras_candy (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  ticket_codigo VARCHAR(120) NOT NULL,
+  producto_id BIGINT REFERENCES public.productos(id) ON DELETE RESTRICT,
+  cantidad INT NOT NULL DEFAULT 1,
+  precio_unitario NUMERIC(10, 2) NOT NULL,
+  usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  estado VARCHAR(30) DEFAULT 'pendiente_entrega' CHECK (estado IN ('pendiente_entrega', 'entregado', 'cancelado')),
+  creado_en TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 7. Cupones de Descuento
+CREATE TABLE public.cupones (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  nombre VARCHAR(100),
+  codigo VARCHAR(50) UNIQUE NOT NULL,
+  descuento_porcentaje INT NOT NULL DEFAULT 10,
+  solo_primera_compra BOOLEAN DEFAULT false,
+  edad_minima INT DEFAULT 0,
+  activo BOOLEAN DEFAULT true,
+  fecha_expiracion DATE DEFAULT (CURRENT_DATE + interval '1 year')
+);
+
+-- 8. Reseñas y Calificaciones
+CREATE TABLE public.resenas (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  pelicula_id BIGINT REFERENCES public.peliculas(id) ON DELETE CASCADE,
+  usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  autor_nombre VARCHAR(120) NOT NULL,
+  puntuacion INT NOT NULL CHECK (puntuacion >= 1 AND puntuacion <= 5),
+  comentario TEXT NOT NULL,
+  creado_en TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 9. Alertas de Estreno
+CREATE TABLE public.alertas (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  usuario_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  pelicula_id BIGINT REFERENCES public.peliculas(id) ON DELETE CASCADE,
+  notificado BOOLEAN DEFAULT false,
+  creado_en TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT uq_usuario_alerta UNIQUE (usuario_id, pelicula_id)
+);
+
+-- 10. Auditoría de Actividad
+CREATE TABLE public.logs_actividad (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  usuario VARCHAR(100) NOT NULL,
+  accion VARCHAR(100) NOT NULL,
+  detalle TEXT,
+  fecha TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Vista de Rendimiento Comercial
+CREATE OR REPLACE VIEW public.top_peliculas_mas_vistas AS
+SELECT 
+  p.id,
+  p.titulo,
+  p.imagen_url,
+  p.formato,
+  COUNT(e.id) AS total_entradas_vendidas
+FROM public.peliculas p
+JOIN public.funciones f ON f.pelicula_id = p.id
+JOIN public.entradas e ON e.funcion_id = f.id
+WHERE e.estado != 'cancelada'
+GROUP BY p.id, p.titulo, p.imagen_url, p.formato
+ORDER BY total_entradas_vendidas DESC
+LIMIT 3;
+4. Algoritmos de Negocio Críticos4.1 Asignación Dinámica de Salas sin SolapamientoEl motor administrativo programa funciones calculando automáticamente la sala libre en lugar de permitir selecciones arbitrarias del operador.Datos de entrada: Película seleccionada, Fecha, Horario de inicio (T_inicio)
+1. Recuperar duración de la película (D) en minutos.
+2. Definir ventana de ocupación:
+   T_fin_bloque = T_inicio + D + 30 minutos (tiempo técnico de limpieza y ventilación).
+3. Obtener el conjunto de salas S = {s1, s2, ..., sn}.
+4. Para cada sala s in S:
+   Buscar colisiones con funciones activas existentes (F_existente):
+   ¿Existe conflicto? = (T_inicio < F_fin_bloque) Y (T_fin_bloque > F_inicio)
+5. Si no hay colisión:
+   Asignar sala s a la nueva función y guardar. Terminar.
+6. Si todas las salas colisionan:
+   Rechazar la operación e informar conflicto horario al administrador.
+4.2 Política de Cancelación y Reintegro a Saldo VirtualPara prescindir de reembolsos bancarios externos complejos:Condiciones requeridas: Entrada en estado 'validada' y usuario autenticado.
+1. Calcular tiempo restante:
+   Delta_T = MarcaTemporal(Funcion) - MarcaTemporal(Actual)
+2. Evaluar restricción de plazo:
+   Si Delta_T >= 2 horas:
+     a. Marcar entrada como 'cancelada' (la butaca queda libre en el mapa).
+     b. Actualizar perfil: credito_actual = credito_actual + precio_pagado.
+     c. Registrar evento en logs_actividad.
+     d. Emitir confirmación al cliente.
+   Si Delta_T < 2 horas:
+     Bloquear la solicitud indicando que el límite de cancelación expiró.
+4.3 Mapa Geométrico de Sala y Reglas de TarificaciónLa sala se modela bajo una matriz física estricta:Dimensiones: 20 filas (A a T) con 28 butacas por fila, distribuidas en 3 bloques (4 butacas pasillo izquierdo, 20 butacas bloque central, 4 butacas pasillo derecho).Filas J y K (Adaptadas): Configuración inclusiva con distribución (2 - 10 - 2) para acceso de sillas de ruedas.Filas R, S y T (Zona VIP): Butacas reclinables ejecutivas con un recargo automático del +30% sobre la tarifa base de la función:$$\text{Precio Butaca VIP} = \text{Precio Base} \times 1.30$$5. Módulos y Rutas de la AplicaciónRutaComponenteAccesoResponsabilidad Técnica/homeHomePúblicoCartelera, podio Top 3, buscador reactivo y filtros de formato./movie/:idMovieDetailPúblicoFicha técnica, sinopsis y reseñas con promedio de estrellas./reserve/:idReserveHíbridoMapa de butacas, Candy Bar, cupones, uso de crédito y PDF/QR./mis-peliculasMisPeliculasComponentClienteHistorial de compras, puntos acumulados y cancelación (2 hs)./admin/validar-qrValidadorQrComponentOperador / AdminLector de cámara o ingreso de código alfanumérico para quema de QR./admin/funcionesFuncionesAdminComponentAdminProgramación con asignación automática de salas./admin/peliculasPeliculasAdminComponentAdminABM de títulos, formatos e imágenes./admin/candy-barCandyBarAdminComponentAdminGestión de productos, combos y control de stock./admin/cuponesCuponesAdminComponentAdminConfiguración de descuentos, vigencias y reglas de edad./admin/logLogActividadComponentAdminConsulta de eventos de auditoría y trazabilidad./loginLoginPúblicoAutenticación de usuarios vía Supabase Auth./registerRegisterPúblicoAlta de perfiles con registro de salud y estilo de vida.6. Procedimiento de Despliegue y PWACompilación de Producción:Bashng build --configuration production
+Estrategia del Service Worker (ngsw-config.json):AssetGroups / App Shell: Estrategia prefetch para bundles JavaScript, hojas de estilo CSS y recursos tipográficos Outfit.DataGroups / API Supabase: Estrategia freshness con timeout de 3 segundos para garantizar cartelera actualizada, degradando a caché si se pierde la conexión.Distribución en Plataforma Cloud:Vinculación del repositorio en Vercel con reglas de redirección para SPA en vercel.json (rewrites: [{ "source": "/(.*)", "destination": "/index.html" }]).
