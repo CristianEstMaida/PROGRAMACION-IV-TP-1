@@ -369,17 +369,16 @@ export class Reserve implements OnInit {
   }
 
   getLeftSeats(row: string): Seat[] {
-    return this.seats().filter(s => s.row === row && s.number <= 2);
+  return this.seats().filter(s => s.row === row && s.number <= 4);
   }
 
   getCenterSeats(row: string): Seat[] {
-    return this.seats().filter(s => s.row === row && s.number > 2 && s.number <= 8);
+    return this.seats().filter(s => s.row === row && s.number > 4 && s.number <= 24);
   }
 
   getRightSeats(row: string): Seat[] {
-    return this.seats().filter(s => s.row === row && s.number > 8);
+    return this.seats().filter(s => s.row === row && s.number > 24);
   }
-
   async confirmBooking() {
   const currentShow = this.selectedShowtime();
   const chosen = this.selectedSeats();

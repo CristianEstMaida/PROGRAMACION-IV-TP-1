@@ -24,21 +24,23 @@
                 <span class="badge">{{ st.format }}</span>
                 <span class="room">{{ st.roomName }}</span>
                 <span class="time">{{ st.startTime }} hs</span>
-                <span class="price">${{ st.price }}</span>
+                <span class="price">${{ st.price | number:'1.0-0' }}</span>
               </button>
             }
           </div>
         </section>
 
-        <!-- 2. Mapa de Butacas -->
+        <!-- 2. Mapa de Butacas (Distribución 4 - 20 - 4) -->
         <section class="theater-section">
-          <h3>2. Seleccioná tus butacas</h3>
+          <h3>2. Seleccioná tus butacas (Distribución 4 - 20 - 4)</h3>
           <div class="cinema-screen">PANTALLA</div>
           <div class="room-wrapper">
             <div class="theater-grid">
               @for (r of getRows(); track r) {
                 <div class="row-container">
                   <span class="row-label">{{ r }}</span>
+                  
+                  <!-- Bloque Izquierdo: 4 butacas -->
                   <div class="seat-block left-block">
                     @for (seat of getLeftSeats(r); track seat.dbId) {
                       <button 
@@ -54,7 +56,10 @@
                       </button>
                     }
                   </div>
+
                   <div class="aisle"></div>
+
+                  <!-- Bloque Central: 20 butacas -->
                   <div class="seat-block center-block">
                     @for (seat of getCenterSeats(r); track seat.dbId) {
                       <button 
@@ -70,7 +75,10 @@
                       </button>
                     }
                   </div>
+
                   <div class="aisle"></div>
+
+                  <!-- Bloque Derecho: 4 butacas -->
                   <div class="seat-block right-block">
                     @for (seat of getRightSeats(r); track seat.dbId) {
                       <button 
@@ -86,6 +94,7 @@
                       </button>
                     }
                   </div>
+
                   <span class="row-label">{{ r }}</span>
                 </div>
               }
@@ -111,7 +120,7 @@
                 <div class="candy-info">
                   <strong>{{ p.nombre }}</strong>
                   <span class="candy-cat">{{ p.categoria }}</span>
-                  <span class="candy-price">${{ p.precio }}</span>
+                  <span class="candy-price">${{ p.precio | number:'1.0-0' }}</span>
                 </div>
                 <div class="qty-selector">
                   <button type="button" (click)="decrementCandy(p)">-</button>
@@ -132,7 +141,6 @@
                 type="text" 
                 [value]="codigoCuponInput()"
                 (input)="codigoCuponInput.set($any($event.target).value)"
-                
                 placeholder="Ej: BIENVENIDA20, SENIOR50" />
               <button type="button" (click)="validarCupon()">Aplicar</button>
             </div>
@@ -145,7 +153,7 @@
             <div class="credit-box">
               <label>
                 <input type="checkbox" [checked]="usarCredito()" (change)="usarCredito.set(!usarCredito())" />
-                Usar crédito disponible por cancelaciones: <strong>${{ creditoDisponible() }} ARS</strong>
+                Usar crédito disponible por cancelaciones: <strong>${{ creditoDisponible() | number:'1.0-0' }} ARS</strong>
               </label>
             </div>
           }
@@ -154,14 +162,17 @@
         <!-- 5. Barra de Pago -->
         <footer class="checkout-bar">
           <div class="summary">
-            <span>Butacas ({{ selectedSeats().length }}): <strong>${{ totalButacas() }} ARS</strong></span>
+            <span>Butacas ({{ selectedSeats().length }}): <strong>${{ totalButacas() | number:'1.0-0' }} ARS</strong></span>
             @if (totalCandy() > 0) {
-              <span>Candy Bar: <strong>+${{ totalCandy() }} ARS</strong></span>
+              <span>Candy Bar: <strong>+${{ totalCandy() | number:'1.0-0' }} ARS</strong></span>
             }
             @if (descuentoCuponMonto() > 0) {
-              <span class="discount-tag">Descuento Cupón: <strong>-${{ descuentoCuponMonto() }} ARS</strong></span>
+              <span class="discount-tag">Descuento Cupón: <strong>-${{ descuentoCuponMonto() | number:'1.0-0' }} ARS</strong></span>
             }
-            <span class="total">Total a Pagar: <strong>${{ totalFinal() }} ARS</strong></span>
+            @if (usarCredito() && creditoDisponible() > 0) {
+              <span class="credit-tag">Crédito aplicado: <strong>-${{ Math.min(creditoDisponible(), subtotalGeneral() - descuentoCuponMonto()) | number:'1.0-0' }} ARS</strong></span>
+            }
+            <span class="total">Total a Pagar: <strong>${{ totalFinal() | number:'1.0-0' }} ARS</strong></span>
           </div>
           <button 
             type="button" 
@@ -175,7 +186,7 @@
         <div class="success-card">
           <h3>🎉 ¡Reserva y Compra Confirmada!</h3>
           <p>Tu entrada y tus productos de Candy Bar han sido registrados.</p>
-          <p class="final-price">Total Abonado: <strong>${{ totalFinal() }} ARS</strong></p>
+          <p class="final-price">Total Abonado: <strong>${{ totalFinal() | number:'1.0-0' }} ARS</strong></p>
           <p class="hint">Descargaste automáticamente el archivo PDF con tu código QR único.</p>
           <a routerLink="/home" class="home-btn">Volver a la Cartelera</a>
         </div>
