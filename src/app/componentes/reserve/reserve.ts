@@ -381,91 +381,132 @@ export class Reserve implements OnInit {
   }
 
   async confirmBooking() {
-    const currentShow = this.selectedShowtime();
-    const chosen = this.selectedSeats();
-    if (!currentShow || chosen.length === 0) return;
+  const currentShow = this.selectedShowtime();
+  const chosen = this.selectedSeats();
+  if (!currentShow || chosen.length === 0) return;
 
-    // Obtener usuario autenticado (o null si es venta pública)
-    const user = await this.auth.getCurrentUser();
+  // Obtener usuario autenticado (o null si es venta pública)
+  const user = await this.auth.getCurrentUser();
 
   // 1. Validar restricción de edad exigida en consigna (+13, +16, +18)
   const restriccion = this.movie()?.rating || 'ATP';
 
   if (!user && restriccion !== 'ATP') {
-  const ok = confirm(`Esta película es para mayores de ${restriccion}. ¿Confirmás que el asistente cumple con la edad o ingresará con un adulto?`);
-  if (!ok) return;
-} else if (user && restriccion !== 'ATP') {
-   const { data: perfil } = await this.supabase
-        .from('perfiles')
-        .select('fecha_nacimiento')
-        .eq('id', user.id)
-        .single();
-      const edad = perfil?.fecha_nacimiento ? this.calcularEdad(perfil.fecha_nacimiento) : 0;
-      const min = parseInt(restriccion.replace('+', ''), 10);
-      if (edad < min) {
-        alert(`No cumplís con la edad mínima (${restriccion}) para adquirir esta función.`);
-        return;
-      }
+    const ok = confirm(`Esta película es para mayores de ${restriccion}. ¿Confirmás que el asistente cumple con la edad o ingresará con un adulto?`);
+    if (!ok) return;
+  } else if (user && restriccion !== 'ATP') {
+    const { data: perfil } = await this.supabase
+      .from('perfiles')
+      .select('fecha_nacimiento')
+      .eq('id', user.id)
+      .single();
+      
+    const edad = perfil?.fecha_nacimiento ? this.calcularEdad(perfil.fecha_nacimiento) : 0;
+    const min = parseInt(restriccion.replace('+', ''), 10);
+    if (edad < min) {
+      alert(`No cumplís con la edad mínima (${restriccion}) para adquirir esta función.`);
+      return;
+    }
   }
 
   // 2. Insertar entradas en Supabase
   const ticketCodigoBase = `TICKET-${currentShow.id}-${Date.now()}`;
 
-    // Armar inserts en la tabla entradas
-    const insertsEntradas = chosen.map(s => ({
-      funcion_id: currentShow.id,
-      butaca_id: s.dbId,
-      usuario_id: user ? user.id : null,
-      estado: 'validada',
-      qr_code: `${ticketCodigoBase}-B${s.dbId}`
-    }));
+  const insertsEntradas = chosen.map(s => ({
+    funcion_id: currentShow.id,
+    butaca_id: s.dbId,
+    usuario_id: user ? user.id : null,
+    estado: 'validada',
+    qr_code: `${ticketCodigoBase}-B${s.dbId}`
+  }));
 
-   const { error: errEntradas } = await this.supabase.from('entradas').insert(insertsEntradas);
-    if (errEntradas) {
-      alert('Error al reservar butacas. Intente nuevamente.');
-      return;
-    }
+  const { error: errEntradas } = await this.supabase.from('entradas').insert(insertsEntradas);
+  if (errEntradas) {
+    console.error('Error al reservar butacas:', errEntradas);
+    alert('Error al reservar butacas. Intente nuevamente.');
+    return;
+  }
 
-    // 2. Insertar Compras de Candy Bar asociadas al mismo Ticket/QR
-    const candyComprados = this.candyItems().filter(c => c.cantidad > 0);
-    if (candyComprados.length > 0) {
-      const insertsCandy = candyComprados.map(c => ({
-        ticket_codigo: ticketCodigoBase,
+  // 3. Insertar Compra de Candy Bar (Modelo Cabecera-Detalle corregido)
+  const candyComprados = this.candyItems().filter(c => c.cantidad > 0);
+  if (candyComprados.length > 0) {
+    const totalCandyMonto = candyComprados.reduce((acc, c) => acc + (c.precio * c.cantidad), 0);
+
+    // 3.1 Cabecera en compras_candy
+    const { data: compraData, error: errCandyCabecera } = await this.supabase
+      .from('compras_candy')
+      .insert({
+        usuario_id: user ? user.id : null,
+        fecha: new Date().toISOString(),
+        total: totalCandyMonto
+      })
+      .select('id')
+      .single();
+
+    if (!errCandyCabecera && compraData) {
+      // 3.2 Detalle en compra_producto con compra_id
+      const insertsDetalle = candyComprados.map(c => ({
+        compra_id: compraData.id,
         producto_id: c.id,
         cantidad: c.cantidad,
-        precio_unitario: c.precio,
-        usuario_id: user ? user.id : null,
-        estado: 'pendiente_entrega'
+        precio_unitario: c.precio
       }));
-      await this.supabase.from('compras_candy').insert(insertsCandy);
+
+      await this.supabase.from('compra_producto').insert(insertsDetalle);
     }
-
-    // 3. Sumar puntos al perfil del usuario
-    if (user) {
-      const { data: perfil } = await this.supabase
-        .from('perfiles')
-        .select('puntos, credito')
-        .eq('id', user.id)
-        .single();
-
-      const puntosGanados = this.totalFinal();
-      const nuevosPuntos = (perfil?.puntos || 0) + puntosGanados;
-      let nuevoCredito = perfil?.credito || 0;
-
-      if (this.usarCredito() && nuevoCredito > 0) {
-        const cubiertoPorCredito = Math.min(nuevoCredito, this.subtotalGeneral() - this.descuentoCuponMonto());
-        nuevoCredito -= cubiertoPorCredito;
-      }
-
-      await this.supabase
-        .from('perfiles')
-        .update({ puntos: nuevosPuntos, credito: nuevoCredito })
-        .eq('id', user.id);
-    }
-        // 4. Descargar PDF con el código QR generado
-   await this.descargarTicketPDF(ticketCodigoBase, currentShow, chosen, candyComprados);
-    this.purchaseSuccess.set(true);
   }
+
+  // 4. Si aplicó cupón, marcarlo en usuario_cupon
+  const cupon = this.cuponAplicado();
+  if (cupon && user) {
+    const { data: cuponDB } = await this.supabase
+      .from('cupones')
+      .select('id')
+      .eq('codigo', cupon.codigo)
+      .single();
+
+    if (cuponDB) {
+      await this.supabase
+        .from('usuario_cupon')
+        .insert({ usuario_id: user.id, cupon_id: cuponDB.id });
+    }
+  }
+
+  // 5. Sumar puntos al perfil del usuario
+  if (user) {
+    const { data: perfil } = await this.supabase
+      .from('perfiles')
+      .select('puntos, credito')
+      .eq('id', user.id)
+      .single();
+
+    const puntosGanados = this.totalFinal();
+    const nuevosPuntos = (perfil?.puntos || 0) + puntosGanados;
+    let nuevoCredito = perfil?.credito || 0;
+
+    if (this.usarCredito() && nuevoCredito > 0) {
+      const cubiertoPorCredito = Math.min(nuevoCredito, this.subtotalGeneral() - this.descuentoCuponMonto());
+      nuevoCredito -= cubiertoPorCredito;
+    }
+
+    await this.supabase
+      .from('perfiles')
+      .update({ puntos: nuevosPuntos, credito: nuevoCredito })
+      .eq('id', user.id);
+  }
+
+  // 6. Auditoría en logs_actividad
+  await this.supabase.from('logs_actividad').insert({
+    usuario: user?.email || 'anonimo@cinenova.com',
+    accion: 'Compra de Entradas',
+    entidad_afectada: 'entradas',
+    detalle: `Reserva confirmada de ${chosen.length} butacas para función #${currentShow.id}. Total abonado: $${this.totalFinal()}`
+  });
+
+  // 7. Descargar PDF con el código QR generado
+  await this.descargarTicketPDF(ticketCodigoBase, currentShow, chosen, candyComprados);
+  this.purchaseSuccess.set(true);
+}
 //   async validarRestriccionEdad(user: any, restriccion: string): Promise<boolean> {
 //   if (!restriccion || restriccion === 'ATP') return true;
 
