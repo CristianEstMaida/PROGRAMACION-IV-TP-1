@@ -1,31 +1,72 @@
 <section class="candy-bar-admin">
-  <h2>Gestión de Candy Bar</h2>
+  <div class="header-section">
+    <h2>🍿 Gestión de Candy Bar</h2>
+    <button class="btn-primary" (click)="agregarProducto()">➕ Nuevo Producto</button>
+  </div>
 
-  <button (click)="agregarProducto()">➕ Agregar Producto</button>
+  @if (cargando()) {
+    <div class="loading-state">
+      <p>Cargando catálogo desde Supabase...</p>
+    </div>
+  } @else {
+    <!-- 1. TABLA DE PRODUCTOS INDIVIDUALES -->
+    <section class="admin-block">
+      <h3>Productos Individuales</h3>
+      <div class="table-responsive">
+        <table class="candy-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Stock Actual</th>
+              <th>Acciones de Stock</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of productos(); track p.id) {
+              <tr>
+                <td class="cell-name">{{ p.nombre }}</td>
+                <td><span class="badge">{{ p.categoria || 'Snacks' }}</span></td>
+                <td class="cell-price">${{ p.precio | number:'1.0-0' }}</td>
+                <td class="cell-stock">
+                  <span [class.low-stock]="p.stock < 10">{{ p.stock }} u.</span>
+                </td>
+                <td class="cell-stock-actions">
+                  <button class="btn-sm" (click)="actualizarStock(p, 5)" title="Sumar 5 unidades">+5</button>
+                  <button class="btn-sm" (click)="actualizarStock(p, -5)" [disabled]="p.stock <= 0" title="Restar 5 unidades">-5</button>
+                </td>
+                <td class="cell-actions">
+                  <button class="btn-sm btn-price" (click)="actualizarPrecio(p, p.precio + 500)">+$500</button>
+                  <button class="btn-sm btn-price" (click)="actualizarPrecio(p, p.precio - 500)" [disabled]="p.precio <= 500">-$500</button>
+                  <button class="btn-sm btn-delete" (click)="eliminarProducto(p.id)" title="Eliminar producto">🗑️</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center">No hay productos registrados en la base de datos.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Categoría</th>
-        <th>Precio</th>
-        <th>Stock</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let p of productos">
-        <td>{{ p.nombre }}</td>
-        <td>{{ p.categoria }}</td>
-        <td>{{ p.precio | currency:'ARS':'symbol':'1.0-0' }}</td>
-        <td>{{ p.stock }}</td>
-        <td>
-          <button (click)="actualizarStock(p, 10)">➕ Stock</button>
-          <button (click)="actualizarStock(p, -10)">➖ Stock</button>
-          <button (click)="actualizarPrecio(p, p.precio + 100)">💲 +100</button>
-          <button (click)="eliminarProducto(p.id)">🗑️ Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    <!-- 2. COMBOS PROMOCIONALES -->
+    <section class="admin-block">
+      <h3>Combos Promocionales</h3>
+      <div class="combos-grid">
+        @for (combo of combos(); track combo.id) {
+          <div class="combo-card">
+            <h4>{{ combo.nombre }}</h4>
+            <p class="combo-desc">{{ combo.descripcion }}</p>
+            <span class="combo-price">${{ combo.precio | number:'1.0-0' }}</span>
+          </div>
+        } @empty {
+          <p>No hay combos promocionales configurados.</p>
+        }
+      </div>
+    </section>
+  }
 </section>
