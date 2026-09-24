@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, signal } from '@angular/core';
 import { email, form, FormField, required, minLength } from '@angular/forms/signals';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -91,6 +91,17 @@ export class Register {
       this.cdr.detectChanges();
     }, 400);
   }
+
+  isFormInvalid = computed(() => {
+    const m = this.registerModel();
+    const emailValido = this.emailState() === 'valid';
+    const passwordValida = m.password.length >= 8 && m.password === m.confirmPassword;
+    const camposCompletos = !!m.nombre.trim() && !!m.apellido.trim() && !!m.fechaNacimiento;
+    const terminosAceptados = !!m.aceptaTerminos;
+
+    // Retorna true si es INVÁLIDO (para el [disabled])
+    return !(emailValido && passwordValida && camposCompletos && terminosAceptados);
+  });
 
   async onSubmit(event: Event) {
     event.preventDefault();

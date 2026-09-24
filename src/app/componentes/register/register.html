@@ -162,13 +162,7 @@
     </label>
 
     <button type="submit"
-      [disabled]="emailState() !== 'valid'
-                  || registerModel().password.length < 8 
-                  || registerModel().password !== registerModel().confirmPassword
-                  || !registerModel().nombre.trim() 
-                  || !registerModel().apellido.trim() 
-                  || !registerModel().fechaNacimiento 
-                  || !registerModel().aceptaTerminos">
+      [disabled]="isFormInvalid()>
       Registrarme
     </button>
   </form>
