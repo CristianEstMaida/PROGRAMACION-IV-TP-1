@@ -1,8 +1,6 @@
-<section class="usuarios-admin">
-  <h2>Gestión de Usuarios</h2>
-
-  <button (click)="agregarUsuario()">➕ Agregar Usuario</button>
-
+@if (cargando()) {
+  <p>Cargando perfiles...</p>
+} @else {
   <table>
     <thead>
       <tr>
@@ -14,31 +12,35 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let u of usuarios">
-        <td>{{ u.nombre }}</td>
-        <td>{{ u.email }}</td>
-        <td>
+      @for (u of usuarios(); track u.id) {
+        <tr>
+          <td>{{ u.nombre }} {{ u.apellido || '' }}</td>
+          <td>{{ u.email }}</td>
+          <td>
             <select [value]="u.rol" (change)="cambiarRolDesdeEvento(u, $event)">
-
-            <!-- <select #selRol [value]="u.rol" (change)="cambiarRol(u, selRol.value)"> -->
-                <option value="admin">Admin</option>
-                <option value="operador">Operador</option>
-                <option value="cliente">Cliente</option>
+              <option value="cliente">Cliente</option>
+              <option value="operador">Operador</option>
+              <option value="admin">Admin</option>
             </select>
-        </td>
-        <td>
-          <span [ngClass]="u.activo ? 'activo' : 'inactivo'">
-            {{ u.activo ? 'Activo' : 'Inactivo' }}
-          </span>
-        </td>
-        <td>
-          <button (click)="toggleActivo(u)">
-            {{ u.activo ? 'Desactivar' : 'Activar' }}
-          </button>
-          <button [appConfirmDelete]="'¿Seguro que deseas eliminar a ' + u.nombre + '?'" 
-          (confirmed)="eliminarUsuario(u.id)">🗑️ Eliminar</button>
-        </td>
-      </tr>
+          </td>
+          <td>
+            <button (click)="toggleActivo(u)">
+              {{ u.activo ? '✅ Activo' : '⛔ Inactivo' }}
+            </button>
+          </td>
+          <td>
+            <button 
+              appConfirmDelete 
+              (confirmed)="eliminarUsuario(u.id)">
+              🗑️ Eliminar
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5">No hay usuarios registrados.</td>
+        </tr>
+      }
     </tbody>
   </table>
-</section>
+}

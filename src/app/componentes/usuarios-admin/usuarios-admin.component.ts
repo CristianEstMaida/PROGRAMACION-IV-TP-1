@@ -1,13 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConfirmDeleteDirective } from '../../directivas/confirm-delete.directive';
+import { SupabaseService } from '../../services/supabase.service';
 
-interface Usuario {
-  id: number;
+export interface Usuario {
+  id: string; // UUID de Supabase auth/perfiles
   nombre: string;
-  email: string;
-  rol: string; // admin, cliente, operador
-  activo: boolean;
+  apellido?: string;
+  email?: string;
+  rol: 'admin' | 'cliente' | 'operador' | string;
+  activo?: boolean;
 }
 
 @Component({
@@ -17,51 +19,90 @@ interface Usuario {
   templateUrl: './usuarios-admin.component.html',
   styleUrls: ['./usuarios-admin.component.css']
 })
-export class UsuariosAdminComponent {
-  usuarios: Usuario[] = [
-    { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', rol: 'cliente', activo: true },
-    { id: 2, nombre: 'María Gómez', email: 'maria@example.com', rol: 'operador', activo: true },
-    { id: 3, nombre: 'Admin', email: 'admin@example.com', rol: 'admin', activo: true }
-  ];
+export class UsuariosAdminComponent implements OnInit {
+  private supabase = inject(SupabaseService).client;
 
-  agregarUsuario() {
-    const nuevo: Usuario = {
-      id: this.usuarios.length + 1,
-      nombre: 'Nuevo Usuario',
-      email: 'nuevo@example.com',
-      rol: 'cliente',
-      activo: true
-    };
-    this.usuarios.push(nuevo);
+  usuarios = signal<Usuario[]>([]);
+  cargando = signal<boolean>(true);
+
+  async ngOnInit() {
+    await this.cargarUsuarios();
   }
 
-  eliminarUsuario(id: number) {
-    this.usuarios = this.usuarios.filter(u => u.id !== id);
+  // 1. GET: Traer perfiles desde Supabase
+  async cargarUsuarios() {
+    this.cargando.set(true);
+    const { data, error } = await this.supabase
+      .from('perfiles')
+      .select('*')
+      .order('nombre', { ascending: true });
+
+    if (error) {
+      console.error('Error al cargar usuarios:', error.message);
+    } else if (data) {
+      this.usuarios.set(data);
+    }
+    this.cargando.set(false);
   }
 
-  toggleActivo(usuario: Usuario) {
-    usuario.activo = !usuario.activo;
+  // 2. UPDATE: Cambiar rol en Supabase
+  async cambiarRol(usuario: Usuario, nuevoRol: string) {
+    if (usuario.rol === nuevoRol) return;
+
+    const { error } = await this.supabase
+      .from('perfiles')
+      .update({ rol: nuevoRol })
+      .eq('id', usuario.id);
+
+    if (error) {
+      console.error('Error al actualizar rol:', error.message);
+      alert('No se pudo actualizar el rol');
+      return;
+    }
+
+    this.usuarios.update(lista =>
+      lista.map(u => (u.id === usuario.id ? { ...u, rol: nuevoRol } : u))
+    );
   }
 
-  cambiarRol(usuario: Usuario, nuevoRol: string) {
-    usuario.rol = nuevoRol;
-  }
-
-//   async cambiarRol(usuario: any, nuevoRol: string) {
-//   const { error } = await this.supabase
-//     .from('perfiles')
-//     .update({ rol: nuevoRol })
-//     .eq('id', usuario.id);
-
-//   if (!error) usuario.rol = nuevoRol;
-// }
   cambiarRolDesdeEvento(usuario: Usuario, event: Event) {
     const value = (event.target as HTMLSelectElement).value;
     this.cambiarRol(usuario, value);
-    }
-//     async cargarUsuarios() {
-//   const { data } = await this.supabase.from('perfiles').select('*');
-//   if (data) this.usuarios.set(data);
-// }
+  }
 
+  // 3. UPDATE: Alternar estado activo / inactivo
+  async toggleActivo(usuario: Usuario) {
+    const nuevoEstado = !usuario.activo;
+
+    const { error } = await this.supabase
+      .from('perfiles')
+      .update({ activo: nuevoEstado })
+      .eq('id', usuario.id);
+
+    if (error) {
+      console.error('Error al cambiar estado activo:', error.message);
+      alert('No se pudo cambiar el estado del usuario');
+      return;
+    }
+
+    this.usuarios.update(lista =>
+      lista.map(u => (u.id === usuario.id ? { ...u, activo: nuevoEstado } : u))
+    );
+  }
+
+  // 4. DELETE: Eliminar perfil (o desactivarlo si tiene restricciones referenciales)
+  async eliminarUsuario(id: string) {
+    const { error } = await this.supabase
+      .from('perfiles')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al eliminar usuario:', error.message);
+      alert('No se pudo eliminar el usuario (puede tener compras o reservas asociadas)');
+      return;
+    }
+
+    this.usuarios.update(lista => lista.filter(u => u.id !== id));
+  }
 }
