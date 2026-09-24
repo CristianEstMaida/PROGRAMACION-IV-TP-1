@@ -114,6 +114,12 @@ export class Reserve implements OnInit {
     return (this.subtotalGeneral() * c.porcentaje) / 100;
   });
 
+    montoCreditoAplicado = computed(() => {
+    if (!this.usarCredito() || this.creditoDisponible() <= 0) return 0;
+    const remanente = this.subtotalGeneral() - this.descuentoCuponMonto();
+    return Math.min(this.creditoDisponible(), Math.max(0, remanente));
+  });
+
   totalFinal = computed(() => {
     let total = this.subtotalGeneral() - this.descuentoCuponMonto();
     if (this.usarCredito()) {

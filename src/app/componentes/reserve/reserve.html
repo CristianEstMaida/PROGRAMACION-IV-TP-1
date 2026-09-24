@@ -170,7 +170,9 @@
               <span class="discount-tag">Descuento Cupón: <strong>-${{ descuentoCuponMonto() | number:'1.0-0' }} ARS</strong></span>
             }
             @if (usarCredito() && creditoDisponible() > 0) {
-              <span class="credit-tag">Crédito aplicado: <strong>-${{ Math.min(creditoDisponible(), subtotalGeneral() - descuentoCuponMonto()) | number:'1.0-0' }} ARS</strong></span>
+              <span class="credit-tag">
+                Crédito aplicado: <strong>-${{ montoCreditoAplicado() | number:'1.0-0' }} ARS</strong>
+              </span>
             }
             <span class="total">Total a Pagar: <strong>${{ totalFinal() | number:'1.0-0' }} ARS</strong></span>
           </div>

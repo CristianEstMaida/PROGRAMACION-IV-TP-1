@@ -1,34 +1,51 @@
-<section class="peliculas-admin">
-  <h2>Gestión de Películas</h2>
+<section class="admin-container">
+  <div class="header-bar">
+    <h2>🎬 Administración de Películas</h2>
+    <button class="btn-create" (click)="agregarPelicula()">➕ Nueva Película</button>
+  </div>
 
-  <input type="text" [(ngModel)]="filtro" placeholder="Buscar película..." appAutoFocus/>
+  <div class="search-box">
+    <input 
+      type="text" 
+      [ngModel]="filtro()" 
+      (ngModelChange)="filtro.set($event)" 
+      placeholder="Buscar película por título..." />
+  </div>
 
-  <button (click)="agregarPelicula()">➕ Agregar Película</button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Título</th>
-        <th>Género</th>
-        <th>Idioma</th>
-        <th>Formato</th>
-        <th>Duración</th>
-        <th>Restricción</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let p of peliculasFiltradas">
-        <td>{{ p.titulo }}</td>
-        <td>{{ p.genero }}</td>
-        <td>{{ p.idioma }}</td>
-        <td>{{ p.formato }}</td>
-        <td>{{ p.duracion }} min</td>
-        <td>{{ p.restriccionEdad }}</td>
-        <td>
-          <button (click)="eliminarPelicula(p.id)">🗑️ Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  @if (cargando()) {
+    <p>Cargando catálogo desde Supabase...</p>
+  } @else {
+    <table class="movies-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Título</th>
+          <th>Formato</th>
+          <th>Idioma</th>
+          <th>Duración</th>
+          <th>Edad</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of peliculasFiltradas(); track p.id) {
+          <tr>
+            <td>{{ p.id }}</td>
+            <td><strong>{{ p.titulo }}</strong></td>
+            <td><span class="badge">{{ p.formato }}</span></td>
+            <td>{{ p.idioma }}</td>
+            <td>{{ p.duracion_minutos }} min</td>
+            <td><span class="rating-tag">{{ p.restriccion_edad }}</span></td>
+            <td>
+              <button class="btn-delete" (click)="eliminarPelicula(p.id)">🗑️ Eliminar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="text-center">No se encontraron películas.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 </section>
