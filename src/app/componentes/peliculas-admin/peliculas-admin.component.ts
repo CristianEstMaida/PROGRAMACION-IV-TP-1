@@ -1,16 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Pelicula {
-  id: number;
-  titulo: string;
-  genero: string;
-  idioma: string;
-  formato: string;
-  duracion: number;
-  restriccionEdad: string;
-}
+import { MoviesService, PeliculaDB } from '../../services/movies.service';
 
 @Component({
   selector: 'app-peliculas-admin',
@@ -19,35 +10,61 @@ interface Pelicula {
   templateUrl: './peliculas-admin.component.html',
   styleUrls: ['./peliculas-admin.component.css']
 })
-export class PeliculasAdminComponent {
-  peliculas: Pelicula[] = [
-    { id: 1, titulo: 'Avatar 2', genero: 'Acción', idioma: 'Castellano', formato: '3D', duracion: 180, restriccionEdad: '+13' },
-    { id: 2, titulo: 'Titanic', genero: 'Romance', idioma: 'Castellano', formato: '2D', duracion: 195, restriccionEdad: 'ATP' },
-    { id: 3, titulo: 'Matrix', genero: 'Sci-Fi', idioma: 'Subtitulado', formato: '2D', duracion: 136, restriccionEdad: '+16' }
-  ];
+export class PeliculasAdminComponent implements OnInit {
+  private moviesService = inject(MoviesService);
 
-  filtro: string = '';
+  // Estados reactivos con Signals
+  peliculas = signal<PeliculaDB[]>([]);
+  filtro = signal<string>('');
+  cargando = signal<boolean>(true);
 
-  get peliculasFiltradas() {
-    return this.peliculas.filter(p =>
-      p.titulo.toLowerCase().includes(this.filtro.toLowerCase())
-    );
+  // Filtro reactivo computado
+  peliculasFiltradas = computed(() => {
+    const query = this.filtro().toLowerCase().trim();
+    if (!query) return this.peliculas();
+    return this.peliculas().filter(p => p.titulo.toLowerCase().includes(query));
+  });
+
+  async ngOnInit() {
+    await this.cargarPeliculas();
   }
 
-  eliminarPelicula(id: number) {
-    this.peliculas = this.peliculas.filter(p => p.id !== id);
+  async cargarPeliculas() {
+    this.cargando.set(true);
+    const data = await this.moviesService.getPeliculasAdmin();
+    this.peliculas.set(data);
+    this.cargando.set(false);
   }
 
-  agregarPelicula() {
-    const nueva: Pelicula = {
-      id: this.peliculas.length + 1,
-      titulo: 'Nueva Película',
-      genero: 'Acción',
-      idioma: 'Castellano',
+  async agregarPelicula() {
+    const nuevaPelicula = {
+      titulo: 'Nueva Película Estreno',
+      duracion_minutos: 120,
       formato: '2D',
-      duracion: 120,
-      restriccionEdad: '+13'
+      restriccion_edad: '+13',
+      idioma: 'Castellano',
+      sinopsis: 'Sinopsis de prueba',
+      imagen_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500'
     };
-    this.peliculas.push(nueva);
+
+    const creada = await this.moviesService.agregarPelicula(nuevaPelicula);
+    if (creada) {
+      // Se agrega al inicio de la lista reactiva
+      this.peliculas.update(lista => [creada, ...lista]);
+    } else {
+      alert('Error al guardar la película en Supabase');
+    }
+  }
+
+  async eliminarPelicula(id: number) {
+    const confirmar = confirm('¿Estás seguro de eliminar esta película?');
+    if (!confirmar) return;
+
+    const ok = await this.moviesService.eliminarPelicula(id);
+    if (ok) {
+      this.peliculas.update(lista => lista.filter(p => p.id !== id));
+    } else {
+      alert('No se pudo eliminar la película (verificá si ya tiene funciones asociadas).');
+    }
   }
 }

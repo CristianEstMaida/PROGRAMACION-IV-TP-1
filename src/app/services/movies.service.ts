@@ -6,26 +6,37 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';  
 import { SupabaseService } from './supabase.service';
 
-export interface PeliculaBD {
+// export interface PeliculaBD {
+//   id: number;
+//   titulo: string;
+//   sinopsis?: string;
+//   duracion_minutos: number;
+//   imagen_url?: string;
+//   formato: string;
+//   idioma: string;
+//   restriccion_edad: string;
+// }
+
+export interface PeliculaDB {
   id: number;
   titulo: string;
-  sinopsis?: string;
   duracion_minutos: number;
-  imagen_url?: string;
   formato: string;
-  idioma: string;
   restriccion_edad: string;
+  idioma: string;
+  sinopsis?: string;
+  imagen_url?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class MoviesService {
 
   private supabase = inject(SupabaseService).client;
-  peliculas = signal<PeliculaBD[]>([]);
+  peliculas = signal<PeliculaDB[]>([]);
 
   constructor(private http: HttpClient) {}
 
-  async obtenerPeliculas(): Promise<PeliculaBD[]> {
+  async obtenerPeliculas(): Promise<PeliculaDB[]> {
     const { data, error } = await this.supabase
       .from('peliculas')
       .select('*')
@@ -92,7 +103,7 @@ async activarAlerta(peliculaId: number, usuarioId: string) {
   return { data, error: null };
 }
 
-  async getMovieById(id: number): Promise<PeliculaBD | null> {
+  async getMovieById(id: number): Promise<PeliculaDB | null> {
     const { data, error } = await this.supabase
       .from('peliculas')
       .select('*')
@@ -107,7 +118,52 @@ async activarAlerta(peliculaId: number, usuarioId: string) {
     return this.http.get<MovieDetailModel[]>('assets/movies.json');
   }
 
+  async getPeliculasAdmin() {
+  const { data, error } = await this.supabase
+    .from('peliculas')
+    .select(`
+      *,
+      pelicula_genero (
+        generos ( id, nombre )
+      )
+    `)
+    .order('id', { ascending: false });
 
+  if (error) {
+    console.error('Error al traer películas para admin:', error.message);
+    return [];
+  }
+  return data || [];
+}
+
+// 2. POST: Insertar película
+  async agregarPelicula(nueva: Omit<PeliculaDB, 'id'>): Promise<PeliculaDB | null> {
+    const { data, error } = await this.supabase
+      .from('peliculas')
+      .insert(nueva)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error al insertar película:', error.message);
+      return null;
+    }
+    return data;
+  }
+
+  // 3. DELETE: Eliminar película
+  async eliminarPelicula(id: number): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('peliculas')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al eliminar película:', error.message);
+      return false;
+    }
+    return true;
+  }
 
 //   getTopMovies() {
 //     return this.http.get<Movie[]>('/api/top-movies'); // tu endpoint
