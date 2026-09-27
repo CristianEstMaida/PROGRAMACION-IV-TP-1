@@ -1,6 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { Auth } from '../services/auth';
+import { Auth } from '../../services/auth';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -14,7 +14,8 @@ import { CommonModule } from '@angular/common';
 export class NavbarAdminComponent {
   @Input() adminName: string = 'Admin';
 
-  constructor(private auth: Auth, private router: Router) {}
+  private auth = inject(Auth);
+   private router = inject(Router);
 
   async logout() {
     try {
