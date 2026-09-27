@@ -421,8 +421,10 @@ export class Reserve implements OnInit {
     funcion_id: currentShow.id,
     butaca_id: s.dbId,
     usuario_id: user ? user.id : null,
-    estado: 'validada',
-    qr_code: `${ticketCodigoBase}-B${s.dbId}`
+    estado: 'activa',
+    qr_code: chosen.length === 1 
+    ? ticketCodigoBase 
+    : `${ticketCodigoBase}-B${s.dbId}`
   }));
 
   const { error: errEntradas } = await this.supabase.from('entradas').insert(insertsEntradas);

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
@@ -11,7 +11,7 @@ import { Auth } from '../../services/auth';
   templateUrl: './validador-qr.component.html',
   styleUrls: ['./validador-qr.component.css']
 })
-export class ValidadorQrComponent{
+export class ValidadorQrComponent {
   private supabase = inject(SupabaseService).client;
   private auth = inject(Auth);
 
@@ -20,7 +20,6 @@ export class ValidadorQrComponent{
   mensajeError = signal<string | null>(null);
   cargando = signal<boolean>(false);
 
- 
   async validarCodigo() {
     const raw = this.codigoEntrada().trim();
     if (!raw) return;
@@ -30,8 +29,8 @@ export class ValidadorQrComponent{
     this.mensajeError.set(null);
 
     try {
-      // 1. Buscar la entrada por QR code
-      const { data: entrada, error } = await this.supabase
+      // 1. Buscar la entrada usando ilike para matchear tanto el código base del PDF como el completo con butaca
+      const { data: entradas, error } = await this.supabase
         .from('entradas')
         .select(`
           id, 
@@ -45,17 +44,20 @@ export class ValidadorQrComponent{
           ),
           butacas (fila, numero)
         `)
-        .eq('qr_code', raw)
-        .single();
+        .ilike('qr_code', `%${raw}%`)
+        .limit(1);
 
-      if (error || !entrada) {
+      if (error || !entradas || entradas.length === 0) {
         this.mensajeError.set('Código de entrada inexistente o no encontrado.');
         return;
       }
 
+      const entrada = entradas[0];
+
       // 2. Verificar estado
-      if (entrada.estado === 'usada') {
-        this.mensajeError.set('⚠️ Este código ya fue validado e ingresado anteriormente.');
+     
+      if (entrada.estado === 'validada' || entrada.estado === 'usada') {
+        this.mensajeError.set('⚠️ Este código ya fue utilizado e ingresado previamente.');
         return;
       }
 
@@ -64,10 +66,10 @@ export class ValidadorQrComponent{
         return;
       }
 
-      // 3. Marcar como usada para que el QR deje de funcionar
+      // 3. Quemar la entrada en Supabase
       const { error: errUpdate } = await this.supabase
         .from('entradas')
-        .update({ estado: 'usada' })
+        .update({ estado: 'validada' })
         .eq('id', entrada.id);
 
       if (errUpdate) {
@@ -75,20 +77,25 @@ export class ValidadorQrComponent{
         return;
       }
 
-      // 4. Registrar en el Log de Actividad
+      // 4. Registrar en logs_actividad incluyendo entidad_afectada
       const currentUser = await this.auth.getCurrentUser();
-      const operadorNombre = currentUser?.email ? currentUser.email.split('@')[0] : 'Operador';
+      const operadorNombre = currentUser?.email || 'operador@cinenova.com';
+      const tituloPelicula = (entrada.funciones as any)?.peliculas?.titulo || 'Cine';
+      const fila = (entrada.butacas as any)?.fila || '';
+      const numero = (entrada.butacas as any)?.numero || '';
 
       await this.supabase.from('logs_actividad').insert({
         usuario: operadorNombre,
         accion: 'Validó QR Entrada',
-        detalle: `Entrada #${entrada.id} (${(entrada.funciones as any)?.peliculas?.titulo || 'Cine'}) Butaca: ${(entrada.butacas as any)?.fila}-${(entrada.butacas as any)?.numero}`
+        entidad_afectada: 'tickets',
+        detalle: `Entrada #${entrada.id} (${tituloPelicula}) Butaca: ${fila}-${numero}`
       });
 
       this.resultado.set(entrada);
       this.codigoEntrada.set('');
 
     } catch (err: any) {
+      console.error('Error durante la validación:', err);
       this.mensajeError.set('Ocurrió un error inesperado al validar.');
     } finally {
       this.cargando.set(false);
