@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CandyService } from '../../services/candy.service';
+import { Combo } from '../../models/producto';
 
 interface Producto {
   id: number;
@@ -29,7 +30,7 @@ export class CandyBarAdminComponent implements OnInit{
 
   // Señales para guardar lo que viene de la base
   productos = signal<Producto[]>([]);
-  combos = signal<any[]>([]);
+  combos = signal<Combo[]>([]);
   cargando = signal<boolean>(true);
 
   

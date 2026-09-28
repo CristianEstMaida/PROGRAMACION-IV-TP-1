@@ -2,15 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConfirmDeleteDirective } from '../../directivas/confirm-delete.directive';
 import { SupabaseService } from '../../services/supabase.service';
-
-export interface Usuario {
-  id: string; // UUID de Supabase auth/perfiles
-  nombre: string;
-  apellido?: string;
-  email?: string;
-  rol: 'admin' | 'cliente' | 'operador' | string;
-  activo?: boolean;
-}
+import { Perfil } from '../../models/perfil';
 
 @Component({
   selector: 'app-usuarios-admin',
@@ -22,7 +14,7 @@ export interface Usuario {
 export class UsuariosAdminComponent implements OnInit {
   private supabase = inject(SupabaseService).client;
 
-  usuarios = signal<Usuario[]>([]);
+  usuarios = signal<Perfil[]>([]);
   cargando = signal<boolean>(true);
 
   async ngOnInit() {
@@ -40,18 +32,18 @@ export class UsuariosAdminComponent implements OnInit {
     if (error) {
       console.error('Error al cargar usuarios:', error.message);
     } else if (data) {
-      this.usuarios.set(data);
+      this.usuarios.set(data as Perfil[]);
     }
     this.cargando.set(false);
   }
 
   // 2. UPDATE: Cambiar rol en Supabase
-  async cambiarRol(usuario: Usuario, nuevoRol: string) {
+  async cambiarRol(usuario: Perfil, nuevoRol: string) {
     if (usuario.rol === nuevoRol) return;
 
     const { error } = await this.supabase
       .from('perfiles')
-      .update({ rol: nuevoRol })
+      .update({ rol: nuevoRol as any })
       .eq('id', usuario.id);
 
     if (error) {
@@ -61,17 +53,18 @@ export class UsuariosAdminComponent implements OnInit {
     }
 
     this.usuarios.update(lista =>
-      lista.map(u => (u.id === usuario.id ? { ...u, rol: nuevoRol } : u))
+      lista.map(u => (u.id === usuario.id ? { ...u, rol: nuevoRol as any } : u))
     );
   }
 
-  cambiarRolDesdeEvento(usuario: Usuario, event: Event) {
+  // Ahora recibe Perfil directamente
+  cambiarRolDesdeEvento(usuario: Perfil, event: Event) {
     const value = (event.target as HTMLSelectElement).value;
     this.cambiarRol(usuario, value);
   }
 
   // 3. UPDATE: Alternar estado activo / inactivo
-  async toggleActivo(usuario: Usuario) {
+  async toggleActivo(usuario: Perfil) {
     const nuevoEstado = !usuario.activo;
 
     const { error } = await this.supabase
@@ -90,7 +83,7 @@ export class UsuariosAdminComponent implements OnInit {
     );
   }
 
-  // 4. DELETE: Eliminar perfil (o desactivarlo si tiene restricciones referenciales)
+  // 4. DELETE: Eliminar perfil
   async eliminarUsuario(id: string) {
     const { error } = await this.supabase
       .from('perfiles')

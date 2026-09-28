@@ -2,15 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
-
-export interface ClienteFidelidad {
-  id: string; // UUID de perfiles
-  nombre: string;
-  apellido?: string;
-  email?: string;
-  puntos: number;
-  credito: number;
-}
+import { Perfil } from '../../models/perfil';
 
 @Component({
   selector: 'app-fidelizacion-admin',
@@ -22,7 +14,7 @@ export interface ClienteFidelidad {
 export class FidelizacionAdminComponent implements OnInit {
   private supabase = inject(SupabaseService).client;
 
-  clientes = signal<ClienteFidelidad[]>([]);
+  clientes = signal<Perfil[]>([]);
   filtro = signal<string>('');
   cargando = signal<boolean>(true);
 
@@ -55,19 +47,19 @@ export class FidelizacionAdminComponent implements OnInit {
     this.cargando.set(true);
     const { data, error } = await this.supabase
       .from('perfiles')
-      .select('id, nombre, apellido, email, puntos, credito')
+      .select('id, nombre, apellido, email, rol, puntos, credito')
       .order('puntos', { ascending: false });
 
     if (error) {
       console.error('Error al cargar datos de fidelización:', error.message);
     } else if (data) {
-      this.clientes.set(data);
+      this.clientes.set(data as Perfil[]);
     }
     this.cargando.set(false);
   }
 
   // 2. UPDATE: Ajustar puntos a un cliente
-  async ajustarPuntos(cliente: ClienteFidelidad) {
+  async ajustarPuntos(cliente: Perfil) {
     const deltaStr = prompt(`Sumar o restar puntos para ${cliente.nombre} (ej: 100 o -50):`);
     if (!deltaStr) return;
 
@@ -92,7 +84,7 @@ export class FidelizacionAdminComponent implements OnInit {
   }
 
   // 3. UPDATE: Bonificar o ajustar crédito disponible
-  async ajustarCredito(cliente: ClienteFidelidad) {
+  async ajustarCredito(cliente: Perfil) {
     const montoStr = prompt(`Ingresá el monto de crédito a sumar o restar a ${cliente.nombre} en $ ARS:`);
     if (!montoStr) return;
 

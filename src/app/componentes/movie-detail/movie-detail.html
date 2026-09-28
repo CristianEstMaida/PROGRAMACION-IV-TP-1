@@ -2,32 +2,35 @@
   <div class="movie-detail-container">
     <div class="movie-detail">
       <div class="poster">
-        <img [src]="m.poster" [alt]="m.title" />
+        <img [src]="m.imagen_url || m.poster" [alt]="m.titulo || m.title" />
       </div>
       <div class="info">
-        <h2>{{ m.title }}</h2>
+        <h2>{{ m.titulo || m.title }}</h2>
         
         <div class="rating-header-box">
           <span class="stars-gold">★ {{ promedioEstrellas() }} / 5</span>
           <span class="reviews-count">({{ reviews().length }} reseñas de espectadores)</span>
         </div>
 
-        @if (m.rating) {
-          <p class="rating"><strong>Clasificación:</strong> {{ m.rating }}</p>
+        @if (m.restriccion_edad) {
+          <p class="rating"><strong>Clasificación:</strong> {{ m.restriccion_edad }}</p>
         }
-        @if (m.genre) {
-          <p class="genre"><strong>Formato:</strong> {{ m.genre }}</p>
+        @if (m.formato || m.genre) {
+          <p class="genre"><strong>Formato:</strong> {{ m.formato || m.genre }}</p>
         }
-        @if (m.duration) {
-          <p class="duration"><strong>Duración:</strong> {{ m.duration }} min</p>
+        @if (m.duracion_minutos) {
+          <p class="duration"><strong>Duración:</strong> {{ m.duracion_minutos }} min</p>
         }
-        <p class="synopsis">{{ m.synopsis }}</p>
+        @if (m.idioma) {
+          <p class="language"><strong>Idioma:</strong> {{ m.idioma }}</p>
+        }
+        <p class="synopsis">{{ m.sinopsis }}</p>
 
         <div class="actions">
           <button class="reserve-btn" [routerLink]="['/reserve', m.id]">
             Sacar Entradas
           </button>
-          <button class="reviews-btn" (click)="toggleReviews()">
+          <button class="reviews-btn" type="button" (click)="toggleReviews()">
             {{ showReviews() ? 'Ocultar Reseñas' : 'Ver Reseñas' }}
           </button>
         </div>

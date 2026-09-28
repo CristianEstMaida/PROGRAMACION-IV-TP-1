@@ -3,17 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MoviesService } from '../../services/movies.service';
-import { MovieDetailModel } from '../../models/movie';
+import { Movie, MovieDetailModel } from '../../models/movie';
 import { SupabaseService } from '../../services/supabase.service';
 import { Auth } from '../../services/auth';
-
-export interface ReviewBD {
-  id: number;
-  autor_nombre: string;
-  puntuacion: number;
-  comentario: string;
-  creado_en: string;
-}
+import { Resena } from '../../models/resena';
 
 @Component({
   standalone: true,
@@ -29,8 +22,8 @@ export class MovieDetail implements OnInit {
   private supabase = inject(SupabaseService).client;
   private auth = inject(Auth);
 
-  movie = signal<MovieDetailModel | null>(null);
-  reviews = signal<ReviewBD[]>([]);
+  movie = signal<Movie | null>(null);
+  reviews = signal<Resena[]>([]);
   showReviews = signal<boolean>(true);
 
   // Formulario nueva reseña
@@ -55,12 +48,12 @@ export class MovieDetail implements OnInit {
     if (data) {
       this.movie.set({
         id: data.id,
-        title: data.titulo,
-        rating: data.restriccion_edad,
+        titulo: data.titulo,
+        restriccion_edad: data.restriccion_edad,
         poster: data.imagen_url || '/assets/img/butacas-cine.jpg',
         genre: data.formato || 'General',
-        duration: data.duracion_minutos,
-        synopsis: data.sinopsis || '',
+        duracion_minutos: data.duracion_minutos,
+        sinopsis: data.sinopsis || '',
         trailerUrl: ''
       });
 
