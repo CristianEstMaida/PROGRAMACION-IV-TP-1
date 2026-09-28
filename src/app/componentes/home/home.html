@@ -13,15 +13,37 @@
     </div>
 
     <div class="auth-buttons">
-      @if (isLoggedIn) {
-        <!-- Botón directo a Mis Películas -->
-      <a routerLink="/mis-peliculas" class="btn-secondary" style="padding: 0.5rem 0.9rem; font-size: 0.85rem;">
-        Mis Películas
-      </a>
-        <button type="button" class="btn-admin" routerLink="/admin">Panel Admin</button>
+      @if (currentUser(); as user) {
+        <!-- 1. Acceso a Mis Películas para Clientes -->
+        @if (userRole() === 'cliente') {
+          <a routerLink="/mis-peliculas" class="btn-secondary">
+            <mat-icon>confirmation_number</mat-icon> Mis Películas
+          </a>
+        }
+
+        <!-- 2. Acceso a Panel Admin protegido estructuralmente para Admin u Operador -->
+        <button 
+          *appHasRole="'admin'" 
+          type="button" 
+          class="btn-admin" 
+          routerLink="/admin">
+          <mat-icon>admin_panel_settings</mat-icon> Panel Admin
+        </button>
+
+        <button 
+          *appHasRole="'operador'" 
+          type="button" 
+          class="btn-admin" 
+          routerLink="/admin/validar-qr">
+          <mat-icon>qr_code_scanner</mat-icon> Validar Entradas
+        </button>
+
+        <!-- 3. Botón de Logout -->
         <button type="button" class="btn-logout" (click)="logout()">Salir</button>
       } @else {
+        <!-- Usuario Anónimo -->
         <a routerLink="/login" class="login-link">Iniciar Sesión</a>
+        <a routerLink="/register" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Registrarse</a>
       }
     </div>
   </header>

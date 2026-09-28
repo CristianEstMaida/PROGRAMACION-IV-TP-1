@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MoviesService } from '../../services/movies.service';
 import { Auth } from '../../services/auth';
 import { ImageFallbackDirective } from '../../directivas/appImageFallback.directive';
+import { HasRoleDirective } from '../../directivas/appHasRole.directive';
 
 export interface PeliculaCard {
   id: number;
@@ -25,12 +26,16 @@ export interface PeliculaCard {
   selector: 'app-home',
   templateUrl: './home.html',
   styleUrls: ['./home.css'],
-  imports: [CommonModule, RouterLink, MatIconModule, FormsModule, ImageFallbackDirective]
+  imports: [CommonModule, RouterLink, MatIconModule, FormsModule, ImageFallbackDirective, HasRoleDirective]
 })
 export class Home implements OnInit {
   private moviesService = inject(MoviesService);
   private auth = inject(Auth);
   private router = inject(Router);
+
+  // Estados de sesión
+  currentUser = signal<any | null>(null);
+  userRole = signal<string | null>(null);
 
   isLoggedIn = false;
 
@@ -56,8 +61,7 @@ export class Home implements OnInit {
   });
 
   async ngOnInit() {
-    const user = await this.auth.getCurrentUser();
-    this.isLoggedIn = !!user;
+    await this.comprobarSesion();
 
     await Promise.all([
       this.cargarCartelera(),
@@ -65,6 +69,20 @@ export class Home implements OnInit {
       this.cargarProximamente()
     ]);
   }
+
+  async comprobarSesion() {
+    const user = await this.auth.getCurrentUser();
+    
+    this.currentUser.set(user);
+
+    if (user) {
+      const role = await this.auth.getUserRole(user.id);
+      this.userRole.set(role);
+    } else {
+      this.userRole.set(null);
+    }
+  }
+   
 
   async cargarCartelera() {
     const data = await this.moviesService.getCartelera();
@@ -136,6 +154,8 @@ export class Home implements OnInit {
   }
   async logout() {
     await this.auth.signOut();
+    this.currentUser.set(null);
+    this.userRole.set(null);
     this.router.navigate(['/login']);
   }
 }

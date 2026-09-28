@@ -390,15 +390,22 @@ export class Reserve implements OnInit, OnDestroy {
   // 2. Insertar entradas en Supabase
   const ticketCodigoBase = `TICKET-${currentShow.id}-${Date.now()}`;
 
-  const insertsEntradas = chosen.map(s => ({
-    funcion_id: currentShow.id,
-    butaca_id: s.dbId,
-    usuario_id: user ? user.id : null,
-    estado: 'activa',
-    qr_code: chosen.length === 1 
-    ? ticketCodigoBase 
-    : `${ticketCodigoBase}-B${s.dbId}`
-  }));
+  // En reserve.ts:
+  const insertsEntradas = chosen.map(s => {
+    const isVip = ['R', 'S', 'T'].includes(s.row);
+    const precioUnitario = isVip ? currentShow.price * 1.3 : currentShow.price;
+
+    return {
+      funcion_id: currentShow.id,
+      butaca_id: s.dbId,
+      usuario_id: user ? user.id : null,
+      estado: 'activa',
+      precio_pagado: Math.round(precioUnitario), // <-- Guardá el precio real cobrado por entrada
+      qr_code: chosen.length === 1 
+        ? ticketCodigoBase 
+        : `${ticketCodigoBase}-B${s.dbId}`
+    };
+  });
 
   const { error: errEntradas } = await this.supabase.from('entradas').insert(insertsEntradas);
   if (errEntradas) {
@@ -590,19 +597,32 @@ async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[],
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // Escucha compras nuevas y cancelaciones
           schema: 'public',
           table: 'entradas',
           filter: `funcion_id=eq.${funcionId}`
         },
         (payload) => {
-          const nuevaEntrada = payload.new as { butaca_id: number };
-          // Marcar la butaca como ocupada en tiempo real
-          this.seats.update(seatsList =>
-            seatsList.map(s =>
-              s.dbId === nuevaEntrada.butaca_id ? { ...s, occupied: true, selected: false } : s
-            )
-          );
+          if (payload.eventType === 'INSERT') {
+            const nuevaEntrada = payload.new as { butaca_id: number; estado: string };
+            if (nuevaEntrada.estado !== 'cancelada') {
+              this.seats.update(seatsList =>
+                seatsList.map(s =>
+                  s.dbId === nuevaEntrada.butaca_id ? { ...s, occupied: true, selected: false } : s
+                )
+              );
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            const entradaModificada = payload.new as { butaca_id: number; estado: string };
+            if (entradaModificada.estado === 'cancelada') {
+              // Se libera la butaca en vivo
+              this.seats.update(seatsList =>
+                seatsList.map(s =>
+                  s.dbId === entradaModificada.butaca_id ? { ...s, occupied: false } : s
+                )
+              );
+            }
+          }
         }
       )
       .subscribe();
