@@ -1,15 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CandyService } from '../../services/candy.service';
-import { Combo } from '../../models/producto';
-
-interface Producto {
-  id: number;
-  nombre: string;
-  precio: number;
-  stock: number;
-  categoria: string; // pochoclos, bebidas, combos, etc.
-}
+import { Producto, Combo } from '../../models/producto';
 
 @Component({
   selector: 'app-candy-bar-admin',
@@ -18,37 +10,24 @@ interface Producto {
   templateUrl: './candy-bar-admin.component.html',
   styleUrls: ['./candy-bar-admin.component.css']
 })
-export class CandyBarAdminComponent implements OnInit{
-  // productos: Producto[] = [
-  //   { id: 1, nombre: 'Pochoclos Grandes', precio: 1500, stock: 50, categoria: 'Pochoclos' },
-  //   { id: 2, nombre: 'Gaseosa 500ml', precio: 1200, stock: 80, categoria: 'Bebidas' },
-  //   { id: 3, nombre: 'Combo Nachos + Bebida', precio: 2500, stock: 30, categoria: 'Combos' }
-  // ];
-
-  // Inyección del servicio
+export class CandyBarAdminComponent implements OnInit {
   private candyService = inject(CandyService);
 
-  // Señales para guardar lo que viene de la base
   productos = signal<Producto[]>([]);
   combos = signal<Combo[]>([]);
   cargando = signal<boolean>(true);
 
-  
   async ngOnInit() {
-    
     await this.cargarDatos();
   }
 
   async cargarDatos() {
     this.cargando.set(true);
-
     try {
-      // Trae ambos en paralelo directo desde Supabase
       const [listaProductos, listaCombos] = await Promise.all([
         this.candyService.getProductos(),
         this.candyService.getCombos()
       ]);
-
       this.productos.set(listaProductos);
       this.combos.set(listaCombos);
     } catch (error) {
@@ -62,7 +41,7 @@ export class CandyBarAdminComponent implements OnInit{
     const datos = await this.candyService.getProductos();
     this.productos.set(datos);
   }
-  // Alta en Supabase
+
   async agregarProducto() {
     const nuevo = {
       nombre: 'Nuevo Snack',
@@ -71,15 +50,12 @@ export class CandyBarAdminComponent implements OnInit{
       categoria: 'Snacks',
       imagen_url: ''
     };
-
     const creado = await this.candyService.agregarProducto(nuevo);
     if (creado) {
-      // Agrega el registro con el ID real devuelto por la BD
       this.productos.update(lista => [...lista, creado]);
     }
   }
 
-  // Baja en Supabase
   async eliminarProducto(id: number) {
     const exito = await this.candyService.eliminarProducto(id);
     if (exito) {
@@ -87,23 +63,19 @@ export class CandyBarAdminComponent implements OnInit{
     }
   }
 
-  // Modificar stock en Supabase
   async actualizarStock(producto: Producto, delta: number) {
     const stockCalculado = Math.max(0, producto.stock + delta);
     const exito = await this.candyService.actualizarStock(producto.id, stockCalculado);
-    
     if (exito) {
-      this.productos.update(lista => 
+      this.productos.update(lista =>
         lista.map(p => p.id === producto.id ? { ...p, stock: stockCalculado } : p)
       );
     }
   }
 
-  // Modificar precio en Supabase
   async actualizarPrecio(producto: Producto, nuevoPrecio: number) {
     if (nuevoPrecio <= 0) return;
     const exito = await this.candyService.actualizarPrecio(producto.id, nuevoPrecio);
-
     if (exito) {
       this.productos.update(lista =>
         lista.map(p => p.id === producto.id ? { ...p, precio: nuevoPrecio } : p)

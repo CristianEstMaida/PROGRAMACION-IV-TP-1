@@ -1,7 +1,7 @@
 <div class="home-container">
   <!-- Navbar superior -->
   <header class="home-header">
-    <div class="logo">🎬 CineNova</div>
+    <div class="logo">🎟️ CineNova</div>
     
     <div class="search-box-header">
       <input 
@@ -61,7 +61,6 @@
         <button type="button" class="btn-primary" (click)="scrollToCartelera()">
           <mat-icon>theaters</mat-icon> Ver Cartelera
         </button>
-        <!-- Lleva primero a leer ficha y reseñas -->
         <a [routerLink]="['/movie', 1]" class="btn-secondary">
           <mat-icon>visibility</mat-icon> Ver Ficha y Reseñas
         </a>
@@ -73,7 +72,7 @@
   @if (topPeliculas().length > 0) {
     <section class="top-section">
       <div class="section-title-wrap">
-        <h2>⭐ Top 3 Películas Más Populares</h2>
+        <h2>🔥 Top 3 Películas Más Populares</h2>
         <p class="section-subtitle">Las más elegidas por nuestra audiencia</p>
       </div>
 
@@ -82,12 +81,12 @@
           <article class="top-card" [class.rank-1]="idx === 0">
             <span class="podium-rank">#{{ idx + 1 }}</span>
             <div class="poster-box">
-              <img [src]="m.poster" appFallback [alt]="m.titulo" />
+              <img [src]="m.poster" [alt]="m.titulo" appFallback />
               <span class="badge-format">{{ m.formato }}</span>
             </div>
             <div class="card-info">
               <h3>{{ m.titulo }}</h3>
-              <p class="meta">{{ m.duracion_minutos }} min · ⭐ {{ m.promedio_estrellas }}/5</p>
+              <p class="meta">{{ m.duracion_minutos }} min • ★ {{ m.promedio_estrellas }}/5</p>
               <div class="card-action">
                 <span class="sales-tag">{{ m.total_ventas }} entradas vendidas</span>
                 <a [routerLink]="['/movie', m.id]" class="btn-action">Ver Ficha</a>
@@ -103,7 +102,7 @@
   <section class="cartelera-section" id="cartelera">
     <div class="section-header-flex">
       <div>
-        <h2>🎟️ En Cartelera</h2>
+        <h2>🎬 En Cartelera</h2>
         <p class="section-subtitle">Consultá los detalles y opiniones antes de reservar tus butacas</p>
       </div>
 
@@ -126,10 +125,9 @@
           </div>
           <div class="card-info">
             <h3>{{ p.titulo }}</h3>
-            <p class="meta">{{ p.duracion_minutos }} min · ⭐ {{ p.promedio_estrellas }}/5</p>
+            <p class="meta">{{ p.duracion_minutos }} min • ★ {{ p.promedio_estrellas }}/5</p>
             <div class="card-action">
               <span class="price">${{ p.precio }}</span>
-              <!-- Flujo correcto: ingresa a ver detalle y reseñas antes de reservar -->
               <a [routerLink]="['/movie', p.id]" class="btn-action">Ver Ficha</a>
             </div>
           </div>
@@ -146,7 +144,7 @@
   @if (proximosEstrenos().length > 0) {
     <section class="upcoming-section">
       <div class="section-title-wrap">
-        <h2>🎥 Próximos Estrenos</h2>
+        <h2>⏳ Próximos Estrenos</h2>
         <p class="section-subtitle">Activá un recordatorio para enterarte cuando abra la preventa</p>
       </div>
 
@@ -154,7 +152,7 @@
         @for (m of proximosEstrenos(); track m.id) {
           <article class="movie-card upcoming-card">
             <div class="poster-box">
-              <img [src]="m.poster" appFallback [alt]="m.titulo" />
+              <img [src]="m.poster" [alt]="m.titulo" appFallback />
               <span class="badge-format">Estreno</span>
             </div>
             <div class="card-info">
@@ -175,7 +173,7 @@
   <!-- Footer -->
   <footer class="home-footer">
     <div class="footer-content">
-      <div class="logo">🎬 CineNova</div>
+      <div class="logo">🎟️ CineNova</div>
       <p class="copy">© 2026 CineNova. Todos los derechos reservados.</p>
     </div>
   </footer>

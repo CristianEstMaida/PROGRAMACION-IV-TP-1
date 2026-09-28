@@ -1,30 +1,37 @@
 <section class="salas-admin">
   <h2>Gestión de Salas</h2>
+  <button type="button" (click)="agregarSala()">➕ Agregar Sala</button>
 
-  <button (click)="agregarSala()">➕ Agregar Sala</button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Filas</th>
-        <th>Columnas</th>
-        <th>Capacidad</th>
-        <th>Tipo</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let s of salas">
-        <td>{{ s.nombre }}</td>
-        <td>{{ s.filas }}</td>
-        <td>{{ s.columnas }}</td>
-        <td>{{ s.capacidad }}</td>
-        <td>{{ s.tipo }}</td>
-        <td>
-          <button (click)="eliminarSala(s.id)">🗑️ Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  @if (cargando()) {
+    <p>Consultando salas en Supabase...</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Capacidad</th>
+          <th>Tipo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of salas(); track s.id) {
+          <tr>
+            <td>{{ s.id }}</td>
+            <td><strong>{{ s.nombre }}</strong></td>
+            <td>{{ s.capacidad || 120 }} butacas</td>
+            <td>{{ s.tipo || 'Estándar' }}</td>
+            <td>
+              <button type="button" (click)="eliminarSala(s.id)">🗑️ Eliminar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="text-center">No hay salas cargadas en la base de datos.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 </section>
