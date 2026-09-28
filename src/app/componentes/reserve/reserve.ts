@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { MoviesService } from '../../services/movies.service';
@@ -8,6 +8,7 @@ import { SupabaseService } from '../../services/supabase.service';
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import { FormsModule } from '@angular/forms';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 // export interface Seat {
 //   id: string;      // ej: "A-1"
@@ -62,12 +63,14 @@ export interface ProductoCandy {
   styleUrls: ['./reserve.css'],
   imports: [CommonModule, RouterLink, FormsModule]
 })
-export class Reserve implements OnInit {
+export class Reserve implements OnInit, OnDestroy {
   private moviesService = inject(MoviesService);
   private auth = inject(Auth);
   private supabase = inject(SupabaseService).client;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+
+  private realtimeChannel: RealtimeChannel | null = null;
   
   movie = signal<MovieDetailModel | null>(null);
 
@@ -245,37 +248,7 @@ export class Reserve implements OnInit {
     await this.cargarButacasYEntradas(show.id, show.salaId);
   }
 
-  async cargarButacasYEntradas(funcionId: number, salaId: number) {
-    // 1. Obtener todas las butacas físicas de la sala
-    const { data: butacas } = await this.supabase
-      .from('butacas')
-      .select('*')
-      .eq('sala_id', salaId)
-      .order('fila')
-      .order('numero');
-
-    // 2. Obtener las entradas ya compradas para esta función específica
-    const { data: entradasOcupadas } = await this.supabase
-      .from('entradas')
-      .select('butaca_id')
-      .eq('funcion_id', funcionId)
-      .neq('estado', 'cancelada');
-
-    const occupiedIds = new Set((entradasOcupadas || []).map(e => e.butaca_id));
-
-    if (butacas) {
-      this.seats.set(
-        butacas.map(b => ({
-          id: `${b.fila}-${b.numero}`,
-          dbId: b.id,
-          row: b.fila,
-          number: b.numero,
-          selected: false,
-          occupied: occupiedIds.has(b.id)
-        }))
-      );
-    }
-  }
+  
 
   toggleSeat(seat: Seat) {
     if (seat.occupied) return;
@@ -574,5 +547,70 @@ async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[],
 
     doc.addImage(qrDataUrl, 'PNG', 14, y + 16, 50, 50);
     doc.save(`ticket-${ticketBase}.pdf`);
+  }
+
+  async cargarButacasYEntradas(funcionId: number, salaId: number) {
+    // 1. Obtener butacas físicas
+    const { data: butacas } = await this.supabase
+      .from('butacas')
+      .select('*')
+      .eq('sala_id', salaId)
+      .order('fila')
+      .order('numero');
+
+    // 2. Obtener entradas ya vendidas
+    const { data: entradasOcupadas } = await this.supabase
+      .from('entradas')
+      .select('butaca_id')
+      .eq('funcion_id', funcionId)
+      .neq('estado', 'cancelada');
+
+    const occupiedIds = new Set((entradasOcupadas || []).map(e => e.butaca_id));
+
+    if (butacas) {
+      this.seats.set(
+        butacas.map(b => ({
+          id: `${b.fila}-${b.numero}`,
+          dbId: b.id,
+          row: b.fila,
+          number: b.numero,
+          selected: false,
+          occupied: occupiedIds.has(b.id)
+        }))
+      );
+    }
+
+    // 3. Suscripción en Tiempo Real para esta función
+    if (this.realtimeChannel) {
+      this.supabase.removeChannel(this.realtimeChannel);
+    }
+
+    this.realtimeChannel = this.supabase
+      .channel(`entradas-funcion-${funcionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'entradas',
+          filter: `funcion_id=eq.${funcionId}`
+        },
+        (payload) => {
+          const nuevaEntrada = payload.new as { butaca_id: number };
+          // Marcar la butaca como ocupada en tiempo real
+          this.seats.update(seatsList =>
+            seatsList.map(s =>
+              s.dbId === nuevaEntrada.butaca_id ? { ...s, occupied: true, selected: false } : s
+            )
+          );
+        }
+      )
+      .subscribe();
+  }
+
+  ngOnDestroy() {
+    if (this.realtimeChannel) {
+      this.supabase.removeChannel(this.realtimeChannel);
+    }
   }
 }

@@ -1,19 +1,22 @@
-import { CanMatchFn } from '@angular/router';
 import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
 import { Auth } from '../services/auth';
 
-export const roleGuard: CanMatchFn = async (route, segments) => {
+export const adminGuard: CanActivateFn = async () => {
   const auth = inject(Auth);
+  const router = inject(Router);
+
   const user = await auth.getCurrentUser();
+  if (!user) {
+    router.navigate(['/login']);
+    return false;
+  }
 
-  console.log("roleGuard ejecutado");
+  const role = await auth.getUserRole(user.id);
+  if (role === 'admin' || role === 'operador') {
+    return true;
+  }
 
-  // El rol esperado se pasa en la data de la ruta
-  const expectedRole = route.data?.['role'];
-
-  if (!user) return false;
-
-  const userRole = await auth.getUserRole(user.id);
-
-  return userRole === expectedRole;
+  router.navigate(['/home']);
+  return false;
 };
