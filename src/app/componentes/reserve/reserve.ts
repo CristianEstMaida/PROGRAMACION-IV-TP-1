@@ -10,24 +10,6 @@ import QRCode from 'qrcode';
 import { FormsModule } from '@angular/forms';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
-// export interface Seat {
-//   id: string;      // ej: "A-1"
-//   row: string;     // ej: "A"
-//   number: number;  // 1 a 28
-//   selected: boolean;
-//   occupied: boolean;
-// }
-
-// export interface ShowTime {
-//   id: string;
-//   roomName: string;
-//   format: '2D' | '3D' | '4D' | '5D';
-//   audio: 'Subtitulada' | 'Doblada';
-//   startTime: string; // ej: "16:00"
-//   endTime: string;   // se calcula con duración + 30m
-//   price: number;
-// }
-
 export interface Seat {
   id: string;      // ej: "A-1"
   dbId: number;    // ID primario de la tabla butacas
@@ -82,22 +64,23 @@ export class Reserve implements OnInit, OnDestroy {
   seats = signal<Seat[]>([]);
 
   purchaseSuccess = signal<boolean>(false);
+  montoConfirmado = signal<number>(0);
 
-  // Candy Bar
+  // Candy Bar y Combos integrados
   candyItems = signal<ProductoCandy[]>([]);
 
-// Cupones y Crédito
+  // Cupones y Crédito
   codigoCuponInput = signal<string>('');
   cuponAplicado = signal<{ codigo: string; porcentaje: number } | null>(null);
   mensajeCupon = signal<string | null>(null);
   creditoDisponible = signal<number>(0);
   usarCredito = signal<boolean>(false);
 
-  // Precios y totales
+  // Precios y totales blindados contra NaN
   selectedSeats = computed(() => this.seats().filter(s => s.selected));
 
   totalButacas = computed(() => {
-    const basePrice = this.selectedShowtime()?.price ?? 0;
+    const basePrice = Number(this.selectedShowtime()?.price) || 0;
     return this.selectedSeats().reduce((acc, seat) => {
       const isVip = ['R', 'S', 'T'].includes(seat.row);
       const seatPrice = isVip ? basePrice * 1.3 : basePrice;
@@ -106,71 +89,45 @@ export class Reserve implements OnInit, OnDestroy {
   });
 
   totalCandy = computed(() => {
-    return this.candyItems().reduce((acc, p) => acc + (p.precio * p.cantidad), 0);
+    return this.candyItems().reduce((acc, p) => acc + (Number(p.precio || 0) * Number(p.cantidad || 0)), 0);
   });
 
-  subtotalGeneral = computed(() => this.totalButacas() + this.totalCandy());
+  subtotalGeneral = computed(() => {
+    const butacas = Number(this.totalButacas()) || 0;
+    const candy = Number(this.totalCandy()) || 0;
+    return butacas + candy;
+  });
 
   descuentoCuponMonto = computed(() => {
     const c = this.cuponAplicado();
     if (!c) return 0;
-    return (this.subtotalGeneral() * c.porcentaje) / 100;
+    const porcentaje = Number(c.porcentaje) || 0;
+    return (this.subtotalGeneral() * porcentaje) / 100;
   });
 
-    montoCreditoAplicado = computed(() => {
+  montoCreditoAplicado = computed(() => {
     if (!this.usarCredito() || this.creditoDisponible() <= 0) return 0;
     const remanente = this.subtotalGeneral() - this.descuentoCuponMonto();
-    return Math.min(this.creditoDisponible(), Math.max(0, remanente));
+    return Math.min(Number(this.creditoDisponible()) || 0, Math.max(0, remanente));
   });
 
   totalFinal = computed(() => {
     let total = this.subtotalGeneral() - this.descuentoCuponMonto();
     if (this.usarCredito()) {
-      total = Math.max(0, total - this.creditoDisponible());
+      total = Math.max(0, total - (Number(this.creditoDisponible()) || 0));
     }
-    return Math.round(total);
+    return isNaN(total) ? 0 : Math.round(total);
   });
-  // totalPrice = computed(() => {
-  // const basePrice = this.selectedShowtime()?.price ?? 0;
-  
-  // Si la butaca es de las últimas 3 filas (R, S, T), tiene un recargo VIP del 30%
-  // return this.selectedSeats().reduce((acc, seat) => {
-  //   const isVip = ['R', 'S', 'T'].includes(seat.row);
-  //   const seatPrice = isVip ? basePrice * 1.3 : basePrice;
-  //   return acc + seatPrice;
-  // }, 0);
-  // });
-
-
-  
-  // purchaseSuccess = signal<boolean>(false);
-
-  // constructor(
-  //   private route: ActivatedRoute,
-  //   private moviesService: MoviesService,
-  //   private router: Router
-  // ) {}
 
   async ngOnInit() {
     const movieId = Number(this.route.snapshot.paramMap.get('id'));
     if (!movieId) return;
-    // const id = Number(this.route.snapshot.paramMap.get('id'));
-    // if (id) {
-    //   this.moviesService.getMovieById(id).subscribe({
-    //     next: (data) => {
-    //       if (data) {
-    //         this.movie.set(data);
-    //         this.generateSchedule(data.duration || 120);
-    //         this.generateSeats();
-    //       }
-    //     }
-    //   });
-    // }
+
     // 1. Cargar película
     const movieData = await this.moviesService.getMovieById(movieId);
     if (!movieData) return;
 
-     this.movie.set({
+    this.movie.set({
       id: movieData.id,
       title: movieData.titulo,
       duration: movieData.duracion_minutos,
@@ -181,7 +138,7 @@ export class Reserve implements OnInit, OnDestroy {
       trailerUrl: ''
     });
 
-   await Promise.all([
+    await Promise.all([
       this.cargarFunciones(movieId),
       this.cargarProductosCandy(),
       this.cargarCreditoUsuario()
@@ -197,19 +154,53 @@ export class Reserve implements OnInit, OnDestroy {
         .eq('id', user.id)
         .single();
       if (perfil?.credito) {
-        this.creditoDisponible.set(perfil.credito);
+        this.creditoDisponible.set(Number(perfil.credito) || 0);
       }
     }
   }
 
+  // Trae únicamente productos activos y suma los combos promocionales
   async cargarProductosCandy() {
-    const { data } = await this.supabase
-      .from('productos')
-      .select('*')
-      .gt('stock', 0);
-    if (data) {
-      this.candyItems.set(data.map(p => ({ ...p, cantidad: 0 })));
+    const [resProductos, resCombos] = await Promise.all([
+      this.supabase
+        .from('productos')
+        .select('*')
+        .eq('activo', true)
+        .gt('stock', 0)
+        .order('id', { ascending: true }),
+      this.supabase
+        .from('combos')
+        .select('*')
+        .order('precio', { ascending: true })
+    ]);
+
+    const listaCandy: ProductoCandy[] = [];
+
+    if (resProductos.data) {
+      resProductos.data.forEach(p => {
+        listaCandy.push({
+          id: p.id,
+          nombre: p.nombre,
+          categoria: p.categoria || 'Snacks',
+          precio: Number(p.precio) || 0,
+          cantidad: 0
+        });
+      });
     }
+
+    if (resCombos.data) {
+      resCombos.data.forEach(c => {
+        listaCandy.push({
+          id: 10000 + c.id, // ID offset para evitar conflicto de keys con productos
+          nombre: c.nombre,
+          categoria: 'Combos',
+          precio: Number(c.precio) || 0,
+          cantidad: 0
+        });
+      });
+    }
+
+    this.candyItems.set(listaCandy);
   }
 
   async cargarFunciones(movieId: number) {
@@ -220,7 +211,7 @@ export class Reserve implements OnInit, OnDestroy {
       .eq('estado', 'activa');
 
     if (data && data.length > 0) {
-      const duracionMin = this.movie()?.duration || 120;
+      const duracionMin = Number(this.movie()?.duration) || 120;
       const list: ShowTime[] = data.map(f => {
         const inicio = new Date(f.fecha_hora);
         const fin = new Date(inicio.getTime() + duracionMin * 60000);
@@ -234,9 +225,9 @@ export class Reserve implements OnInit, OnDestroy {
           format: f.tipo_funcion,
           startTime: formatPad(inicio),
           endTime: formatPad(fin),
-          price: f.precio
-          };
-        });
+          price: Number(f.precio) || 0
+        };
+      });
 
       this.showtimes.set(list);
       await this.selectShowtime(list[0]);
@@ -248,8 +239,6 @@ export class Reserve implements OnInit, OnDestroy {
     await this.cargarButacasYEntradas(show.id, show.salaId);
   }
 
-  
-
   toggleSeat(seat: Seat) {
     if (seat.occupied) return;
     this.seats.update(list =>
@@ -257,7 +246,6 @@ export class Reserve implements OnInit, OnDestroy {
     );
   }
 
-  // Modificadores de Candy Bar
   incrementCandy(p: ProductoCandy) {
     this.candyItems.update(items =>
       items.map(item => item.id === p.id ? { ...item, cantidad: item.cantidad + 1 } : item)
@@ -270,7 +258,6 @@ export class Reserve implements OnInit, OnDestroy {
     );
   }
 
-  // Validación de Cupones según Requerimientos
   async validarCupon() {
     const codigo = this.codigoCuponInput().trim().toUpperCase();
     if (!codigo) return;
@@ -290,7 +277,6 @@ export class Reserve implements OnInit, OnDestroy {
 
     const user = await this.auth.getCurrentUser();
 
-    // 1. Regla: Solo primera compra
     if (cupon.solo_primera_compra) {
       if (!user) {
         this.mensajeCupon.set('Este cupón requiere que inicies sesión.');
@@ -306,7 +292,6 @@ export class Reserve implements OnInit, OnDestroy {
       }
     }
 
-    // 2. Regla: Mayores de 50 años
     if (cupon.edad_minima > 0) {
       if (!user) {
         this.mensajeCupon.set('Iniciá sesión para validar el descuento por edad.');
@@ -328,8 +313,9 @@ export class Reserve implements OnInit, OnDestroy {
       }
     }
 
-    this.cuponAplicado.set({ codigo: cupon.codigo, porcentaje: cupon.descuento_porcentaje });
-    this.mensajeCupon.set(`¡Cupón aplicado! Descuento del ${cupon.descuento_porcentaje}%.`);
+    const descPorcentaje = Number(cupon.descuento_porcentaje) || 0;
+    this.cuponAplicado.set({ codigo: cupon.codigo, porcentaje: descPorcentaje });
+    this.mensajeCupon.set(`¡Cupón aplicado! Descuento del ${descPorcentaje}%.`);
   }
 
   calcularEdad(fechaStr: string): number {
@@ -341,14 +327,12 @@ export class Reserve implements OnInit, OnDestroy {
     return edad;
   }
 
-  // Helpers de grilla de butacas
-
   getRows(): string[] {
     return Array.from(new Set(this.seats().map(s => s.row)));
   }
 
   getLeftSeats(row: string): Seat[] {
-  return this.seats().filter(s => s.row === row && s.number <= 4);
+    return this.seats().filter(s => s.row === row && s.number <= 4);
   }
 
   getCenterSeats(row: string): Seat[] {
@@ -358,166 +342,136 @@ export class Reserve implements OnInit, OnDestroy {
   getRightSeats(row: string): Seat[] {
     return this.seats().filter(s => s.row === row && s.number > 24);
   }
+
   async confirmBooking() {
-  const currentShow = this.selectedShowtime();
-  const chosen = this.selectedSeats();
-  if (!currentShow || chosen.length === 0) return;
+    const currentShow = this.selectedShowtime();
+    const chosen = this.selectedSeats();
+    if (!currentShow || chosen.length === 0) return;
 
-  // Obtener usuario autenticado (o null si es venta pública)
-  const user = await this.auth.getCurrentUser();
+    const user = await this.auth.getCurrentUser();
+    const restriccion = this.movie()?.rating || 'ATP';
 
-  // 1. Validar restricción de edad exigida en consigna (+13, +16, +18)
-  const restriccion = this.movie()?.rating || 'ATP';
-
-  if (!user && restriccion !== 'ATP') {
-    const ok = confirm(`Esta película es para mayores de ${restriccion}. ¿Confirmás que el asistente cumple con la edad o ingresará con un adulto?`);
-    if (!ok) return;
-  } else if (user && restriccion !== 'ATP') {
-    const { data: perfil } = await this.supabase
-      .from('perfiles')
-      .select('fecha_nacimiento')
-      .eq('id', user.id)
-      .single();
+    if (!user && restriccion !== 'ATP') {
+      const ok = confirm(`Esta película es para mayores de ${restriccion}. ¿Confirmás que el asistente cumple con la edad o ingresará con un adulto?`);
+      if (!ok) return;
+    } else if (user && restriccion !== 'ATP') {
+      const { data: perfil } = await this.supabase
+        .from('perfiles')
+        .select('fecha_nacimiento')
+        .eq('id', user.id)
+        .single();
       
-    const edad = perfil?.fecha_nacimiento ? this.calcularEdad(perfil.fecha_nacimiento) : 0;
-    const min = parseInt(restriccion.replace('+', ''), 10);
-    if (edad < min) {
-      alert(`No cumplís con la edad mínima (${restriccion}) para adquirir esta función.`);
+      const edad = perfil?.fecha_nacimiento ? this.calcularEdad(perfil.fecha_nacimiento) : 0;
+      const min = parseInt(restriccion.replace('+', ''), 10);
+      if (edad < min) {
+        alert(`No cumplís con la edad mínima (${restriccion}) para adquirir esta función.`);
+        return;
+      }
+    }
+
+    const ticketCodigoBase = `TICKET-${currentShow.id}-${Date.now()}`;
+
+    const insertsEntradas = chosen.map(s => {
+      const isVip = ['R', 'S', 'T'].includes(s.row);
+      const precioUnitario = isVip ? currentShow.price * 1.3 : currentShow.price;
+      return {
+        funcion_id: currentShow.id,
+        butaca_id: s.dbId,
+        usuario_id: user ? user.id : null,
+        estado: 'activa',
+        precio_pagado: Math.round(precioUnitario),
+        qr_code: chosen.length === 1 
+          ? ticketCodigoBase 
+          : `${ticketCodigoBase}-B${s.dbId}`
+      };
+    });
+
+    const { error: errEntradas } = await this.supabase.from('entradas').insert(insertsEntradas);
+    if (errEntradas) {
+      console.error('Error al reservar butacas:', errEntradas);
+      alert('Error al reservar butacas. Intente nuevamente.');
       return;
     }
-  }
 
-  // 2. Insertar entradas en Supabase
-  const ticketCodigoBase = `TICKET-${currentShow.id}-${Date.now()}`;
+    const candyComprados = this.candyItems().filter(c => c.cantidad > 0);
+    if (candyComprados.length > 0) {
+      const totalCandyMonto = candyComprados.reduce((acc, c) => acc + (c.precio * c.cantidad), 0);
 
-  // En reserve.ts:
-  const insertsEntradas = chosen.map(s => {
-    const isVip = ['R', 'S', 'T'].includes(s.row);
-    const precioUnitario = isVip ? currentShow.price * 1.3 : currentShow.price;
+      const { data: compraData, error: errCandyCabecera } = await this.supabase
+        .from('compras_candy')
+        .insert({
+          usuario_id: user ? user.id : null,
+          fecha: new Date().toISOString(),
+          total: totalCandyMonto
+        })
+        .select('id')
+        .single();
 
-    return {
-      funcion_id: currentShow.id,
-      butaca_id: s.dbId,
-      usuario_id: user ? user.id : null,
-      estado: 'activa',
-      precio_pagado: Math.round(precioUnitario), // <-- Guardá el precio real cobrado por entrada
-      qr_code: chosen.length === 1 
-        ? ticketCodigoBase 
-        : `${ticketCodigoBase}-B${s.dbId}`
-    };
-  });
-
-  const { error: errEntradas } = await this.supabase.from('entradas').insert(insertsEntradas);
-  if (errEntradas) {
-    console.error('Error al reservar butacas:', errEntradas);
-    alert('Error al reservar butacas. Intente nuevamente.');
-    return;
-  }
-
-  // 3. Insertar Compra de Candy Bar (Modelo Cabecera-Detalle corregido)
-  const candyComprados = this.candyItems().filter(c => c.cantidad > 0);
-  if (candyComprados.length > 0) {
-    const totalCandyMonto = candyComprados.reduce((acc, c) => acc + (c.precio * c.cantidad), 0);
-
-    // 3.1 Cabecera en compras_candy
-    const { data: compraData, error: errCandyCabecera } = await this.supabase
-      .from('compras_candy')
-      .insert({
-        usuario_id: user ? user.id : null,
-        fecha: new Date().toISOString(),
-        total: totalCandyMonto
-      })
-      .select('id')
-      .single();
-
-    if (!errCandyCabecera && compraData) {
-      // 3.2 Detalle en compra_producto con compra_id
-      const insertsDetalle = candyComprados.map(c => ({
-        compra_id: compraData.id,
-        producto_id: c.id,
-        cantidad: c.cantidad,
-        precio_unitario: c.precio
-      }));
-
-      await this.supabase.from('compra_producto').insert(insertsDetalle);
+      if (!errCandyCabecera && compraData) {
+        const insertsDetalle = candyComprados.map(c => ({
+          compra_id: compraData.id,
+          producto_id: c.id >= 10000 ? null : c.id,
+          cantidad: c.cantidad,
+          precio_unitario: c.precio
+        }));
+        await this.supabase.from('compra_producto').insert(insertsDetalle);
+      }
     }
-  }
 
-  // 4. Si aplicó cupón, marcarlo en usuario_cupon
-  const cupon = this.cuponAplicado();
-  if (cupon && user) {
-    const { data: cuponDB } = await this.supabase
-      .from('cupones')
-      .select('id')
-      .eq('codigo', cupon.codigo)
-      .single();
+    const cupon = this.cuponAplicado();
+    if (cupon && user) {
+      const { data: cuponDB } = await this.supabase
+        .from('cupones')
+        .select('id')
+        .eq('codigo', cupon.codigo)
+        .single();
 
-    if (cuponDB) {
+      if (cuponDB) {
+        await this.supabase
+          .from('usuario_cupon')
+          .insert({ usuario_id: user.id, cupon_id: cuponDB.id });
+      }
+    }
+
+    const montoAbonado = this.totalFinal();
+
+    if (user) {
+      const { data: perfil } = await this.supabase
+        .from('perfiles')
+        .select('puntos, credito')
+        .eq('id', user.id)
+        .single();
+
+      const puntosGanados = montoAbonado;
+      const nuevosPuntos = (Number(perfil?.puntos) || 0) + puntosGanados;
+      let nuevoCredito = Number(perfil?.credito) || 0;
+
+      if (this.usarCredito() && nuevoCredito > 0) {
+        const cubiertoPorCredito = Math.min(nuevoCredito, this.subtotalGeneral() - this.descuentoCuponMonto());
+        nuevoCredito -= cubiertoPorCredito;
+      }
+
       await this.supabase
-        .from('usuario_cupon')
-        .insert({ usuario_id: user.id, cupon_id: cuponDB.id });
-    }
-  }
-
-  // 5. Sumar puntos al perfil del usuario
-  if (user) {
-    const { data: perfil } = await this.supabase
-      .from('perfiles')
-      .select('puntos, credito')
-      .eq('id', user.id)
-      .single();
-
-    const puntosGanados = this.totalFinal();
-    const nuevosPuntos = (perfil?.puntos || 0) + puntosGanados;
-    let nuevoCredito = perfil?.credito || 0;
-
-    if (this.usarCredito() && nuevoCredito > 0) {
-      const cubiertoPorCredito = Math.min(nuevoCredito, this.subtotalGeneral() - this.descuentoCuponMonto());
-      nuevoCredito -= cubiertoPorCredito;
+        .from('perfiles')
+        .update({ puntos: nuevosPuntos, credito: nuevoCredito })
+        .eq('id', user.id);
     }
 
-    await this.supabase
-      .from('perfiles')
-      .update({ puntos: nuevosPuntos, credito: nuevoCredito })
-      .eq('id', user.id);
+    await this.supabase.from('logs_actividad').insert({
+      usuario: user?.email || 'anonimo@cinenova.com',
+      accion: 'Compra de Entradas',
+      entidad_afectada: 'entradas',
+      detalle: `Reserva confirmada de ${chosen.length} butacas para función #${currentShow.id}. Total abonado: $${montoAbonado}`
+    });
+
+    // Guardar el valor final congelado para la tarjeta de éxito
+    this.montoConfirmado.set(montoAbonado);
+
+    await this.descargarTicketPDF(ticketCodigoBase, currentShow, chosen, candyComprados);
+    this.purchaseSuccess.set(true);
   }
 
-  // 6. Auditoría en logs_actividad
-  await this.supabase.from('logs_actividad').insert({
-    usuario: user?.email || 'anonimo@cinenova.com',
-    accion: 'Compra de Entradas',
-    entidad_afectada: 'entradas',
-    detalle: `Reserva confirmada de ${chosen.length} butacas para función #${currentShow.id}. Total abonado: $${this.totalFinal()}`
-  });
-
-  // 7. Descargar PDF con el código QR generado
-  await this.descargarTicketPDF(ticketCodigoBase, currentShow, chosen, candyComprados);
-  this.purchaseSuccess.set(true);
-}
-//   async validarRestriccionEdad(user: any, restriccion: string): Promise<boolean> {
-//   if (!restriccion || restriccion === 'ATP') return true;
-
-//   // Obtener fecha de nacimiento del perfil en Supabase
-//   const { data: perfil } = await this.supabase
-//     .from('perfiles')
-//     .select('fecha_nacimiento')
-//     .eq('id', user.id)
-//     .single();
-
-//   if (!perfil?.fecha_nacimiento) return false;
-
-//   const fechaNac = new Date(perfil.fecha_nacimiento);
-//   const hoy = new Date();
-//   let edad = hoy.getFullYear() - fechaNac.getFullYear();
-//   const m = hoy.getMonth() - fechaNac.getMonth();
-//   if (m < 0 || (m === 0 && hoy.getDate() < fechaNac.getDate())) edad--;
-
-//   const minimaRequerida = parseInt(restriccion.replace('+', ''), 10);
-//   return edad >= minimaRequerida;
-// }
-
-
-async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[], candy: ProductoCandy[]) {
+  async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[], candy: ProductoCandy[]) {
     const doc = new jsPDF();
     const qrDataUrl = await QRCode.toDataURL(ticketBase);
 
@@ -557,7 +511,6 @@ async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[],
   }
 
   async cargarButacasYEntradas(funcionId: number, salaId: number) {
-    // 1. Obtener butacas físicas
     const { data: butacas } = await this.supabase
       .from('butacas')
       .select('*')
@@ -565,7 +518,6 @@ async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[],
       .order('fila')
       .order('numero');
 
-    // 2. Obtener entradas ya vendidas
     const { data: entradasOcupadas } = await this.supabase
       .from('entradas')
       .select('butaca_id')
@@ -587,7 +539,6 @@ async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[],
       );
     }
 
-    // 3. Suscripción en Tiempo Real para esta función
     if (this.realtimeChannel) {
       this.supabase.removeChannel(this.realtimeChannel);
     }
@@ -597,7 +548,7 @@ async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[],
       .on(
         'postgres_changes',
         {
-          event: '*', // Escucha compras nuevas y cancelaciones
+          event: '*',
           schema: 'public',
           table: 'entradas',
           filter: `funcion_id=eq.${funcionId}`
@@ -615,7 +566,6 @@ async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[],
           } else if (payload.eventType === 'UPDATE') {
             const entradaModificada = payload.new as { butaca_id: number; estado: string };
             if (entradaModificada.estado === 'cancelada') {
-              // Se libera la butaca en vivo
               this.seats.update(seatsList =>
                 seatsList.map(s =>
                   s.dbId === entradaModificada.butaca_id ? { ...s, occupied: false } : s
