@@ -1,4 +1,4 @@
-import { Component, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, signal, ChangeDetectorRef, inject } from '@angular/core';
 import { form, FormField, required, email } from '@angular/forms/signals';
 import { RouterLink, Router } from '@angular/router';
 import { LoginData } from '../../models/login-data';
@@ -13,6 +13,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './login.html',
 })
 export class Login {
+  private auth = inject(Auth);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
   loginModel = signal<LoginData>({
     email: '',
     password: '',
@@ -26,12 +30,6 @@ export class Login {
 
   errorMessage = signal<string | null>(null);
   isLoading = signal<boolean>(false);
-
-  constructor(
-    private auth: Auth, 
-    private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   // Rellena los inputs automáticamente para pruebas rápidas
   fillDemoCredentials(emailVal: string, passVal: string) {
@@ -54,7 +52,6 @@ export class Login {
       const result = await this.auth.signIn(credentials.email, credentials.password);
 
       if (result.error) {
-        // Errores de Supabase: 'Invalid login credentials', 'Email not confirmed', etc.
         if (result.error.message.includes('Invalid login credentials')) {
           this.errorMessage.set('Usuario o contraseña incorrectos.');
         } else if (result.error.message.includes('Email not confirmed')) {
@@ -65,14 +62,23 @@ export class Login {
         return;
       }
 
-      // Login exitoso -> redirigir al Home
-      
-      if (credentials.email === 'admin@cinenova.com') {
-        this.router.navigate(['/admin']);
+      // Redirección dinámica según el rol registrado en Supabase
+      const user = await this.auth.getCurrentUser();
+      if (user) {
+        const rol = await this.auth.getUserRole(user.id);
+
+        if (rol === 'admin') {
+          this.router.navigate(['/admin']);
+        } else if (rol === 'operador') {
+          this.router.navigate(['/admin/validar-qr']);
+        } else {
+          this.router.navigate(['/home']);
+        }
       } else {
         this.router.navigate(['/home']);
       }
     } catch (err: any) {
+      console.error('Error durante el inicio de sesión:', err);
       this.errorMessage.set('Ocurrió un error inesperado al iniciar sesión.');
     } finally {
       this.isLoading.set(false);
