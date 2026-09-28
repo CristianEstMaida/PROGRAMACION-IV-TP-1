@@ -1,140 +1,235 @@
-.cupones-admin {
-  background: #0d1522;
-  border: 1px solid #1c2b42;
+.cupones-container {
+  padding: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: #f3f4f6;
+}
+
+.header-section h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+/* Tarjeta de Formulario */
+.create-card {
+  background: #1f2937;
+  border: 1px solid #374151;
   border-radius: 12px;
   padding: 1.5rem;
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-.cupones-admin h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-top: 0;
-  margin-bottom: 1.2rem;
-  letter-spacing: 0.5px;
+.create-card h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #e5e7eb;
 }
 
-/* Botón Agregar Cupón */
-.cupones-admin > button {
-  background: linear-gradient(180deg, #d32f2f 0%, #8e0000 100%);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 0.65rem 1.3rem;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.35),
-    0 4px 10px rgba(0, 0, 0, 0.35);
-  transition: transform 0.15s ease, filter 0.15s ease;
+.create-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
 }
 
-.cupones-admin > button:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1);
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1 1 180px;
 }
 
-.cupones-admin > button:active {
-  transform: translateY(0);
-}
-
-/* Tabla integrada */
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-top: 1.2rem;
-}
-
-th {
-  background: #111a28;
-  color: #cbd5e1;
-  padding: 0.85rem 1rem;
+.form-group label {
   font-size: 0.85rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: 2px solid #20314b;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.form-group input {
+  background: #111827;
+  border: 1px solid #4b5563;
+  color: #ffffff;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #e50914;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #d1d5db;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: #e50914;
+  cursor: pointer;
+}
+
+.btn-create {
+  background: #e50914;
+  color: #ffffff;
+  border: none;
+  padding: 0.7rem 1.4rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  height: 42px;
+}
+
+.btn-create:hover {
+  background: #b91c1c;
+}
+
+/* Buscador */
+.filter-box {
+  margin-bottom: 1.25rem;
+}
+
+.filter-box input {
+  width: 100%;
+  max-width: 400px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #ffffff;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.filter-box input:focus {
+  border-color: #9ca3af;
+}
+
+/* Tabla */
+.cupones-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1f2937;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.cupones-table th,
+.cupones-table td {
+  padding: 0.9rem 1.2rem;
   text-align: left;
 }
 
-td {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid #162337;
-  color: #e2e8f0;
-  font-size: 0.9rem;
-  vertical-align: middle;
-}
-
-tr:hover td {
-  background: #121c2d;
-}
-
-/* Badges de estado con iluminación suave */
-.activo,
-.inactivo {
-  display: inline-block;
-  padding: 0.25rem 0.65rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 700;
+.cupones-table th {
+  background: #111827;
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #374151;
 }
 
-.activo {
-  background: rgba(46, 125, 50, 0.2);
-  color: #4caf50;
-  border: 1px solid rgba(76, 175, 80, 0.4);
+.cupones-table tr {
+  border-bottom: 1px solid #374151;
+  transition: background 0.15s;
 }
 
-.inactivo {
-  background: rgba(198, 40, 40, 0.2);
-  color: #ef5350;
-  border: 1px solid rgba(239, 83, 80, 0.4);
+.cupones-table tr:hover {
+  background: #283548;
 }
 
-/* Contenedor de acciones */
-td:last-child {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-/* Botones de acción tipo píldora */
-td button {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
+.cupones-table code {
+  background: #111827;
+  padding: 0.25rem 0.6rem;
   border-radius: 4px;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.8rem;
-  font-weight: 700;
+  color: #fbbf24;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.badge.blue {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid #3b82f6;
+}
+
+.badge.orange {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+  border: 1px solid #f97316;
+}
+
+.badge.gray {
+  background: rgba(156, 163, 175, 0.2);
+  color: #9ca3af;
+  border: 1px solid #6b7280;
+}
+
+/* Botones de acción */
+.btn-status {
+  background: #374151;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  color: #d1d5db;
+  font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: filter 0.15s ease, transform 0.1s ease;
+  transition: all 0.2s;
 }
 
-td button:hover {
-  filter: brightness(1.15);
-  transform: translateY(-1px);
+.btn-status.active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid #10b981;
 }
 
-td button:active {
-  transform: translateY(0);
+.btn-delete {
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
 }
 
-/* Botón Activar / Desactivar (Azul) */
-td button:nth-of-type(1) {
-  background: linear-gradient(180deg, #1976d2 0%, #0d47a1 100%);
+.btn-delete:hover {
+  background: #ef4444;
+  color: #ffffff;
 }
 
-/* Botón Eliminar (Rojo oscuro) */
-td button:nth-of-type(2) {
-  background: linear-gradient(180deg, #c62828 0%, #7f0000 100%);
+.empty-state {
+  text-align: center;
+  color: #9ca3af;
+  padding: 2rem !important;
 }

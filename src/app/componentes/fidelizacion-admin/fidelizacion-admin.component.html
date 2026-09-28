@@ -1,29 +1,71 @@
-<section class="fidelizacion-admin">
-  <h2>Gestión de Fidelización</h2>
+<section class="fidelizacion-container">
+  <div class="header-section">
+    <h2>⭐ Programa de Fidelización y Créditos</h2>
+  </div>
 
-  <button (click)="agregarCliente()">➕ Agregar Cliente</button>
+  <!-- Métricas resumen -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="label">Puntos Totales Emitidos</span>
+      <span class="value">{{ totalPuntosEmitidos() | number:'1.0-0' }} pts</span>
+    </div>
+    <div class="stat-card">
+      <span class="label">Crédito a Favor Circulante</span>
+      <span class="value">${{ totalCreditoDisponible() | number:'1.0-0' }} ARS</span>
+    </div>
+    <div class="stat-card">
+      <span class="label">Clientes Registrados</span>
+      <span class="value">{{ clientes().length }}</span>
+    </div>
+  </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Email</th>
-        <th>Puntos</th>
-        <th>Nivel</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let c of clientes">
-        <td>{{ c.nombre }}</td>
-        <td>{{ c.email }}</td>
-        <td>{{ c.puntos }}</td>
-        <td>{{ c.nivel }}</td>
-        <td>
-          <button (click)="sumarPuntos(c, 50)">➕ 50 Puntos</button>
-          <button (click)="eliminarCliente(c.id)">🗑️ Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Buscador -->
+  <div class="search-bar">
+    <input 
+      type="text" 
+      [ngModel]="filtro()" 
+      (ngModelChange)="filtro.set($event)" 
+      placeholder="Buscar cliente por nombre o email..." />
+  </div>
+
+  <!-- Tabla de fidelización -->
+  @if (cargando()) {
+    <p class="loading">Consultando puntos y créditos en Supabase...</p>
+  } @else {
+    <table class="fidelidad-table">
+      <thead>
+        <tr>
+          <th>Pos.</th>
+          <th>Cliente</th>
+          <th>Email</th>
+          <th>Puntos</th>
+          <th>Crédito</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of clientesFiltrados(); track c.id; let i = $index) {
+          <tr>
+            <td class="pos-col">#{{ i + 1 }}</td>
+            <td><strong>{{ c.nombre }} {{ c.apellido || '' }}</strong></td>
+            <td>{{ c.email || 'No registrado' }}</td>
+            <td><span class="badge points">⭐ {{ c.puntos || 0 }} pts</span></td>
+            <td><span class="badge credit">${{ c.credito || 0 | number:'1.0-0' }} ARS</span></td>
+            <td class="actions-col">
+              <button type="button" class="btn-action pts" (click)="ajustarPuntos(c)">
+                Ajustar Puntos
+              </button>
+              <button type="button" class="btn-action crd" (click)="ajustarCredito(c)">
+                Ajustar Crédito
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty-state">No se encontraron clientes.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 </section>

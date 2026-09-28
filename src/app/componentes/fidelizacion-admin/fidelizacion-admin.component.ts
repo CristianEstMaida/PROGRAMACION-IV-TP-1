@@ -1,52 +1,118 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SupabaseService } from '../../services/supabase.service';
 
-interface ClienteFidelizado {
-  id: number;
+export interface ClienteFidelidad {
+  id: string; // UUID de perfiles
   nombre: string;
-  email: string;
+  apellido?: string;
+  email?: string;
   puntos: number;
-  nivel: string; // Bronze, Silver, Gold, Platinum
+  credito: number;
 }
 
 @Component({
   selector: 'app-fidelizacion-admin',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './fidelizacion-admin.component.html',
   styleUrls: ['./fidelizacion-admin.component.css']
 })
-export class FidelizacionAdminComponent {
-  clientes: ClienteFidelizado[] = [
-    { id: 1, nombre: 'Juan Pérez', email: 'juan@example.com', puntos: 120, nivel: 'Silver' },
-    { id: 2, nombre: 'María Gómez', email: 'maria@example.com', puntos: 300, nivel: 'Gold' },
-    { id: 3, nombre: 'Pedro López', email: 'pedro@example.com', puntos: 50, nivel: 'Bronze' }
-  ];
+export class FidelizacionAdminComponent implements OnInit {
+  private supabase = inject(SupabaseService).client;
 
-  agregarCliente() {
-    const nuevo: ClienteFidelizado = {
-      id: this.clientes.length + 1,
-      nombre: 'Nuevo Cliente',
-      email: 'nuevo@example.com',
-      puntos: 0,
-      nivel: 'Bronze'
-    };
-    this.clientes.push(nuevo);
+  clientes = signal<ClienteFidelidad[]>([]);
+  filtro = signal<string>('');
+  cargando = signal<boolean>(true);
+
+  // Totales acumulados calculados con computed
+  totalPuntosEmitidos = computed(() => 
+    this.clientes().reduce((acc, c) => acc + (c.puntos || 0), 0)
+  );
+
+  totalCreditoDisponible = computed(() => 
+    this.clientes().reduce((acc, c) => acc + (c.credito || 0), 0)
+  );
+
+  // Filtro reactivo por nombre, apellido o email
+  clientesFiltrados = computed(() => {
+    const q = this.filtro().toLowerCase().trim();
+    if (!q) return this.clientes();
+    return this.clientes().filter(c =>
+      (c.nombre?.toLowerCase().includes(q)) ||
+      (c.apellido?.toLowerCase().includes(q)) ||
+      (c.email?.toLowerCase().includes(q))
+    );
+  });
+
+  async ngOnInit() {
+    await this.cargarClientesFidelidad();
   }
 
-  eliminarCliente(id: number) {
-    this.clientes = this.clientes.filter(c => c.id !== id);
+  // 1. GET: Traer ranking de clientes con puntos y crédito
+  async cargarClientesFidelidad() {
+    this.cargando.set(true);
+    const { data, error } = await this.supabase
+      .from('perfiles')
+      .select('id, nombre, apellido, email, puntos, credito')
+      .order('puntos', { ascending: false });
+
+    if (error) {
+      console.error('Error al cargar datos de fidelización:', error.message);
+    } else if (data) {
+      this.clientes.set(data);
+    }
+    this.cargando.set(false);
   }
 
-  sumarPuntos(cliente: ClienteFidelizado, puntos: number) {
-    cliente.puntos += puntos;
-    this.actualizarNivel(cliente);
+  // 2. UPDATE: Ajustar puntos a un cliente
+  async ajustarPuntos(cliente: ClienteFidelidad) {
+    const deltaStr = prompt(`Sumar o restar puntos para ${cliente.nombre} (ej: 100 o -50):`);
+    if (!deltaStr) return;
+
+    const delta = parseInt(deltaStr, 10);
+    if (isNaN(delta) || delta === 0) return;
+
+    const nuevosPuntos = Math.max(0, (cliente.puntos || 0) + delta);
+
+    const { error } = await this.supabase
+      .from('perfiles')
+      .update({ puntos: nuevosPuntos })
+      .eq('id', cliente.id);
+
+    if (error) {
+      alert('Error al actualizar los puntos.');
+      return;
+    }
+
+    this.clientes.update(lista =>
+      lista.map(c => c.id === cliente.id ? { ...c, puntos: nuevosPuntos } : c)
+    );
   }
 
-  actualizarNivel(cliente: ClienteFidelizado) {
-    if (cliente.puntos >= 500) cliente.nivel = 'Platinum';
-    else if (cliente.puntos >= 300) cliente.nivel = 'Gold';
-    else if (cliente.puntos >= 100) cliente.nivel = 'Silver';
-    else cliente.nivel = 'Bronze';
+  // 3. UPDATE: Bonificar o ajustar crédito disponible
+  async ajustarCredito(cliente: ClienteFidelidad) {
+    const montoStr = prompt(`Ingresá el monto de crédito a sumar o restar a ${cliente.nombre} en $ ARS:`);
+    if (!montoStr) return;
+
+    const monto = parseFloat(montoStr);
+    if (isNaN(monto) || monto === 0) return;
+
+    const nuevoCredito = Math.max(0, (cliente.credito || 0) + monto);
+
+    const { error } = await this.supabase
+      .from('perfiles')
+      .update({ credito: nuevoCredito })
+      .eq('id', cliente.id);
+
+    if (error) {
+      alert('Error al actualizar el crédito.');
+      return;
+    }
+
+    this.clientes.update(lista =>
+      lista.map(c => c.id === cliente.id ? { ...c, credito: nuevoCredito } : c)
+    );
   }
 }

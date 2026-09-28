@@ -1,37 +1,120 @@
-<section class="cupones-admin">
-  <h2>Gestión de Cupones</h2>
+<section class="cupones-container">
+  <div class="header-section">
+    <h2>🎟️ Gestión de Cupones y Promociones</h2>
+  </div>
 
-  <button (click)="agregarCupon()">➕ Agregar Cupón</button>
+  <!-- Formulario de Alta -->
+  <div class="create-card">
+    <h3>Crear Nuevo Cupón</h3>
+    <form (ngSubmit)="crearCupon()" class="create-form">
+      <div class="form-group">
+        <label>Código:</label>
+        <input 
+          type="text" 
+          placeholder="Ej: BIENVENIDA20" 
+          [ngModel]="nuevoCupon().codigo" 
+          (ngModelChange)="nuevoCupon().codigo = $event" 
+          name="codigo" 
+          required />
+      </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Descuento</th>
-        <th>Inicio</th>
-        <th>Fin</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let c of cupones">
-        <td><strong>{{ c.codigo | uppercase }}</strong></td>
-        <td>{{ c.descuento / 100 | percent:'1.0-0' }}</td>
-        <td>{{ c.fechaInicio | date:'dd/MM/yyyy' }}</td>
-        <td>{{ c.fechaFin | date:'dd/MM/yyyy' }}</td>
-        <td>
-          <span [ngClass]="c.activo ? 'activo' : 'inactivo'">
-            {{ c.activo ? 'Activo' : 'Inactivo' }}
-          </span>
-        </td>
-        <td>
-          <button (click)="toggleActivo(c)">
-            {{ c.activo ? 'Desactivar' : 'Activar' }}
-          </button>
-          <button (click)="eliminarCupon(c.id)">🗑️ Eliminar</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+      <div class="form-group">
+        <label>Descuento (%):</label>
+        <input 
+          type="number" 
+          min="1" 
+          max="100" 
+          [ngModel]="nuevoCupon().descuento_porcentaje" 
+          (ngModelChange)="nuevoCupon().descuento_porcentaje = $event" 
+          name="descuento" 
+          required />
+      </div>
+
+      <div class="form-group">
+        <label>Edad mínima (0 = sin límite):</label>
+        <input 
+          type="number" 
+          min="0" 
+          [ngModel]="nuevoCupon().edad_minima" 
+          (ngModelChange)="nuevoCupon().edad_minima = $event" 
+          name="edadMinima" />
+      </div>
+
+      <div class="checkbox-group">
+        <label>
+          <input 
+            type="checkbox" 
+            [checked]="nuevoCupon().solo_primera_compra" 
+            (change)="nuevoCupon().solo_primera_compra = !nuevoCupon().solo_primera_compra" />
+          Solo 1° compra
+        </label>
+      </div>
+
+      <button type="submit" class="btn-create">Guardar Cupón</button>
+    </form>
+  </div>
+
+  <!-- Barra de Filtro -->
+  <div class="filter-box">
+    <input 
+      type="text" 
+      [ngModel]="filtro()" 
+      (ngModelChange)="filtro.set($event)" 
+      placeholder="Filtrar por código de cupón..." />
+  </div>
+
+  <!-- Listado de Cupones desde Supabase -->
+  @if (cargando()) {
+    <p>Consultando base de datos...</p>
+  } @else {
+    <table class="cupones-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descuento</th>
+          <th>Regla Especial</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of cuponesFiltrados(); track c.id) {
+          <tr>
+            <td><code>{{ c.codigo }}</code></td>
+            <td><strong>{{ c.descuento_porcentaje }}%</strong></td>
+            <td>
+              @if (c.solo_primera_compra) {
+                <span class="badge blue">Primera Compra</span>
+              } @else if (c.edad_minima > 0) {
+                <span class="badge orange">Mayor de {{ c.edad_minima }} años</span>
+              } @else {
+                <span class="badge gray">General</span>
+              }
+            </td>
+            <td>
+              <button 
+                type="button" 
+                class="btn-status" 
+                [class.active]="c.activo" 
+                (click)="toggleActivo(c)">
+                {{ c.activo ? '✅ Activo' : '⏸️ Pausado' }}
+              </button>
+            </td>
+            <td>
+              <button 
+                type="button" 
+                class="btn-delete" 
+                (click)="eliminarCupon(c.id)">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="empty-state">No hay cupones registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 </section>
