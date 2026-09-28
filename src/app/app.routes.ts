@@ -26,8 +26,7 @@ export const routes: Routes = [
   },
   {
     path: 'reserve/:id',
-    loadComponent: () => import('./componentes/reserve/reserve').then(m => m.Reserve),
-    canActivate: [authGuard] // canActivate redirige limpiamente al login si es anónimo
+    loadComponent: () => import('./componentes/reserve/reserve').then(m => m.Reserve)
   },
   {
     path: 'reset-password',
