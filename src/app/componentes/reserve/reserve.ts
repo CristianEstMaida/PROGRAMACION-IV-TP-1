@@ -467,11 +467,17 @@ export class Reserve implements OnInit, OnDestroy {
     // Guardar el valor final congelado para la tarjeta de éxito
     this.montoConfirmado.set(montoAbonado);
 
-    await this.descargarTicketPDF(ticketCodigoBase, currentShow, chosen, candyComprados);
+    await this.descargarTicketPDF(ticketCodigoBase, currentShow, chosen, candyComprados, montoAbonado);
     this.purchaseSuccess.set(true);
   }
 
-  async descargarTicketPDF(ticketBase: string, funcion: ShowTime, butacas: Seat[], candy: ProductoCandy[]) {
+  async descargarTicketPDF(
+    ticketBase: string, 
+    funcion: ShowTime, 
+    butacas: Seat[], 
+    candy: ProductoCandy[],
+    montoAbonado: number // <-- Agregamos el monto exacto por parámetro
+  ) {
     const doc = new jsPDF();
     const qrDataUrl = await QRCode.toDataURL(ticketBase);
 
@@ -503,7 +509,8 @@ export class Reserve implements OnInit, OnDestroy {
 
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Total Abonado: $${this.totalFinal()} ARS`, 14, y);
+    // Usamos el parámetro numérico asegurado
+    doc.text(`Total Abonado: $${montoAbonado.toLocaleString('es-AR')} ARS`, 14, y);
     doc.text(`Código Único: ${ticketBase}`, 14, y + 8);
 
     doc.addImage(qrDataUrl, 'PNG', 14, y + 16, 50, 50);
