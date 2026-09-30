@@ -36,6 +36,7 @@ export class ValidadorQrComponent {
           id, 
           estado, 
           qr_code, 
+          usuario_id,
           funciones (
             fecha_hora, 
             tipo_funcion, 
@@ -75,6 +76,15 @@ export class ValidadorQrComponent {
       if (errUpdate) {
         this.mensajeError.set('Error al actualizar el estado de la entrada.');
         return;
+      }
+
+      // Adentro de validarCodigo() en validador-qr.component.ts:
+      if (entrada.usuario_id) {
+        await this.supabase
+          .from('compras_candy')
+          .update({ estado: 'entregado' })
+          .eq('usuario_id', entrada.usuario_id)
+          .eq('fecha', new Date().toISOString().split('T')[0]);
       }
 
       // 4. Registrar en logs_actividad incluyendo entidad_afectada

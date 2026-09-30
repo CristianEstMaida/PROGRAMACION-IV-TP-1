@@ -90,4 +90,12 @@ export class CandyService {
     }
     return true;
   }
+
+  async actualizarPrecioCombo(id: number, nuevoPrecio: number): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('combos')
+      .update({ precio: nuevoPrecio })
+      .eq('id', id);
+    return !error;
+  }
 }

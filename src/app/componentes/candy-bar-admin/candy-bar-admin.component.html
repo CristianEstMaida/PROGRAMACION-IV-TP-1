@@ -62,6 +62,7 @@
             <h4>{{ combo.nombre }}</h4>
             <p class="combo-desc">{{ combo.descripcion }}</p>
             <span class="combo-price">${{ combo.precio | number:'1.0-0' }}</span>
+            <button type="button" class="btn-sm" (click)="modificarPrecioCombo(combo)">Cambiar Precio</button>
           </div>
         } @empty {
           <p>No hay combos promocionales configurados.</p>

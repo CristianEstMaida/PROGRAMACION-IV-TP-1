@@ -7,13 +7,14 @@ import { Movie, MovieDetailModel } from '../../models/movie';
 import { SupabaseService } from '../../services/supabase.service';
 import { Auth } from '../../services/auth';
 import { Resena } from '../../models/resena';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   standalone: true,
   selector: 'app-movie-detail',
   templateUrl: './movie-detail.html',
   styleUrls: ['./movie-detail.css'],
-  imports: [CommonModule, RouterLink, FormsModule]
+  imports: [CommonModule, RouterLink, FormsModule, MatIconModule]
 })
 export class MovieDetail implements OnInit {
   private route = inject(ActivatedRoute);

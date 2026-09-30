@@ -8,7 +8,14 @@
         <h2>{{ m.titulo || m.title }}</h2>
         
         <div class="rating-header-box">
-          <span class="stars-gold">★ {{ promedioEstrellas() }} / 5</span>
+          <span class="stars-gold">
+            @for (s of [1, 2, 3, 4, 5]; track s) {
+              <mat-icon class="star-icon">
+                {{ s <= promedioEstrellas() ? 'star' : (s - 0.5 <= promedioEstrellas() ? 'star_half' : 'star_border') }}
+              </mat-icon>
+            }
+            {{ promedioEstrellas() }} / 5
+          </span>
           <span class="reviews-count">({{ reviews().length }} reseñas de espectadores)</span>
         </div>
 

@@ -82,4 +82,16 @@ export class CandyBarAdminComponent implements OnInit {
       );
     }
   }
+
+  async modificarPrecioCombo(combo: Combo) {
+    const nuevo = prompt(`Ingresá el nuevo precio para ${combo.nombre}:`, combo.precio.toString());
+    if (!nuevo) return;
+    const precio = parseFloat(nuevo);
+    if (isNaN(precio) || precio <= 0) return;
+
+    const ok = await this.candyService.actualizarPrecioCombo(combo.id, precio);
+    if (ok) {
+      this.combos.update(list => list.map(c => c.id === combo.id ? { ...c, precio } : c));
+    }
+  }
 }

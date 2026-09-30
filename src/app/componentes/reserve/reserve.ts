@@ -80,7 +80,8 @@ export class Reserve implements OnInit, OnDestroy {
   selectedSeats = computed(() => this.seats().filter(s => s.selected));
 
   totalButacas = computed(() => {
-    const basePrice = Number(this.selectedShowtime()?.price) || 0;
+    const rawPrice = Number(this.selectedShowtime()?.price);
+    const basePrice = rawPrice > 0 ? rawPrice : 4500;
     return this.selectedSeats().reduce((acc, seat) => {
       const isVip = ['R', 'S', 'T'].includes(seat.row);
       const seatPrice = isVip ? basePrice * 1.3 : basePrice;
@@ -218,6 +219,7 @@ export class Reserve implements OnInit, OnDestroy {
 
         const formatPad = (date: Date) =>
           date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const rawP = Number(f.precio);
         return {
           id: f.id,
           salaId: f.sala_id,
@@ -225,7 +227,7 @@ export class Reserve implements OnInit, OnDestroy {
           format: f.tipo_funcion,
           startTime: formatPad(inicio),
           endTime: formatPad(fin),
-          price: Number(f.precio) || 0
+          price: rawP > 0 ? rawP : 4500
         };
       });
 
@@ -369,11 +371,13 @@ export class Reserve implements OnInit, OnDestroy {
       }
     }
 
+    const rawBasePrice = Number(currentShow.price);
+    const showPrice = rawBasePrice > 0 ? rawBasePrice : 4500;
     const ticketCodigoBase = `TICKET-${currentShow.id}-${Date.now()}`;
 
     const insertsEntradas = chosen.map(s => {
       const isVip = ['R', 'S', 'T'].includes(s.row);
-      const precioUnitario = isVip ? currentShow.price * 1.3 : currentShow.price;
+      const precioUnitario = isVip ? showPrice * 1.3 : showPrice;
       return {
         funcion_id: currentShow.id,
         butaca_id: s.dbId,
