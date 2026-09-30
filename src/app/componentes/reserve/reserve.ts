@@ -503,19 +503,24 @@ export class Reserve implements OnInit, OnDestroy {
       }
     }
 
-    // 3. Registrar cupón si aplica
+    // 3. Registrar cupón si aplica (solo si es de uso único como primera compra)
     const cupon = this.cuponAplicado();
     if (cupon && user) {
       const { data: cuponDB } = await this.supabase
         .from('cupones')
-        .select('id')
+        .select('id, solo_primera_compra')
         .eq('codigo', cupon.codigo)
         .single();
 
-      if (cuponDB) {
+      // Solo guardamos en usuario_cupon si el cupón está restringido a primera compra
+      // Los cupones recurrentes (Senior, generales) no necesitan bloquearse en esa tabla
+      if (cuponDB && cuponDB.solo_primera_compra) {
         await this.supabase
           .from('usuario_cupon')
-          .insert({ usuario_id: user.id, cupon_id: cuponDB.id });
+          .upsert(
+            { usuario_id: user.id, cupon_id: cuponDB.id },
+            { onConflict: 'usuario_id,cupon_id' }
+          );
       }
     }
 
