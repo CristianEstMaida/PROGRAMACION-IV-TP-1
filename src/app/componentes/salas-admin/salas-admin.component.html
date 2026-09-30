@@ -5,30 +5,45 @@
   @if (cargando()) {
     <p>Consultando salas en Supabase...</p>
   } @else {
-    <table>
+    <table class="salas-table">
       <thead>
         <tr>
           <th>ID</th>
-          <th>Nombre</th>
-          <th>Capacidad</th>
-          <th>Tipo</th>
-          <th>Acciones</th>
+          <th>NOMBRE</th>
+          <th>CAPACIDAD</th>
+          <th>TIPO</th>
+          <th>ESTADO</th>
+          <th>ACCIONES</th>
         </tr>
       </thead>
       <tbody>
         @for (s of salas(); track s.id) {
-          <tr>
+          <tr [class.fila-inactiva]="!s.activa">
             <td>{{ s.id }}</td>
-            <td><strong>{{ s.nombre }}</strong></td>
-            <td>{{ s.capacidad || 120 }} butacas</td>
-            <td>{{ s.tipo || 'Estándar' }}</td>
+            <td>{{ s.nombre }}</td>
+            <td>{{ s.capacidad }} butacas</td>
+            <td>{{ s.tipo }}</td>
             <td>
-              <button type="button" (click)="eliminarSala(s.id)">🗑️ Eliminar</button>
+              @if (s.activa) {
+                <span class="badge badge-activa">Activa</span>
+              } @else {
+                <span class="badge badge-inactiva">Inactiva</span>
+              }
             </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="5" class="text-center">No hay salas cargadas en la base de datos.</td>
+            <td>
+              <button 
+                type="button"
+                class="btn-action" 
+                [class.btn-desactivar]="s.activa"
+                [class.btn-activar]="!s.activa"
+                (click)="toggleEstadoSala(s)">
+                @if (s.activa) {
+                  🗑️ Desactivar
+                } @else {
+                  ✅ Habilitar
+                }
+              </button>
+            </td>
           </tr>
         }
       </tbody>

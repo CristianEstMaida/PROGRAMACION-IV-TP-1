@@ -98,3 +98,63 @@ td button:hover {
 td button:active {
   transform: translateY(0);
 }
+
+/* Badges de Estado */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 9999px;
+
+  &-activa {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+  }
+
+  &-inactiva {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+}
+
+/* Fila atenuada si está inactiva */
+tr.fila-inactiva {
+  opacity: 0.6;
+  filter: grayscale(20%);
+}
+
+/* Botones de acción */
+.btn-action {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+
+  &.btn-desactivar {
+    background-color: #dc2626;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+
+    &:hover {
+      background-color: #b91c1c;
+    }
+  }
+
+  &.btn-activar {
+    background-color: #059669;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3);
+
+    &:hover {
+      background-color: #047857;
+    }
+  }
+}

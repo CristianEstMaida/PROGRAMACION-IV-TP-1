@@ -5,6 +5,7 @@ export interface Sala {
   columnas?: number;
   capacidad?: number;
   tipo?: string; // estándar, VIP, accesible
+  activa: boolean;
 }
 
 
@@ -13,6 +14,6 @@ export interface Butaca {
   sala_id: number;
   fila: string;
   numero: number;
-  tipo: 'normal' | 'adaptada' | 'vip';
+  tipo: 'normal' | 'accesible' | 'vip';
   ocupada?: boolean;
 }

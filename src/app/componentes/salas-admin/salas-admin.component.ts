@@ -40,6 +40,29 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
     this.cargando.set(false);
   }
 
+  async toggleEstadoSala(sala: Sala) {
+    const nuevoEstado = !sala.activa;
+    const accion = nuevoEstado ? 'habilitar' : 'deshabilitar';
+
+    const confirmar = confirm(`¿Estás seguro de que querés ${accion} la ${sala.nombre}?`);
+    if (!confirmar) return;
+
+    const { error } = await this.supabase
+      .from('salas')
+      .update({ activa: nuevoEstado })
+      .eq('id', sala.id);
+
+    if (error) {
+      alert(`Error al actualizar la sala: ${error.message}`);
+      return;
+    }
+
+    // Actualización reactiva instantánea en la señal
+    this.salas.update(lista =>
+      lista.map(s => s.id === sala.id ? { ...s, activa: nuevoEstado } : s)
+    );
+  }
+
   // 2. REALTIME: Escuchar cambios externos de otras pestañas o usuarios
   suscribirSalasRealtime() {
     this.realtimeSalas = this.supabase

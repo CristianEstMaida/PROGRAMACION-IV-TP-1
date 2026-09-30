@@ -309,10 +309,11 @@ export class Reserve implements OnInit, OnDestroy {
 
     const { data, error } = await this.supabase
       .from('funciones')
-      .select('id, sala_id, fecha_hora, precio, tipo_funcion, salas(nombre)')
+      .select('id, sala_id, fecha_hora, precio, tipo_funcion, salas!inner (id, nombre, activa)')
       .eq('pelicula_id', movieId)
       .gte('fecha_hora', ahora)
-      .eq('estado', 'activa');
+      .eq('estado', 'activa')
+      .eq('salas.activa', true);
 
     if (error) {
       console.error('Error al cargar funciones:', error);
