@@ -68,7 +68,8 @@ export class MoviesService {
         funciones!inner (
           id,
           fecha_hora,
-          estado
+          estado,
+          tipo_funcion
         )
       `)
       .gte('funciones.fecha_hora', ahora)

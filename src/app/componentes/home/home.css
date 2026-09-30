@@ -458,6 +458,26 @@
   font-weight: 700;
 }
 
+.badges-formatos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.badge-formato {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  text-transform: uppercase;
+}
+
 .badge-rating {
   position: absolute;
   top: 0.6rem;

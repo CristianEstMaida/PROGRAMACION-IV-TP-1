@@ -120,7 +120,11 @@
         <article class="movie-card">
           <div class="poster-box">
             <img [src]="p.poster" [alt]="p.titulo" appFallback />
-            <span class="badge-format">{{ p.formato }}</span>
+            <div class="badges-formatos">
+              @for (fmt of pelicula.formatos; track fmt) {
+                <span class="badge-formato">{{ fmt }}</span>
+              }
+            </div>
             <span class="badge-rating">{{ p.restriccion_edad }}</span>
           </div>
           <div class="card-info">

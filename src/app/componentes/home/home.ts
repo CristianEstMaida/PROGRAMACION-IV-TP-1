@@ -86,16 +86,30 @@ export class Home implements OnInit {
 
   async cargarCartelera() {
     const data = await this.moviesService.getCartelera();
-    this.cartelera.set((data || []).map(p => ({
-      id: p.id,
-      titulo: p.titulo,
-      duracion_minutos: p.duracion_minutos,
-      formato: p.formato || '2D',
-      restriccion_edad: p.restriccion_edad || 'ATP',
-      poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
-      precio: 4500,
-      promedio_estrellas: 4.8
-    })));
+
+    this.cartelera.set((data || []).map((p: any) => {
+      // 1. Extraer los formatos únicos directamente de las funciones devueltas
+      const listaFormatos = Array.isArray(p.funciones) 
+        ? p.funciones.map((f: any) => f.tipo_funcion).filter(Boolean)
+        : (p.funciones?.tipo_funcion ? [p.funciones.tipo_funcion] : []);
+
+      const tipos = Array.from(new Set(listaFormatos));
+
+      // 2. Si hay funciones asignamos la combinación (ej: "2D", "2D / 3D"), de lo contrario '2D'
+      const formatoFinal = tipos.length > 0 ? tipos.join(' / ') : '2D';
+
+      return {
+        id: p.id,
+        titulo: p.titulo,
+        duracion_minutos: p.duracion_minutos,
+        formato: formatoFinal,
+        formatos: tipos,
+        restriccion_edad: p.restriccion_edad || 'ATP',
+        poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
+        precio: 4500,
+        promedio_estrellas: 4.8
+      };
+    }));
   }
 
   async cargarTop() {
