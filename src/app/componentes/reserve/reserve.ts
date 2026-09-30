@@ -375,6 +375,7 @@ export class Reserve implements OnInit, OnDestroy {
     const showPrice = rawBasePrice > 0 ? rawBasePrice : 4500;
     const ticketCodigoBase = `TICKET-${currentShow.id}-${Date.now()}`;
 
+    // 1. Inserción de entradas en Supabase
     const insertsEntradas = chosen.map(s => {
       const isVip = ['R', 'S', 'T'].includes(s.row);
       const precioUnitario = isVip ? showPrice * 1.3 : showPrice;
@@ -397,6 +398,7 @@ export class Reserve implements OnInit, OnDestroy {
       return;
     }
 
+    // 2. Inserción de Candy Bar y Combos
     const candyComprados = this.candyItems().filter(c => c.cantidad > 0);
     if (candyComprados.length > 0) {
       const totalCandyMonto = candyComprados.reduce((acc, c) => acc + (c.precio * c.cantidad), 0);
@@ -412,16 +414,20 @@ export class Reserve implements OnInit, OnDestroy {
         .single();
 
       if (!errCandyCabecera && compraData) {
-        const insertsDetalle = candyComprados.map(c => ({
-          compra_id: compraData.id,
-          producto_id: c.id >= 10000 ? null : c.id,
-          cantidad: c.cantidad,
-          precio_unitario: c.precio
-        }));
-        await this.supabase.from('compra_producto').insert(insertsDetalle);
+        const productosIndividuales = candyComprados.filter(c => c.id < 10000);
+        if (productosIndividuales.length > 0) {
+          const insertsDetalle = productosIndividuales.map(c => ({
+            compra_id: compraData.id,
+            producto_id: c.id,
+            cantidad: c.cantidad,
+            precio_unitario: c.precio
+          }));
+          await this.supabase.from('compra_producto').insert(insertsDetalle);
+        }
       }
     }
 
+    // 3. Registrar cupón si aplica
     const cupon = this.cuponAplicado();
     if (cupon && user) {
       const { data: cuponDB } = await this.supabase
@@ -437,8 +443,26 @@ export class Reserve implements OnInit, OnDestroy {
       }
     }
 
-    const montoAbonado = this.totalFinal();
+    // 4. Cálculo explícito y seguro del total a cobrar
+    const totalEntradasCalculado = chosen.reduce((acc, s) => {
+      const isVip = ['R', 'S', 'T'].includes(s.row);
+      const p = isVip ? showPrice * 1.3 : showPrice;
+      return acc + p;
+    }, 0);
 
+    const totalCandyCalculado = candyComprados.reduce((acc, c) => acc + (c.precio * c.cantidad), 0);
+    const subtotalReal = totalEntradasCalculado + totalCandyCalculado;
+
+    const descPorcentaje = Number(this.cuponAplicado()?.porcentaje) || 0;
+    const descuentoMonto = (subtotalReal * descPorcentaje) / 100;
+    let montoAbonado = subtotalReal - descuentoMonto;
+
+    if (this.usarCredito() && this.creditoDisponible() > 0) {
+      montoAbonado = Math.max(0, montoAbonado - Number(this.creditoDisponible()));
+    }
+    montoAbonado = Math.round(montoAbonado);
+
+    // 5. Actualizar puntos y saldo del usuario
     if (user) {
       const { data: perfil } = await this.supabase
         .from('perfiles')
@@ -446,12 +470,11 @@ export class Reserve implements OnInit, OnDestroy {
         .eq('id', user.id)
         .single();
 
-      const puntosGanados = montoAbonado;
-      const nuevosPuntos = (Number(perfil?.puntos) || 0) + puntosGanados;
+      const nuevosPuntos = (Number(perfil?.puntos) || 0) + montoAbonado;
       let nuevoCredito = Number(perfil?.credito) || 0;
 
       if (this.usarCredito() && nuevoCredito > 0) {
-        const cubiertoPorCredito = Math.min(nuevoCredito, this.subtotalGeneral() - this.descuentoCuponMonto());
+        const cubiertoPorCredito = Math.min(nuevoCredito, subtotalReal - descuentoMonto);
         nuevoCredito -= cubiertoPorCredito;
       }
 
@@ -461,6 +484,7 @@ export class Reserve implements OnInit, OnDestroy {
         .eq('id', user.id);
     }
 
+    // 6. Auditoría en log
     await this.supabase.from('logs_actividad').insert({
       usuario: user?.email || 'anonimo@cinenova.com',
       accion: 'Compra de Entradas',
@@ -468,9 +492,8 @@ export class Reserve implements OnInit, OnDestroy {
       detalle: `Reserva confirmada de ${chosen.length} butacas para función #${currentShow.id}. Total abonado: $${montoAbonado}`
     });
 
-    // Guardar el valor final congelado para la tarjeta de éxito
+    // 7. Descargar PDF con el monto total consolidado
     this.montoConfirmado.set(montoAbonado);
-
     await this.descargarTicketPDF(ticketCodigoBase, currentShow, chosen, candyComprados, montoAbonado);
     this.purchaseSuccess.set(true);
   }
