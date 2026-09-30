@@ -112,19 +112,37 @@ export class Home implements OnInit {
     }));
   }
 
-  async cargarTop() {
+ async cargarTop() {
     const data = await this.moviesService.getTopPeliculas();
-    this.topPeliculas.set((data || []).slice(0, 3).map(p => ({
-      id: p.id,
-      titulo: p.titulo,
-      duracion_minutos: p.duracion_minutos,
-      formato: p.formato || '2D',
-      restriccion_edad: p.restriccion_edad || 'ATP',
-      poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
-      precio: 4500,
-      total_ventas: p.total_ventas || 0,
-      promedio_estrellas: 5.0
-    })));
+    const ahora = new Date().toISOString();
+
+    this.topPeliculas.set((data || []).map((p: any) => {
+      // 1. Filtrar solo funciones vigentes y activas
+      const funcionesValidas = (p.funciones || []).filter(
+        (f: any) => f.estado === 'activa' && f.fecha_hora >= ahora
+      );
+
+      // 2. Extraer formatos únicos programados (ej: ['2D'])
+      const tipos = Array.from(
+        new Set(funcionesValidas.map((f: any) => f.tipo_funcion).filter(Boolean))
+      );
+
+      // 3. Cadena para compatibilidad y array para badges
+      const formatoFinal = tipos.length > 0 ? tipos.join(' / ') : '2D';
+
+      return {
+        id: p.id,
+        titulo: p.titulo,
+        duracion_minutos: p.duracion_minutos,
+        formato: formatoFinal,
+        formatos: tipos, // <-- Array de formatos reales para el @for del template
+        restriccion_edad: p.restriccion_edad || 'ATP',
+        poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
+        precio: 4500,
+        total_ventas: p.total_ventas || 0,
+        promedio_estrellas: 5.0
+      };
+    }));
   }
 
   async cargarProximamente() {

@@ -102,10 +102,27 @@ export class MoviesService {
 
   // 3. Top 3 Más Vendidas
   async getTopPeliculas() {
+    const ahora = new Date().toISOString();
+
     const { data, error } = await this.supabase
       .from('top_peliculas_mas_vistas')
-      .select('*');
-    return error ? [] : data;
+      .select(`
+        *,
+        funciones (
+          id,
+          tipo_funcion,
+          fecha_hora,
+          estado
+        )
+      `)
+      .limit(3);
+
+    if (error) {
+      console.error('Error al obtener top películas:', error.message);
+      return [];
+    }
+
+    return data || [];
   }
 
 async activarAlerta(peliculaId: number, usuarioId: string) {

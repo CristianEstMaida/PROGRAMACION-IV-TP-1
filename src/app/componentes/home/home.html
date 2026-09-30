@@ -82,7 +82,14 @@
             <span class="podium-rank">#{{ idx + 1 }}</span>
             <div class="poster-box">
               <img [src]="m.poster" [alt]="m.titulo" appFallback />
-              <span class="badge-format">{{ m.formato }}</span>
+              <div class="badges-formatos">
+                @for (fmt of peli.formatos; track fmt) {
+                  <span class="badge-formato">{{ fmt }}</span>
+                }
+                @if (peli.formatos.length === 0) {
+                  <span class="badge-formato">2D</span>
+                }
+              </div>
             </div>
             <div class="card-info">
               <h3>{{ m.titulo }}</h3>
