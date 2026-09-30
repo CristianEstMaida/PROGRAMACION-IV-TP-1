@@ -98,7 +98,8 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
     const nombre = prompt('Ingresá el nombre de la sala (ej: Sala 6 - IMAX):');
     if (!nombre || !nombre.trim()) return;
 
-    const tipo = prompt('Tipo de sala (ej: Estándar, 3D, VIP, 5D):') || 'Estándar';
+    // Fijamos el tipo como Estándar / Multipropósito automáticamente
+    const tipo = 'Estándar';
 
     // Capacidad útil vendible según consigna
     const capacidadOficial = 518;
@@ -107,8 +108,9 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
       .from('salas')
       .insert({
         nombre: nombre.trim(),
-        tipo: tipo.trim(),
-        capacidad: capacidadOficial
+        tipo: tipo,
+        capacidad: capacidadOficial,
+        activa: true
       })
       .select()
       .single();
