@@ -145,4 +145,29 @@ export class CuponesAdminComponent implements OnInit {
 
     this.cupones.update(lista => lista.filter(c => c.id !== id));
   }
+
+  async editarPorcentaje(cupon: Cupon) {
+    const nuevoPorcentajeStr = prompt(`Nuevo porcentaje de descuento para ${cupon.codigo}:`, cupon.descuento_porcentaje.toString());
+    if (!nuevoPorcentajeStr) return;
+
+    const nuevoPorcentaje = parseInt(nuevoPorcentajeStr, 10);
+    if (isNaN(nuevoPorcentaje) || nuevoPorcentaje <= 0 || nuevoPorcentaje > 100) {
+      alert('Ingresá un valor entre 1 y 100.');
+      return;
+    }
+
+    const { error } = await this.supabase
+      .from('cupones')
+      .update({ descuento_porcentaje: nuevoPorcentaje })
+      .eq('id', cupon.id);
+
+    if (error) {
+      alert('Error al actualizar el cupón: ' + error.message);
+      return;
+    }
+
+    this.cupones.update(lista =>
+      lista.map(c => c.id === cupon.id ? { ...c, descuento_porcentaje: nuevoPorcentaje } : c)
+    );
+  }
 }

@@ -42,6 +42,8 @@ export class MisPeliculasComponent implements OnInit {
   creditoDisponible = signal<number>(0);
   entradas = signal<EntradaHistorial[]>([]);
   cargando = signal<boolean>(true);
+  // Cambiá la definición de cuponInfo para incluir 'motivo'
+  cuponInfo = signal<{ codigo: string; porcentaje: number; motivo: string } | null>(null);
 
   async ngOnInit() {
     const user = await this.auth.getCurrentUser();
@@ -54,7 +56,69 @@ export class MisPeliculasComponent implements OnInit {
       this.cargarPerfil(user.id),
       this.cargarEntradas(user.id)
     ]);
+    await this.cargarMejorBeneficio(user.id);
     this.cargando.set(false);
+  }
+
+  calcularEdad(fechaStr: string): number {
+    const nac = new Date(fechaStr);
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+  }
+
+  async cargarMejorBeneficio(userId: string) {
+    // 1. Obtener la fecha de nacimiento del usuario
+    const { data: perfil } = await this.supabase
+      .from('perfiles')
+      .select('fecha_nacimiento')
+      .eq('id', userId)
+      .single();
+
+    const edad = perfil?.fecha_nacimiento ? this.calcularEdad(perfil.fecha_nacimiento) : 0;
+
+    // 2. Traer todos los cupones activos
+    const { data: cupones } = await this.supabase
+      .from('cupones')
+      .select('codigo, descuento_porcentaje, solo_primera_compra, edad_minima')
+      .eq('activo', true);
+
+    if (!cupones || cupones.length === 0) return;
+
+    const candidatos: { codigo: string; porcentaje: number; motivo: string }[] = [];
+
+    // Si califica para Senior (edad >= edad_minima)
+    if (edad >= 50) {
+      const senior = cupones.find(c => c.edad_minima && c.edad_minima <= edad);
+      if (senior) {
+        candidatos.push({
+          codigo: senior.codigo,
+          porcentaje: Number(senior.descuento_porcentaje) || 0,
+          motivo: 'Beneficio Senior (+50)'
+        });
+      }
+    }
+
+    // Si no tiene compras registradas, califica para Primera Compra
+    if (this.entradas().length === 0) {
+      const bienvenida = cupones.find(c => c.solo_primera_compra);
+      if (bienvenida) {
+        candidatos.push({
+          codigo: bienvenida.codigo,
+          porcentaje: Number(bienvenida.descuento_porcentaje) || 0,
+          motivo: 'Bienvenida (1° Compra)'
+        });
+      }
+    }
+
+    // Ordenamos para que el de mayor descuento quede primero
+    candidatos.sort((a, b) => b.porcentaje - a.porcentaje);
+
+    if (candidatos.length > 0) {
+      this.cuponInfo.set(candidatos[0]);
+    }
   }
 
   async cargarPerfil(userId: string) {

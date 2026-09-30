@@ -101,9 +101,19 @@
               </button>
             </td>
             <td>
+              <!-- BOTÓN EDITAR PORCENTAJE AGREGADO ACÁ -->
+              <button 
+                type="button" 
+                class="btn-edit" 
+                title="Editar porcentaje de descuento"
+                (click)="editarPorcentaje(c)">
+                ✏️ Modificar
+              </button>
+
               <button 
                 type="button" 
                 class="btn-delete" 
+                title="Eliminar cupón"
                 (click)="eliminarCupon(c.id)">
                 🗑️
               </button>

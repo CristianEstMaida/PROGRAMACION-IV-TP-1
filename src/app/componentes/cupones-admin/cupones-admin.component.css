@@ -233,3 +233,22 @@
   color: #9ca3af;
   padding: 2rem !important;
 }
+
+.btn-edit {
+  background: #374151;
+  border: 1px solid #4b5563;
+  color: #fbbf24;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-edit:hover {
+  background: #4b5563;
+  color: #ffffff;
+  border-color: #fbbf24;
+}

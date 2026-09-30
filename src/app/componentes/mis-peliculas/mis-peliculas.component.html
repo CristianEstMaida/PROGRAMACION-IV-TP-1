@@ -6,6 +6,18 @@
       <p>Historial de entradas, compras y programa de fidelización</p>
     </div>
     <div class="balance-cards">
+      <div class="benefits-summary" style="margin-top: 1.5rem; background: #0d1522; border: 1.5px solid #1c2b42; border-radius: 12px; padding: 1.2rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; padding: 0.3rem 0.7rem; border-radius: 6px; font-weight: 800; font-size: 0.8rem;">
+          MIS BENEFICIOS
+        </span>
+        <span style="font-size: 0.95rem; color: #cbd5e1;">
+          @if (cuponInfo(); as info) {
+            Tenés disponible tu <strong>{{ info.motivo }}</strong>: <strong>{{ info.porcentaje }}% OFF</strong> con el código <code>{{ info.codigo }}</code>.
+          } @else {
+            No tenés cupones promocionales pendientes. Sumá puntos con cada entrada para canjear recompensas.
+          }
+        </span>
+      </div>
       <div class="bal-card points">
         <span class="label">Puntos Acumulados</span>
         <span class="val">⭐ {{ puntosFidelizacion() }}</span>
