@@ -1,5 +1,10 @@
 @if (movie(); as m) {
   <div class="movie-detail-container">
+    <div class="top-nav-bar" style="margin-bottom: 1.2rem;">
+      <a routerLink="/home" class="btn-back" style="display: inline-flex; align-items: center; gap: 0.4rem; color: #2f66ff; text-decoration: none; font-weight: 700; font-size: 0.95rem;">
+        ← Volver a la Cartelera
+      </a>
+    </div>
     <div class="movie-detail">
       <div class="poster">
         <img [src]="m.imagen_url || m.poster" [alt]="m.titulo || m.title" />
