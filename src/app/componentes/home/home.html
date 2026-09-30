@@ -83,10 +83,10 @@
             <div class="poster-box">
               <img [src]="m.poster" [alt]="m.titulo" appFallback />
               <div class="badges-formatos">
-                @for (fmt of peli.formatos; track fmt) {
+                @for (fmt of m.formatos; track fmt) {
                   <span class="badge-formato">{{ fmt }}</span>
                 }
-                @if (peli.formatos.length === 0) {
+                @if (!m.formatos || m.formatos.length === 0) {
                   <span class="badge-formato">2D</span>
                 }
               </div>
@@ -128,8 +128,11 @@
           <div class="poster-box">
             <img [src]="p.poster" [alt]="p.titulo" appFallback />
             <div class="badges-formatos">
-              @for (fmt of pelicula.formatos; track fmt) {
+              @for (fmt of p.formatos; track fmt) {
                 <span class="badge-formato">{{ fmt }}</span>
+              }
+              @if (!p.formatos || p.formatos.length === 0) {
+                <span class="badge-formato">2D</span>
               }
             </div>
             <span class="badge-rating">{{ p.restriccion_edad }}</span>

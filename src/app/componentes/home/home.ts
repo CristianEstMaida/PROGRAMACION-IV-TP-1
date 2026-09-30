@@ -13,6 +13,7 @@ export interface PeliculaCard {
   titulo: string;
   duracion_minutos: number;
   formato: string;
+  formatos?: string[];
   restriccion_edad: string;
   poster: string;
   precio: number;
@@ -86,16 +87,15 @@ export class Home implements OnInit {
 
   async cargarCartelera() {
     const data = await this.moviesService.getCartelera();
-
     this.cartelera.set((data || []).map((p: any) => {
-      // 1. Extraer los formatos únicos directamente de las funciones devueltas
-      const listaFormatos = Array.isArray(p.funciones) 
-        ? p.funciones.map((f: any) => f.tipo_funcion).filter(Boolean)
-        : (p.funciones?.tipo_funcion ? [p.funciones.tipo_funcion] : []);
+      // 1. Extraer los formatos y forzar tipado string
+      const listaFormatos: string[] = Array.isArray(p.funciones) 
+        ? p.funciones.map((f: any) => String(f.tipo_funcion || '')).filter(Boolean)
+        : (p.funciones?.tipo_funcion ? [String(p.funciones.tipo_funcion)] : []);
+      
+      const tipos: string[] = Array.from(new Set(listaFormatos));
 
-      const tipos = Array.from(new Set(listaFormatos));
-
-      // 2. Si hay funciones asignamos la combinación (ej: "2D", "2D / 3D"), de lo contrario '2D'
+      // 2. String para fallback y combinación
       const formatoFinal = tipos.length > 0 ? tipos.join(' / ') : '2D';
 
       return {
@@ -103,7 +103,7 @@ export class Home implements OnInit {
         titulo: p.titulo,
         duracion_minutos: p.duracion_minutos,
         formato: formatoFinal,
-        formatos: tipos,
+        formatos: tipos, // Ahora TypeScript sabe que es estrictamente string[]
         restriccion_edad: p.restriccion_edad || 'ATP',
         poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
         precio: 4500,
@@ -117,17 +117,15 @@ export class Home implements OnInit {
     const ahora = new Date().toISOString();
 
     this.topPeliculas.set((data || []).map((p: any) => {
-      // 1. Filtrar solo funciones vigentes y activas
+      // 1. Filtrar funciones vigentes y forzar tipado string
       const funcionesValidas = (p.funciones || []).filter(
         (f: any) => f.estado === 'activa' && f.fecha_hora >= ahora
       );
 
-      // 2. Extraer formatos únicos programados (ej: ['2D'])
-      const tipos = Array.from(
-        new Set(funcionesValidas.map((f: any) => f.tipo_funcion).filter(Boolean))
+      const tipos: string[] = Array.from(
+        new Set(funcionesValidas.map((f: any) => String(f.tipo_funcion || '')).filter(Boolean))
       );
 
-      // 3. Cadena para compatibilidad y array para badges
       const formatoFinal = tipos.length > 0 ? tipos.join(' / ') : '2D';
 
       return {
@@ -135,7 +133,7 @@ export class Home implements OnInit {
         titulo: p.titulo,
         duracion_minutos: p.duracion_minutos,
         formato: formatoFinal,
-        formatos: tipos, // <-- Array de formatos reales para el @for del template
+        formatos: tipos, // Estrictamente string[]
         restriccion_edad: p.restriccion_edad || 'ATP',
         poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
         precio: 4500,

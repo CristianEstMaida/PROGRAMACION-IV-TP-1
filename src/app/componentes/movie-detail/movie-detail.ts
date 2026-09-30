@@ -47,12 +47,25 @@ export class MovieDetail implements OnInit {
 
     const data = await this.moviesService.getMovieById(id);
     if (data) {
+      // Consultar formatos de funciones activas para esta película
+    const ahora = new Date().toISOString();
+    const { data: funciones } = await this.supabase
+      .from('funciones')
+      .select('tipo_funcion')
+      .eq('pelicula_id', id)
+      .gte('fecha_hora', ahora)
+      .eq('estado', 'activa');
+
+    const formatosUnicos = Array.from(
+      new Set((funciones || []).map(f => f.tipo_funcion).filter(Boolean))
+    );
+    const formatoFinal = formatosUnicos.length > 0 ? formatosUnicos.join(' / ') : '2D';
       this.movie.set({
         id: data.id,
         titulo: data.titulo,
         restriccion_edad: data.restriccion_edad,
         poster: data.imagen_url || '/assets/img/butacas-cine.jpg',
-        genre: data.formato || 'General',
+        genre: formatoFinal,
         duracion_minutos: data.duracion_minutos,
         sinopsis: data.sinopsis || '',
         trailerUrl: ''
