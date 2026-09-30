@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { Auth } from '../../services/auth';
+import jsPDF from 'jspdf';
+import * as QRCode from 'qrcode';
 
 export interface EntradaHistorial {
   id: number;
@@ -188,51 +190,118 @@ export class MisPeliculasComponent implements OnInit {
     }
   }
 
-  async cancelarEntrada(entrada: EntradaHistorial) {
-    if (!entrada.puedeCancelar) {
-      alert('Solo se pueden cancelar funciones con un mínimo de 2 horas de anticipación.');
-      return;
+
+  // 1. Método para verificar si todavía está a tiempo de cancelar (> 2 horas)
+    puedeCancelar(fechaHoraStr: string): boolean {
+      if (!fechaHoraStr) return false;
+      const fechaFuncion = new Date(fechaHoraStr);
+      const ahora = new Date();
+      const diferenciaHoras = (fechaFuncion.getTime() - ahora.getTime()) / (1000 * 60 * 60);
+      return diferenciaHoras >= 2;
     }
 
-    const confirma = confirm(`¿Estás seguro de cancelar esta entrada? Se acreditarán $${entrada.precio_pagado} ARS en tu perfil como crédito para futuras compras.`);
-    if (!confirma) return;
+  // 2. Método de cancelación con acreditación de saldo
+  async cancelarEntrada(item: any) {
+    const monto = Number(item.precio_pagado) || 0;
+    const confirmar = confirm(
+      `¿Querés cancelar tu entrada para "${item.pelicula.titulo}"?\n` +
+      `Se te reintegrarán $${monto} como crédito en tu cuenta.`
+    );
+    if (!confirmar) return;
 
     const user = await this.auth.getCurrentUser();
     if (!user) return;
 
-    // 1. Cambiar estado de la entrada a 'cancelada'
-    const { error: errEntrada } = await this.supabase
+    // Actualizar estado en Supabase
+    const { error: errUpdate } = await this.supabase
       .from('entradas')
       .update({ estado: 'cancelada' })
-      .eq('id', entrada.id);
+      .eq('id', item.id);
 
-    if (errEntrada) {
-      alert('Error al cancelar la entrada: ' + errEntrada.message);
+    if (errUpdate) {
+      alert('Error al cancelar: ' + errUpdate.message);
       return;
     }
 
-    // 2. Acreditar saldo a favor en el perfil
-    const nuevoCredito = Number(this.creditoDisponible()) + Number(entrada.precio_pagado);
-    const { error: errPerfil } = await this.supabase
+    // Sumar crédito en la base de datos
+    const nuevoCredito = Number(this.creditoDisponible()) + monto;
+    await this.supabase
       .from('perfiles')
       .update({ credito: nuevoCredito })
       .eq('id', user.id);
 
-    if (!errPerfil) {
-      this.creditoDisponible.set(nuevoCredito);
-      // Actualizar estado en el listado local
-      this.entradas.update(list =>
-        list.map(e => e.id === entrada.id ? { ...e, estado: 'cancelada', puedeCancelar: false } : e)
-      );
+    // Actualizar la interfaz en vivo
+    this.creditoDisponible.set(nuevoCredito);
+    this.entradas.update(lista =>
+      lista.map(e => e.id === item.id ? { ...e, estado: 'cancelada' } : e)
+    );
 
-      // 3. Registrar en Log de Actividad
-      await this.supabase.from('logs_actividad').insert({
-        usuario: this.usuarioNombre(),
-        accion: 'Canceló Entrada',
-        detalle: `Entrada #${entrada.id} cancelada. Crédito devuelto: $${entrada.precio_pagado} ARS`
+    alert(`Reserva cancelada con éxito. Tu nuevo saldo de crédito es $${nuevoCredito}.`);
+  }
+  async descargarComprobante(item: any) {
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [100, 160] // Formato ticket de cine
       });
 
-      alert(`✅ Entrada cancelada con éxito. Se añadieron $${entrada.precio_pagado} ARS a tu crédito disponible.`);
+      // Fondo y Encabezado
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 100, 160, 'F');
+
+      doc.setTextColor(248, 113, 113);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CINENOVA', 50, 15, { align: 'center' });
+
+      doc.setTextColor(148, 163, 184);
+      doc.setFontSize(9);
+      doc.text('Entrada de Cine', 50, 22, { align: 'center' });
+
+      // Línea divisoria
+      doc.setDrawColor(51, 65, 85);
+      doc.setLineDashPattern([2, 2], 0);
+      doc.line(10, 26, 90, 26);
+      doc.setLineDashPattern([], 0);
+
+      // Detalles de la película y función
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(item.pelicula?.titulo || 'Película', 50, 34, { align: 'center' });
+
+      doc.setTextColor(203, 213, 225);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Sala: ${item.funcion?.sala || '-'} (${item.funcion?.tipo_funcion || '2D'})`, 15, 44);
+      doc.text(`Ubicación: Butaca ${item.butaca}`, 15, 52);
+
+      const fechaStr = item.funcion?.fecha_hora 
+        ? new Date(item.funcion.fecha_hora).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+        : '-';
+      doc.text(`Horario: ${fechaStr} hs`, 15, 60);
+      doc.text(`Importe pagado: $${item.precio_pagado} ARS`, 15, 68);
+      doc.text(`Estado: ${item.estado.toUpperCase()}`, 15, 76);
+
+      // Generar e insertar Código QR
+      const qrDataUrl = await QRCode.toDataURL(item.qr_code || item.id.toString(), {
+        margin: 1,
+        width: 140
+      });
+      doc.addImage(qrDataUrl, 'PNG', 30, 84, 40, 40);
+
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Código: ${item.qr_code}`, 50, 130, { align: 'center' });
+      doc.text('Presentá este código en el acceso a sala', 50, 136, { align: 'center' });
+
+      // Descargar archivo
+      doc.save(`Ticket-CineNova-${item.qr_code}.pdf`);
+    } catch (err) {
+      console.error('Error generando comprobante PDF:', err);
+      alert('No se pudo generar el PDF del comprobante.');
     }
   }
 }
+

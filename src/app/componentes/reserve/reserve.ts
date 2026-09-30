@@ -124,6 +124,8 @@ export class Reserve implements OnInit, OnDestroy {
 
   cuponSugerido = signal<{ codigo: string; porcentaje: number; motivo: string } | null>(null);
   
+  
+
   aplicarCuponDirecto(codigo: string) {
     this.codigoCuponInput.set(codigo);
     this.validarCupon();
@@ -291,10 +293,13 @@ export class Reserve implements OnInit, OnDestroy {
   }
 
   async cargarFunciones(movieId: number) {
+    
+  const ahora = new Date().toISOString();
     const { data } = await this.supabase
       .from('funciones')
       .select('id, sala_id, fecha_hora, precio, tipo_funcion, salas(nombre)')
       .eq('pelicula_id', movieId)
+      .gte('fecha_hora', ahora)
       .eq('estado', 'activa');
 
     if (data && data.length > 0) {

@@ -18,6 +18,7 @@
           }
         </span>
       </div>
+
       <div class="bal-card points">
         <span class="label">Puntos Acumulados</span>
         <span class="val">⭐ {{ puntosFidelizacion() }}</span>
@@ -57,16 +58,38 @@
               <p class="price-paid">Importe: ${{ item.precio_pagado }} ARS</p>
 
               <div class="ticket-actions">
+                <!-- Enlace a la reseña solicitada por consigna -->
                 <a [routerLink]="['/movie', item.pelicula.id]" class="btn-review">
                   ★ Dejar o Ver Reseña
                 </a>
 
-                @if (item.puedeCancelar) {
-                  <button type="button" class="btn-cancel" (click)="cancelarEntrada(item)">
-                    Cancelar Reserva (Devolución a Crédito)
-                  </button>
+                <!-- Descarga de Comprobante / PDF -->
+                <button type="button" class="btn-pdf" (click)="descargarComprobante(item)">
+                  📄 Descargar PDF
+                </button>
+
+                <!-- Gestión de Cancelación con regla de 2 horas -->
+                @if (item.estado === 'activa') {
+                  @if (puedeCancelar(item.funcion?.fecha_hora)) {
+                    <button 
+                      type="button" 
+                      class="btn-cancel" 
+                      (click)="cancelarEntrada(item)">
+                      ❌ Cancelar Reserva (Reembolso en Crédito)
+                    </button>
+                  } @else {
+                    <span class="cancel-deadline-info">
+                      ⚠️ No cancelable (menos de 2 hs para la función)
+                    </span>
+                  }
+                } @else if (item.estado === 'cancelada') {
+                  <span class="cancelled-tag">
+                    Cancelada (Reembolsada a crédito)
+                  </span>
                 } @else if (item.estado === 'validada') {
-                  <span class="cancel-deadline-info">No cancelable (menos de 2 hs para la función)</span>
+                  <span class="used-tag">
+                    ✓ Entrada utilizada
+                  </span>
                 }
               </div>
             </div>
