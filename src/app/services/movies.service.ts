@@ -65,6 +65,9 @@ export class MoviesService {
       .from('peliculas')
       .select(`
         *,
+        pelicula_genero (
+          generos ( nombre )
+        ),
         funciones!inner (
           id,
           fecha_hora,

@@ -14,6 +14,7 @@ export interface PeliculaCard {
   duracion_minutos: number;
   formato: string;
   formatos?: string[];
+  generos?: string[];
   restriccion_edad: string;
   poster: string;
   precio: number;
@@ -49,15 +50,28 @@ export class Home implements OnInit {
   busqueda = signal<string>('');
   filtroFormato = signal<string>('Todas');
 
-  // Grilla reactiva con buscador y filtro
+  // 2. En la clase Home:
+  filtroGenero = signal<string>('Todos');
+
+  // Lista reactiva de géneros únicos disponibles en la cartelera actual
+  generosDisponibles = computed(() => {
+    const lista = this.cartelera().flatMap(p => p.generos || []);
+    const unicos = Array.from(new Set(lista)).filter(Boolean);
+    return ['Todos', ...unicos];
+  });
+
+  // 3. Modificar carteleraFiltrada para evaluar texto, formato y género
   carteleraFiltrada = computed(() => {
     const query = this.busqueda().toLowerCase().trim();
     const formato = this.filtroFormato();
+    const genero = this.filtroGenero();
 
     return this.cartelera().filter(p => {
       const coincideTitulo = p.titulo.toLowerCase().includes(query);
-      const coincideFormato = formato === 'Todas' || p.formato.includes(formato);
-      return coincideTitulo && coincideFormato;
+      const coincideFormato = formato === 'Todas' || (p.formatos || []).includes(formato);
+      const coincideGenero = genero === 'Todos' || (p.generos || []).includes(genero);
+
+      return coincideTitulo && coincideFormato && coincideGenero;
     });
   });
 
@@ -98,18 +112,27 @@ export class Home implements OnInit {
       // 2. String para fallback y combinación
       const formatoFinal = tipos.length > 0 ? tipos.join(' / ') : '2D';
 
+      // Extraer nombres de géneros asociados
+      const listaGeneros: string[] = (p.pelicula_genero || [])
+        .map((pg: any) => pg.generos?.nombre)
+        .filter(Boolean);
+
       return {
         id: p.id,
         titulo: p.titulo,
         duracion_minutos: p.duracion_minutos,
         formato: formatoFinal,
         formatos: tipos, // Ahora TypeScript sabe que es estrictamente string[]
+        generos: listaGeneros,
         restriccion_edad: p.restriccion_edad || 'ATP',
         poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
         precio: 4500,
         promedio_estrellas: 4.8
       };
-    }));
+    }));   
+  }
+  setFiltroGenero(genero: string) {
+    this.filtroGenero.set(genero);
   }
 
  async cargarTop() {

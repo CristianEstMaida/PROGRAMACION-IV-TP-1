@@ -113,7 +113,17 @@
         <p class="section-subtitle">Consultá los detalles y opiniones antes de reservar tus butacas</p>
       </div>
 
-      <div class="filter-pills">
+      <div class="filter-pills" style="margin-top: 0.8rem;display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+        <span style="align-self: center; font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Género:</span>
+        @for (gen of generosDisponibles(); track gen) {
+          <button 
+            type="button"
+            class="pill" 
+            [class.active]="filtroGenero() === gen" 
+            (click)="setFiltroGenero(gen)">
+            {{ gen }}
+          </button>
+        }
         <button class="pill" [class.active]="filtroFormato() === 'Todas'" (click)="setFiltro('Todas')">Todas</button>
         <button class="pill" [class.active]="filtroFormato() === '2D'" (click)="setFiltro('2D')">2D</button>
         <button class="pill" [class.active]="filtroFormato() === '3D'" (click)="setFiltro('3D')">3D</button>
