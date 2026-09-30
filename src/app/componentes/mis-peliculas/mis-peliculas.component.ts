@@ -163,10 +163,16 @@ export class MisPeliculasComponent implements OnInit {
         const fechaFuncion = new Date(e.funciones?.fecha_hora).getTime();
         const diffHoras = (fechaFuncion - ahora) / (1000 * 60 * 60);
 
+        // 1. Calcular el estado real para la interfaz
+        let estadoCalculado = e.estado;
+        if (e.estado === 'activa' && fechaFuncion < ahora) {
+          estadoCalculado = 'expirada'; // La función ya pasó y no se usó
+        }
+
         return {
           id: e.id,
           qr_code: e.qr_code,
-          estado: e.estado,
+          estado: estadoCalculado, // <-- Usamos el estado calculado
           precio_pagado: e.precio_pagado || 4500,
           butaca: `Fila ${e.butacas?.fila} - Asiento ${e.butacas?.numero}`,
           pelicula: {
@@ -181,8 +187,8 @@ export class MisPeliculasComponent implements OnInit {
             tipo_funcion: e.funciones?.tipo_funcion || '2D',
             sala: e.funciones?.salas?.nombre || 'Sala Principal'
           },
-          // Condición de consigna: Se puede cancelar hasta 2 horas antes de la función
-          puedeCancelar: diffHoras >= 2 && e.estado === 'validada'
+          // 2. Solo se cancela si está ACTIVA y faltan 2 o más horas
+          puedeCancelar: diffHoras >= 2 && e.estado === 'activa'
         };
       });
 

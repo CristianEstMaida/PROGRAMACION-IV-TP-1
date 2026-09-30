@@ -82,6 +82,10 @@
                       ⚠️ No cancelable (menos de 2 hs para la función)
                     </span>
                   }
+                } @else if (item.estado === 'expirada') {
+                  <span class="expired-tag" style="color: #94a3b8; font-size: 0.85rem; font-weight: 500;">
+                    ⏳ Función finalizada
+                  </span>
                 } @else if (item.estado === 'cancelada') {
                   <span class="cancelled-tag">
                     Cancelada (Reembolsada a crédito)
