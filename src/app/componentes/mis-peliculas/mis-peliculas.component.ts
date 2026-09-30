@@ -87,42 +87,58 @@ export class MisPeliculasComponent implements OnInit {
       .select('codigo, descuento_porcentaje, solo_primera_compra, edad_minima')
       .eq('activo', true);
 
-    if (!cupones || cupones.length === 0) return;
+    if (!cupones || cupones.length === 0) {
+      this.cuponInfo.set(null);
+      return;
+    }
 
     const candidatos: { codigo: string; porcentaje: number; motivo: string }[] = [];
 
-    // Si califica para Senior (edad >= edad_minima)
-    if (edad >= 50) {
-      const senior = cupones.find(c => c.edad_minima && c.edad_minima <= edad);
-      if (senior) {
+    for (const c of cupones) {
+      const desc = Number(c.descuento_porcentaje) || 0;
+
+      // Caso 1: Cupón Senior (edad >= edad_minima)
+      if (c.edad_minima > 0 && edad >= c.edad_minima) {
         candidatos.push({
-          codigo: senior.codigo,
-          porcentaje: Number(senior.descuento_porcentaje) || 0,
-          motivo: 'Beneficio Senior (+50)'
+          codigo: c.codigo,
+          porcentaje: desc,
+          motivo: `Beneficio Senior (+${c.edad_minima})`
+        });
+        continue;
+      }
+
+      // Caso 2: Cupón de Primera Compra
+      if (c.solo_primera_compra) {
+        if (this.entradas().length === 0) {
+          candidatos.push({
+            codigo: c.codigo,
+            porcentaje: desc,
+            motivo: 'Bienvenida (1° Compra)'
+          });
+        }
+        continue;
+      }
+
+      // Caso 3: Cupón General / Promoción Especial (ej: CINENOVA10)
+      if (!c.solo_primera_compra && (!c.edad_minima || c.edad_minima === 0)) {
+        candidatos.push({
+          codigo: c.codigo,
+          porcentaje: desc,
+          motivo: 'Promoción Especial'
         });
       }
     }
 
-    // Si no tiene compras registradas, califica para Primera Compra
-    if (this.entradas().length === 0) {
-      const bienvenida = cupones.find(c => c.solo_primera_compra);
-      if (bienvenida) {
-        candidatos.push({
-          codigo: bienvenida.codigo,
-          porcentaje: Number(bienvenida.descuento_porcentaje) || 0,
-          motivo: 'Bienvenida (1° Compra)'
-        });
-      }
-    }
-
-    // Ordenamos para que el de mayor descuento quede primero
+    // Ordenamos de mayor a menor descuento
     candidatos.sort((a, b) => b.porcentaje - a.porcentaje);
 
     if (candidatos.length > 0) {
       this.cuponInfo.set(candidatos[0]);
+    } else {
+      this.cuponInfo.set(null);
     }
   }
-
+  
   async cargarPerfil(userId: string) {
     const { data } = await this.supabase
       .from('perfiles')

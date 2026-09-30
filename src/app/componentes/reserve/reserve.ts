@@ -161,9 +161,12 @@ export class Reserve implements OnInit, OnDestroy {
   // En reserve.ts:
   async verificarCuponesDisponibles() {
     const user = await this.auth.getCurrentUser();
-    if (!user) return;
+    if (!user) {
+      this.cuponSugerido.set(null);
+      return;
+    }
 
-    // 1. Datos del usuario
+    // 1. Datos del perfil
     const { data: perfil } = await this.supabase
       .from('perfiles')
       .select('fecha_nacimiento')
@@ -172,35 +175,44 @@ export class Reserve implements OnInit, OnDestroy {
 
     const edad = perfil?.fecha_nacimiento ? this.calcularEdad(perfil.fecha_nacimiento) : 0;
 
-    // 2. Historial de compras para saber si aplica primera compra
-    const { count } = await this.supabase
+    // 2. Verificar compras/entradas previas de este usuario
+    const { data: entradasPrevias, error: errEntradas } = await this.supabase
       .from('entradas')
-      .select('*', { count: 'exact', head: true })
+      .select('id')
       .eq('usuario_id', user.id)
-      .neq('estado', 'cancelada');
+      .neq('estado', 'cancelada')
+      .limit(1);
 
-    const esPrimeraCompra = (!count || count === 0);
+    // Si ya tiene al menos una entrada no cancelada, YA NO es primera compra
+    const tieneCompras = entradasPrevias && entradasPrevias.length > 0;
+    const esPrimeraCompra = !tieneCompras;
 
-    // 3. Obtener todos los cupones activos del admin
+    // 3. Traer cupones activos
     const { data: cupones } = await this.supabase
       .from('cupones')
       .select('*')
       .eq('activo', true);
 
-    if (!cupones || cupones.length === 0) return;
+
+    if (!cupones || cupones.length === 0) {
+      this.cuponSugerido.set(null);
+      return;
+    }
 
     const candidatos: { codigo: string; porcentaje: number; motivo: string }[] = [];
 
     for (const c of cupones) {
       const desc = Number(c.descuento_porcentaje) || 0;
 
-      // Caso A: Cupón de Primera Compra
-      if (c.solo_primera_compra && esPrimeraCompra) {
-        candidatos.push({
-          codigo: c.codigo,
-          porcentaje: desc,
-          motivo: 'Bienvenida (1° Compra)'
-        });
+      // Caso A: Cupón de Primera Compra (SOLO si es primera compra real)
+      if (c.solo_primera_compra) {
+        if (esPrimeraCompra) {
+          candidatos.push({
+            codigo: c.codigo,
+            porcentaje: desc,
+            motivo: 'Bienvenida (1° Compra)'
+          });
+        }
         continue;
       }
 
@@ -214,7 +226,7 @@ export class Reserve implements OnInit, OnDestroy {
         continue;
       }
 
-      // Caso C: Cupones Generales (sin restricción de edad ni primera compra)
+      // Caso C: Cupones Generales
       if (!c.solo_primera_compra && (!c.edad_minima || c.edad_minima === 0)) {
         candidatos.push({
           codigo: c.codigo,
@@ -224,10 +236,8 @@ export class Reserve implements OnInit, OnDestroy {
       }
     }
 
-    // Ordenar de mayor a menor porcentaje
     candidatos.sort((a, b) => b.porcentaje - a.porcentaje);
 
-    // Si hay al menos un cupón que califica, tomamos el más alto
     if (candidatos.length > 0) {
       this.cuponSugerido.set(candidatos[0]);
     } else {
