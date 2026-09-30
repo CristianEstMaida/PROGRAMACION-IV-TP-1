@@ -181,27 +181,6 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
     }
   }
 
-  // 4. DELETE: Borrar sala (Actualización instantánea)
-  async eliminarSala(id: number) {
-    const confirmar = confirm('¿Eliminar esta sala y todas sus butacas?');
-    if (!confirmar) return;
-
-    await this.supabase.from('butacas').delete().eq('sala_id', id);
-
-    const { error } = await this.supabase
-      .from('salas')
-      .update({ activa: false })
-      .eq('id', id);
-
-    if (error) {
-      alert('No se pudo eliminar la sala: ' + error.message);
-      return;
-    }
-
-    // Desaparece al instante de la tabla sin recargar
-    this.salas.update(lista => lista.filter(s => s.id !== id));
-  }
-
   ngOnDestroy() {
     if (this.realtimeSalas) {
       this.supabase.removeChannel(this.realtimeSalas);
