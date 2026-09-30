@@ -155,11 +155,12 @@ export class Reserve implements OnInit, OnDestroy {
       this.verificarCuponesDisponibles()
     ]);
   }
+  // En reserve.ts:
   async verificarCuponesDisponibles() {
     const user = await this.auth.getCurrentUser();
     if (!user) return;
 
-    // 1. Obtener perfil para chequear edad
+    // 1. Datos del usuario
     const { data: perfil } = await this.supabase
       .from('perfiles')
       .select('fecha_nacimiento')
@@ -168,7 +169,7 @@ export class Reserve implements OnInit, OnDestroy {
 
     const edad = perfil?.fecha_nacimiento ? this.calcularEdad(perfil.fecha_nacimiento) : 0;
 
-    // 2. Contar compras efectivas (excluyendo canceladas)
+    // 2. Historial de compras para saber si aplica primera compra
     const { count } = await this.supabase
       .from('entradas')
       .select('*', { count: 'exact', head: true })
@@ -177,7 +178,7 @@ export class Reserve implements OnInit, OnDestroy {
 
     const esPrimeraCompra = (!count || count === 0);
 
-    // 3. Buscar cupones activos en la base
+    // 3. Obtener todos los cupones activos del admin
     const { data: cupones } = await this.supabase
       .from('cupones')
       .select('*')
@@ -185,35 +186,50 @@ export class Reserve implements OnInit, OnDestroy {
 
     if (!cupones || cupones.length === 0) return;
 
-    const listaSugeridos: { codigo: string; porcentaje: number; motivo: string }[] = [];
+    const candidatos: { codigo: string; porcentaje: number; motivo: string }[] = [];
 
-    // Si califica para Senior
-    if (edad >= 50) {
-      const cuponSenior = cupones.find(c => c.edad_minima && c.edad_minima <= edad);
-      if (cuponSenior) {
-        listaSugeridos.push({
-          codigo: cuponSenior.codigo,
-          porcentaje: Number(cuponSenior.descuento_porcentaje) || 30,
-          motivo: 'Beneficio Senior (+50)'
+    for (const c of cupones) {
+      const desc = Number(c.descuento_porcentaje) || 0;
+
+      // Caso A: Cupón de Primera Compra
+      if (c.solo_primera_compra && esPrimeraCompra) {
+        candidatos.push({
+          codigo: c.codigo,
+          porcentaje: desc,
+          motivo: 'Bienvenida (1° Compra)'
+        });
+        continue;
+      }
+
+      // Caso B: Cupón Senior (+50)
+      if (c.edad_minima > 0 && edad >= c.edad_minima) {
+        candidatos.push({
+          codigo: c.codigo,
+          porcentaje: desc,
+          motivo: `Beneficio Senior (+${c.edad_minima})`
+        });
+        continue;
+      }
+
+      // Caso C: Cupones Generales (sin restricción de edad ni primera compra)
+      if (!c.solo_primera_compra && (!c.edad_minima || c.edad_minima === 0)) {
+        candidatos.push({
+          codigo: c.codigo,
+          porcentaje: desc,
+          motivo: 'Promoción Especial'
         });
       }
     }
 
-    // Si califica para Primera Compra
-    if (esPrimeraCompra) {
-      const cuponBienvenida = cupones.find(c => c.solo_primera_compra);
-      if (cuponBienvenida) {
-        listaSugeridos.push({
-          codigo: cuponBienvenida.codigo,
-          porcentaje: Number(cuponBienvenida.descuento_porcentaje) || 20,
-          motivo: 'Primera Compra'
-        });
-      }
-    }
+    // Ordenar de mayor a menor porcentaje
+    candidatos.sort((a, b) => b.porcentaje - a.porcentaje);
 
-    // Ordenamos para que el de mayor descuento aparezca primero
-    listaSugeridos.sort((a, b) => b.porcentaje - a.porcentaje);
-    this.cuponSugerido.set(listaSugeridos.length > 0 ? listaSugeridos[0] : null);
+    // Si hay al menos un cupón que califica, tomamos el más alto
+    if (candidatos.length > 0) {
+      this.cuponSugerido.set(candidatos[0]);
+    } else {
+      this.cuponSugerido.set(null);
+    }
   }
 
   async cargarCreditoUsuario() {
@@ -492,6 +508,7 @@ export class Reserve implements OnInit, OnDestroy {
       if (!errCandyCabecera && compraData) {
         const productosIndividuales = candyComprados.filter(c => c.id < 10000);
         if (productosIndividuales.length > 0) {
+          // A. Insertar el detalle de la compra
           const insertsDetalle = productosIndividuales.map(c => ({
             compra_id: compraData.id,
             producto_id: c.id,
@@ -499,10 +516,26 @@ export class Reserve implements OnInit, OnDestroy {
             precio_unitario: c.precio
           }));
           await this.supabase.from('compra_producto').insert(insertsDetalle);
+
+          // B. Descontar stock únicamente si la compra se guardó bien
+          for (const item of productosIndividuales) {
+            const { data: prodActual } = await this.supabase
+              .from('productos')
+              .select('stock')
+              .eq('id', item.id)
+              .single();
+
+            if (prodActual) {
+              const nuevoStock = Math.max(0, (prodActual.stock || 0) - item.cantidad);
+              await this.supabase
+                .from('productos')
+                .update({ stock: nuevoStock })
+                .eq('id', item.id);
+            }
+          }
         }
       }
     }
-
     // 3. Registrar cupón si aplica (solo si es de uso único como primera compra)
     const cupon = this.cuponAplicado();
     if (cupon && user) {
