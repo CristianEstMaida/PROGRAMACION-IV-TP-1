@@ -53,9 +53,12 @@ export class FuncionesAdminComponent {
     const { data: p } = await this.supabase
       .from('peliculas')
       .select('id, titulo, duracion_minutos');
+
+    // Solo cargamos salas que estén activas para asignación automática
     const { data: s } = await this.supabase
       .from('salas')
-      .select('id, nombre');
+      .select('id, nombre')
+      .eq('activa', true);
 
     if (p) this.peliculas.set(p);
     if (s) this.salas.set(s);
@@ -95,41 +98,57 @@ export class FuncionesAdminComponent {
     const peliElegida = this.peliculas().find(p => p.id === peliculaId);
     const duracion = peliElegida?.duracion_minutos || 120;
 
-    // 1. Armar fecha y hora exacta
+    // 1. Armar fecha y hora de inicio exacta local
     const [year, month, day] = fechaStr.split('-').map(Number);
     const [h, m] = horario.split(':').map(Number);
     const inicioNueva = new Date(year, month - 1, day, h, m, 0, 0);
 
-    // 2. VALIDACIÓN CLAVE: Impedir funciones en el pasado
+    // 2. Impedir funciones en el pasado
     const ahora = new Date();
     if (inicioNueva < ahora) {
       this.mensajeError.set('No se puede programar una función en una fecha u horario que ya pasó.');
       return;
     }
 
-    // Intervalo reservado total: Duración + 30 min de limpieza
+    // 3. Intervalo de la nueva función: Duración + 30 minutos obligatorios de limpieza
     const finConLimpiezaNueva = new Date(inicioNueva.getTime() + (duracion + 30) * 60000);
 
-    // Obtener funciones activas para validar solapamiento
-    const { data: funcionesExistentes } = await this.supabase
+    // 4. Consultar solo las funciones del día para máxima performance
+    const inicioDia = new Date(year, month - 1, day, 0, 0, 0).toISOString();
+    const finDia = new Date(year, month - 1, day, 23, 59, 59).toISOString();
+
+    const { data: funcionesExistentes, error: errFunciones } = await this.supabase
       .from('funciones')
       .select('id, sala_id, fecha_hora, peliculas(duracion_minutos)')
-      .eq('estado', 'activa');
+      .eq('estado', 'activa')
+      .gte('fecha_hora', inicioDia)
+      .lte('fecha_hora', finDia);
+
+    if (errFunciones) {
+      this.mensajeError.set('Error al chequear funciones existentes: ' + errFunciones.message);
+      return;
+    }
 
     const salasDisponibles = this.salas();
+    if (salasDisponibles.length === 0) {
+      this.mensajeError.set('No hay salas activas configuradas en el cine.');
+      return;
+    }
+
     let salaAsignadaId: number | null = null;
     let salaAsignadaNombre = '';
 
-    // Algoritmo de asignación automática de sala libre
+    // 5. Algoritmo de asignación automática de primera sala disponible
     for (const sala of salasDisponibles) {
       const funcionesDeEstaSala = (funcionesExistentes || []).filter(f => f.sala_id === sala.id);
 
       const hayConflicto = funcionesDeEstaSala.some(f => {
         const duracionExistente = (f.peliculas as any)?.duracion_minutos || 120;
         const inicioExistente = new Date(f.fecha_hora);
+        // Margen obligatorio de la función existente
         const finExistenteConLimpieza = new Date(inicioExistente.getTime() + (duracionExistente + 30) * 60000);
 
-        // Se solapan si el inicio de una es previo al fin de la otra y viceversa
+        // Se solapan si ambos intervalos coinciden en el tiempo
         return inicioNueva < finExistenteConLimpieza && finConLimpiezaNueva > inicioExistente;
       });
 
@@ -141,16 +160,15 @@ export class FuncionesAdminComponent {
     }
 
     if (!salaAsignadaId) {
-      this.mensajeError.set(`No hay salas disponibles para ${horario} hs el ${fechaStr}. Todas las salas están ocupadas o en periodo de limpieza (30 min).`);
+      this.mensajeError.set(`No hay salas disponibles para las ${horario} hs el ${fechaStr}. Todas las salas están proyectando o en su periodo de 30 min de limpieza.`);
       return;
     }
 
-    // Insertar la función con la sala asignada de forma automática
+    // 6. Insertar función con sala asignada automáticamente
     const { error } = await this.supabase.from('funciones').insert({
       pelicula_id: peliculaId,
       sala_id: salaAsignadaId,
       fecha_hora: inicioNueva.toISOString(),
-      fecha_fin: finConLimpiezaNueva.toISOString(),
       tipo_funcion: formato || '2D',
       precio: Number(precio),
       estado: 'activa'
