@@ -44,15 +44,18 @@
                   <div class="seat-block left-block">
                     @for (seat of getLeftSeats(r); track seat.dbId) {
                       <button 
-                        type="button" 
+                        type="button"
                         class="seat"
+                        [class.seat-spacer]="!seat.activo"
                         [class.occupied]="seat.occupied"
                         [class.selected]="seat.selected"
-                        [class.vip]="seat.row === 'R' || seat.row === 'S' || seat.row === 'T'"
-                        [class.accessible]="seat.row === 'J' || seat.row === 'K'"
-                        [disabled]="seat.occupied"
-                        (click)="toggleSeat(seat)"
-                        [title]="'Fila ' + seat.row + ' Butaca ' + seat.number">
+                        [class.accessible]="seat.tipo === 'accesible'"
+                        [class.vip]="seat.tipo === 'vip'"
+                        [disabled]="seat.occupied || !seat.activo"
+                        (click)="seat.activo && toggleSeat(seat)">
+                        @if (seat.activo) {
+                          {{ seat.number }}
+                        }
                       </button>
                     }
                   </div>
@@ -63,15 +66,18 @@
                   <div class="seat-block center-block">
                     @for (seat of getCenterSeats(r); track seat.dbId) {
                       <button 
-                        type="button" 
+                        type="button"
                         class="seat"
+                        [class.seat-spacer]="!seat.activo"
                         [class.occupied]="seat.occupied"
                         [class.selected]="seat.selected"
-                        [class.vip]="seat.row === 'R' || seat.row === 'S' || seat.row === 'T'"
-                        [class.accessible]="seat.row === 'J' || seat.row === 'K'"
-                        [disabled]="seat.occupied"
-                        (click)="toggleSeat(seat)"
-                        [title]="'Fila ' + seat.row + ' Butaca ' + seat.number">
+                        [class.accessible]="seat.tipo === 'accesible'"
+                        [class.vip]="seat.tipo === 'vip'"
+                        [disabled]="seat.occupied || !seat.activo"
+                        (click)="seat.activo && toggleSeat(seat)">
+                        @if (seat.activo) {
+                          {{ seat.number }}
+                        }
                       </button>
                     }
                   </div>
@@ -82,15 +88,18 @@
                   <div class="seat-block right-block">
                     @for (seat of getRightSeats(r); track seat.dbId) {
                       <button 
-                        type="button" 
+                        type="button"
                         class="seat"
+                        [class.seat-spacer]="!seat.activo"
                         [class.occupied]="seat.occupied"
                         [class.selected]="seat.selected"
-                        [class.vip]="seat.row === 'R' || seat.row === 'S' || seat.row === 'T'"
-                        [class.accessible]="seat.row === 'J' || seat.row === 'K'"
-                        [disabled]="seat.occupied"
-                        (click)="toggleSeat(seat)"
-                        [title]="'Fila ' + seat.row + ' Butaca ' + seat.number">
+                        [class.accessible]="seat.tipo === 'accesible'"
+                        [class.vip]="seat.tipo === 'vip'"
+                        [disabled]="seat.occupied || !seat.activo"
+                        (click)="seat.activo && toggleSeat(seat)">
+                        @if (seat.activo) {
+                          {{ seat.number }}
+                        }
                       </button>
                     }
                   </div>

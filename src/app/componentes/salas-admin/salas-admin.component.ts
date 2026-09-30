@@ -76,9 +76,14 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
     if (!nombre || !nombre.trim()) return;
 
     const tipo = prompt('Tipo de sala (ej: Estándar, 3D, VIP, 5D):') || 'Estándar';
-    const filas = 10;
+    
+    // Todas las filas desde la A hasta la T (20 filas)
+    const letrasFilas = [
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
+      'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'
+    ];
     const columnas = 12;
-    const capacidad = filas * columnas;
+    const capacidad = letrasFilas.length * columnas;
 
     const { data: nuevaSala, error: errSala } = await this.supabase
       .from('salas')
@@ -95,29 +100,46 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Actualización instantánea en la UI sin esperar F5 ni WebSocket
+    // Actualización instantánea en la tabla del panel
     this.salas.update(lista => {
       if (lista.some(s => s.id === nuevaSala.id)) return lista;
       return [...lista, nuevaSala as Sala];
     });
 
-    // Generar las butacas físicas (Filas A-J, Asientos 1-12)
-    const letrasFilas = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    // Clasificación de filas según requerimiento:
+    // - J y K: Accesibles
+    // - R, S y T: VIP
+    // - Resto: Normal
     const butacasNuevas = [];
 
-    for (let f = 0; f < filas; f++) {
-      const letra = letrasFilas[f] || `F${f + 1}`;
+    for (let f = 0; f < letrasFilas.length; f++) {
+      const letra = letrasFilas[f];
+
+      if (letra === 'K') {
+        continue;
+      }
+
+      const tipoButaca = (letra === 'J') 
+        ? 'accesible' 
+        : (['R', 'S', 'T'].includes(letra) ? 'vip' : 'normal');
+
       for (let c = 1; c <= columnas; c++) {
         butacasNuevas.push({
           sala_id: nuevaSala.id,
           fila: letra,
           numero: c,
-          tipo: 'normal'
+          tipo: tipoButaca
         });
       }
     }
 
-    await this.supabase.from('butacas').insert(butacasNuevas);
+    const { error: errButacas } = await this.supabase
+      .from('butacas')
+      .insert(butacasNuevas);
+
+    if (errButacas) {
+      console.error('Error al insertar butacas:', errButacas.message);
+    }
   }
 
   // 4. DELETE: Borrar sala (Actualización instantánea)

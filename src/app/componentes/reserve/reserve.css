@@ -193,6 +193,20 @@
   opacity: 0.45;
 }
 
+/* Espacio de pasillo accesible entre la fila J y la L */
+.seat-row[data-row="J"] {
+  margin-bottom: 28px;
+  position: relative;
+}
+
+/* Oculta la butaca inactiva pero preserva el ancho, alto y margen exacto en la cuadrícula */
+.seat.seat-spacer {
+  visibility: hidden;       /* Deja el espacio vacío transparente */
+  pointer-events: none;     /* No permite clicks ni hover */
+  border: none !important;
+  background: transparent !important;
+}
+
 /* Leyenda */
 .legend {
   display: flex;

@@ -11,6 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 export interface Seat {
+  tipo: string;
+  activo: boolean;
   id: string;      // ej: "A-1"
   dbId: number;    // ID primario de la tabla butacas
   row: string;
@@ -83,7 +85,7 @@ export class Reserve implements OnInit, OnDestroy {
     const rawPrice = Number(this.selectedShowtime()?.price);
     const basePrice = rawPrice > 0 ? rawPrice : 4500;
     return this.selectedSeats().reduce((acc, seat) => {
-      const isVip = ['R', 'S', 'T'].includes(seat.row);
+      const isVip = seat.tipo === 'vip';
       const seatPrice = isVip ? basePrice * 1.3 : basePrice;
       return acc + seatPrice;
     }, 0);
@@ -334,15 +336,21 @@ export class Reserve implements OnInit, OnDestroy {
   }
 
   getLeftSeats(row: string): Seat[] {
-    return this.seats().filter(s => s.row === row && s.number <= 4);
+    return this.seats()
+      .filter(s => s.row === row && s.number <= 4)
+      .sort((a, b) => a.number - b.number);
   }
 
   getCenterSeats(row: string): Seat[] {
-    return this.seats().filter(s => s.row === row && s.number > 4 && s.number <= 24);
+    return this.seats()
+      .filter(s => s.row === row && s.number > 4 && s.number <= 24)
+      .sort((a, b) => a.number - b.number);
   }
 
   getRightSeats(row: string): Seat[] {
-    return this.seats().filter(s => s.row === row && s.number > 24);
+    return this.seats()
+      .filter(s => s.row === row && s.number > 24)
+      .sort((a, b) => a.number - b.number);
   }
 
   async confirmBooking() {
@@ -567,6 +575,8 @@ export class Reserve implements OnInit, OnDestroy {
           dbId: b.id,
           row: b.fila,
           number: b.numero,
+          tipo: b.tipo,
+          activo: b.activo !== false,
           selected: false,
           occupied: occupiedIds.has(b.id)
         }))
