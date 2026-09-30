@@ -23,6 +23,12 @@
                 (click)="selectShowtime(st)">
                 <span class="badge">{{ st.format }}</span>
                 <span class="room">{{ st.roomName }}</span>
+                
+                <!-- Día y Fecha de la función -->
+                <span class="date" style="font-size: 0.85rem; font-weight: 600; color: #f59e0b; margin-top: 2px;">
+                  📅 {{ st.dateStr }}
+                </span>
+
                 <span class="time">{{ st.startTime }} hs</span>
                 <span class="price">${{ st.price | number:'1.0-0' }}</span>
               </button>

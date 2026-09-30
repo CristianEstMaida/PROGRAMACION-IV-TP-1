@@ -26,6 +26,7 @@ export interface ShowTime {
   salaId: number;
   roomName: string;
   format: '2D' | '3D' | '4D' | '5D' | string;
+  dateStr?: string;
   audio?: 'Subtitulada' | 'Doblada' | string;
   startTime: string;
   endTime?: string;
@@ -315,19 +316,30 @@ export class Reserve implements OnInit, OnDestroy {
       return;
     }
 
-      const duracionMin = Number(this.movie()?.duration) || 120;
+
+    const duracionMin = Number(this.movie()?.duration) || 120;
       const list: ShowTime[] = data.map(f => {
         const inicio = new Date(f.fecha_hora);
         const fin = new Date(inicio.getTime() + duracionMin * 60000);
 
         const formatPad = (date: Date) =>
           date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // Armar la fecha amigable: "Hoy (30/09)", "Jue 01/10", etc.
+        const diaSemana = inicio.toLocaleDateString('es-AR', { weekday: 'short' });
+        const diaMes = inicio.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+        const esHoy = inicio.toDateString() === new Date().toDateString();
+        const displayFecha = esHoy 
+          ? `Hoy (${diaMes})` 
+          : `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} ${diaMes}`;
+
         const rawP = Number(f.precio);
         return {
           id: f.id,
           salaId: f.sala_id,
           roomName: (f.salas as any)?.nombre || 'Sala 1',
           format: f.tipo_funcion,
+          dateStr: displayFecha, // <-- agregás esta propiedad
           startTime: formatPad(inicio),
           endTime: formatPad(fin),
           price: rawP > 0 ? rawP : 4500
