@@ -294,15 +294,27 @@ export class Reserve implements OnInit, OnDestroy {
 
   async cargarFunciones(movieId: number) {
     
-  const ahora = new Date().toISOString();
-    const { data } = await this.supabase
+    const ahora = new Date().toISOString();
+
+    const { data, error } = await this.supabase
       .from('funciones')
       .select('id, sala_id, fecha_hora, precio, tipo_funcion, salas(nombre)')
       .eq('pelicula_id', movieId)
       .gte('fecha_hora', ahora)
       .eq('estado', 'activa');
 
-    if (data && data.length > 0) {
+    if (error) {
+      console.error('Error al cargar funciones:', error);
+      return;
+    }
+
+    // 2. Si no hay funciones vigentes para esta película
+    if (!data || data.length === 0) {
+      alert('No hay funciones disponibles ni vigentes para esta película.');
+      this.router.navigate(['/home']);
+      return;
+    }
+
       const duracionMin = Number(this.movie()?.duration) || 120;
       const list: ShowTime[] = data.map(f => {
         const inicio = new Date(f.fecha_hora);
@@ -324,7 +336,6 @@ export class Reserve implements OnInit, OnDestroy {
 
       this.showtimes.set(list);
       await this.selectShowtime(list[0]);
-    }
   }
 
   async selectShowtime(show: ShowTime) {
