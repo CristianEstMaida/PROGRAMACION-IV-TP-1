@@ -70,27 +70,22 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  // 3. POST: Crear sala y sus butacas asociadas (Actualización instantánea)
-  async agregarSala() {
-    const nombre = prompt('Ingresá el nombre de la sala (ej: Sala 4 - IMAX):');
+  // 3. POST: Crear sala y sus 518 butacas asociadas
+ async agregarSala() {
+    const nombre = prompt('Ingresá el nombre de la sala (ej: Sala 6 - IMAX):');
     if (!nombre || !nombre.trim()) return;
 
     const tipo = prompt('Tipo de sala (ej: Estándar, 3D, VIP, 5D):') || 'Estándar';
-    
-    // Todas las filas desde la A hasta la T (20 filas)
-    const letrasFilas = [
-      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
-      'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'
-    ];
-    const columnas = 12;
-    const capacidad = letrasFilas.length * columnas;
+
+    // Capacidad útil vendible según consigna
+    const capacidadOficial = 518;
 
     const { data: nuevaSala, error: errSala } = await this.supabase
       .from('salas')
       .insert({
         nombre: nombre.trim(),
         tipo: tipo.trim(),
-        capacidad: capacidad
+        capacidad: capacidadOficial
       })
       .select()
       .single();
@@ -100,45 +95,66 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Actualización instantánea en la tabla del panel
+    // Actualización reactiva en la tabla del panel
     this.salas.update(lista => {
       if (lista.some(s => s.id === nuevaSala.id)) return lista;
       return [...lista, nuevaSala as Sala];
     });
 
-    // Clasificación de filas según requerimiento:
-    // - J y K: Accesibles
-    // - R, S y T: VIP
-    // - Resto: Normal
-    const butacasNuevas = [];
+    const letrasFilas = [
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
+      'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'
+    ];
+    const totalColumnas = 28;
+    const butacasNuevas: any[] = [];
 
-    for (let f = 0; f < letrasFilas.length; f++) {
-      const letra = letrasFilas[f];
+    // Los 14 números activos de la fila J para discapacidad (2 + 10 + 2)
+    const asientosActivosFilaJ = [2, 3, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 26, 27];
 
-      if (letra === 'K') {
-        continue;
-      }
+    for (const letra of letrasFilas) {
+      for (let c = 1; c <= totalColumnas; c++) {
+        let tipoButaca = 'normal';
+        let estaActiva = true;
 
-      const tipoButaca = (letra === 'J') 
-        ? 'accesible' 
-        : (['R', 'S', 'T'].includes(letra) ? 'vip' : 'normal');
+        if (letra === 'K') {
+          // Fila K es pasillo completo: todas en false
+          tipoButaca = 'accesible';
+          estaActiva = false;
+        } else if (letra === 'J') {
+          // Fila J: solo activas las 14 accesibles, el resto false
+          if (asientosActivosFilaJ.includes(c)) {
+            tipoButaca = 'accesible';
+            estaActiva = true;
+          } else {
+            tipoButaca = 'normal';
+            estaActiva = false;
+          }
+        } else if (['R', 'S', 'T'].includes(letra)) {
+          // Filas VIP
+          tipoButaca = 'vip';
+          estaActiva = true;
+        }
 
-      for (let c = 1; c <= columnas; c++) {
         butacasNuevas.push({
           sala_id: nuevaSala.id,
           fila: letra,
           numero: c,
-          tipo: tipoButaca
+          tipo: tipoButaca,
+          activo: estaActiva
         });
       }
     }
 
+    // Insertar las 560 butacas en Supabase
     const { error: errButacas } = await this.supabase
       .from('butacas')
       .insert(butacasNuevas);
 
     if (errButacas) {
       console.error('Error al insertar butacas:', errButacas.message);
+      alert('Error al insertar las butacas: ' + errButacas.message);
+    } else {
+      alert(`Sala creada con éxito: 560 posiciones generadas (518 activas, 42 pasillos).`);
     }
   }
 
@@ -151,7 +167,7 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
 
     const { error } = await this.supabase
       .from('salas')
-      .delete()
+      .update({ activa: false })
       .eq('id', id);
 
     if (error) {
