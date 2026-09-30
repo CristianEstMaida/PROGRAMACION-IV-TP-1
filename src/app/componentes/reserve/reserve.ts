@@ -122,6 +122,13 @@ export class Reserve implements OnInit, OnDestroy {
     return isNaN(total) ? 0 : Math.round(total);
   });
 
+  cuponSugerido = signal<{ codigo: string; porcentaje: number; motivo: string } | null>(null);
+  
+  aplicarCuponDirecto(codigo: string) {
+    this.codigoCuponInput.set(codigo);
+    this.validarCupon();
+  }
+
   async ngOnInit() {
     const movieId = Number(this.route.snapshot.paramMap.get('id'));
     if (!movieId) return;
@@ -144,8 +151,69 @@ export class Reserve implements OnInit, OnDestroy {
     await Promise.all([
       this.cargarFunciones(movieId),
       this.cargarProductosCandy(),
-      this.cargarCreditoUsuario()
+      this.cargarCreditoUsuario(),
+      this.verificarCuponesDisponibles()
     ]);
+  }
+  async verificarCuponesDisponibles() {
+    const user = await this.auth.getCurrentUser();
+    if (!user) return;
+
+    // 1. Obtener perfil para chequear edad
+    const { data: perfil } = await this.supabase
+      .from('perfiles')
+      .select('fecha_nacimiento')
+      .eq('id', user.id)
+      .single();
+
+    const edad = perfil?.fecha_nacimiento ? this.calcularEdad(perfil.fecha_nacimiento) : 0;
+
+    // 2. Contar compras efectivas (excluyendo canceladas)
+    const { count } = await this.supabase
+      .from('entradas')
+      .select('*', { count: 'exact', head: true })
+      .eq('usuario_id', user.id)
+      .neq('estado', 'cancelada');
+
+    const esPrimeraCompra = (!count || count === 0);
+
+    // 3. Buscar cupones activos en la base
+    const { data: cupones } = await this.supabase
+      .from('cupones')
+      .select('*')
+      .eq('activo', true);
+
+    if (!cupones || cupones.length === 0) return;
+
+    const listaSugeridos: { codigo: string; porcentaje: number; motivo: string }[] = [];
+
+    // Si califica para Senior
+    if (edad >= 50) {
+      const cuponSenior = cupones.find(c => c.edad_minima && c.edad_minima <= edad);
+      if (cuponSenior) {
+        listaSugeridos.push({
+          codigo: cuponSenior.codigo,
+          porcentaje: Number(cuponSenior.descuento_porcentaje) || 30,
+          motivo: 'Beneficio Senior (+50)'
+        });
+      }
+    }
+
+    // Si califica para Primera Compra
+    if (esPrimeraCompra) {
+      const cuponBienvenida = cupones.find(c => c.solo_primera_compra);
+      if (cuponBienvenida) {
+        listaSugeridos.push({
+          codigo: cuponBienvenida.codigo,
+          porcentaje: Number(cuponBienvenida.descuento_porcentaje) || 20,
+          motivo: 'Primera Compra'
+        });
+      }
+    }
+
+    // Ordenamos para que el de mayor descuento aparezca primero
+    listaSugeridos.sort((a, b) => b.porcentaje - a.porcentaje);
+    this.cuponSugerido.set(listaSugeridos.length > 0 ? listaSugeridos[0] : null);
   }
 
   async cargarCreditoUsuario() {

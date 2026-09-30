@@ -144,6 +144,23 @@
         <!-- 4. Cupones y Crédito a Favor -->
         <section class="discount-section">
           <div class="coupon-box">
+            <!-- BANNER VISIBLE DE PRIMERA COMPRA -->
+            @if (cuponSugerido(); as promo) {
+              <div class="welcome-coupon-banner">
+                <div class="coupon-info-text">
+                  <span class="coupon-badge">{{ promo.motivo }}</span>
+                  <p>
+                    Tenés un <strong>{{ promo.porcentaje }}% de descuento</strong> disponible con el código: <strong>{{ promo.codigo }}</strong>
+                  </p>
+                </div>
+                <button 
+                  type="button" 
+                  class="btn-apply-coupon" 
+                  (click)="aplicarCuponDirecto(promo.codigo)">
+                  <span>Canjear {{ promo.porcentaje }}% OFF</span>
+                </button>
+              </div>
+            }
             <label>Cupón de descuento:</label>
             <div class="coupon-input-group">
               <input 
