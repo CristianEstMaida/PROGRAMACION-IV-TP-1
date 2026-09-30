@@ -58,13 +58,34 @@ export class MoviesService {
 
   // 1. Películas en Cartelera (estrenadas hoy o antes)
   async getCartelera() {
-    const hoy = new Date().toISOString().split('T')[0];
-    const { data, error } = await this.supabase
+  const ahora = new Date().toISOString();
+
+  // Trae solo películas que tengan funciones activas de hoy en adelante
+  const { data, error } = await this.supabase
       .from('peliculas')
-      .select('*')
-      .lte('fecha_estreno', hoy)
+      .select(`
+        *,
+        funciones!inner (
+          id,
+          fecha_hora,
+          estado
+        )
+      `)
+      .gte('funciones.fecha_hora', ahora)
+      .eq('funciones.estado', 'activa')
       .order('id', { ascending: true });
-    return error ? [] : data;
+
+    if (error) {
+      console.error('Error al obtener cartelera:', error);
+      return [];
+    }
+
+    // Eliminar duplicados si una película tiene más de una función programada
+    const unicas = Array.from(
+      new Map((data || []).map(p => [p.id, p])).values()
+    );
+
+    return unicas;
   }
 
   // 2. Próximos Estrenos (fecha_estreno en el futuro)
