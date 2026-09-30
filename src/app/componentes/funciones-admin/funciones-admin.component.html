@@ -16,8 +16,21 @@
       <option *ngFor="let p of peliculas()" [value]="p.id">{{ p.titulo }} ({{ p.duracion_minutos }} min)</option>
     </select>
 
-    <input type="date" name="fecha" ngModel required />
-    <input type="time" name="horario" ngModel required />
+    <input 
+    type="date"
+    name="fecha"
+    ngModel
+    #fechaInput 
+    [min]="fechaMinima" 
+    class="form-control" 
+    required />
+    <input 
+    type="time"
+    name="horario"
+    ngModel
+    #horarioInput 
+    [min]="obtenerHoraMinima(fechaInput.value)"
+    required />
 
     <select name="formato" ngModel required>
       <option value="" disabled selected>Formato</option>

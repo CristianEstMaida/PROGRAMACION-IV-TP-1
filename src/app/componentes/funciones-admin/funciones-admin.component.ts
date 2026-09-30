@@ -19,6 +19,32 @@ export class FuncionesAdminComponent {
   mensajeError = signal<string | null>(null);
   mensajeExito = signal<string | null>(null);
 
+  private getFechaLocal(d = new Date()): string {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Atributo [min] para el input de fecha (hora local, sin desfase UTC)
+  fechaMinima: string = this.getFechaLocal();
+
+  // Fecha de hoy en formato YYYY-MM-DD para el atributo [min] del HTML
+
+  obtenerHoraMinima(fechaSeleccionada: string): string {
+    if (!fechaSeleccionada) return '00:00';
+    
+    // Usar el método local en lugar de toISOString()
+    const hoyStr = this.getFechaLocal();
+    if (fechaSeleccionada === hoyStr) {
+      const ahora = new Date();
+      const h = String(ahora.getHours()).padStart(2, '0');
+      const m = String(ahora.getMinutes()).padStart(2, '0');
+      return `${h}:${m}`;
+    }
+    return '00:00';
+  }
+
   async ngOnInit() {
     await Promise.all([this.cargarFunciones(), this.cargarAuxiliares()]);
   }
@@ -69,12 +95,19 @@ export class FuncionesAdminComponent {
     const peliElegida = this.peliculas().find(p => p.id === peliculaId);
     const duracion = peliElegida?.duracion_minutos || 120;
 
-    // Calcular inicio y fin considerando 30 minutos de limpieza/receso
+    // 1. Armar fecha y hora exacta
     const [year, month, day] = fechaStr.split('-').map(Number);
     const [h, m] = horario.split(':').map(Number);
-
     const inicioNueva = new Date(year, month - 1, day, h, m, 0, 0);
-    // Intervalo reservado total: Duración + 30 min
+
+    // 2. VALIDACIÓN CLAVE: Impedir funciones en el pasado
+    const ahora = new Date();
+    if (inicioNueva < ahora) {
+      this.mensajeError.set('No se puede programar una función en una fecha u horario que ya pasó.');
+      return;
+    }
+
+    // Intervalo reservado total: Duración + 30 min de limpieza
     const finConLimpiezaNueva = new Date(inicioNueva.getTime() + (duracion + 30) * 60000);
 
     // Obtener funciones activas para validar solapamiento
