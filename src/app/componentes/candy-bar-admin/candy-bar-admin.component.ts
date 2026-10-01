@@ -2,6 +2,8 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CandyService } from '../../services/candy.service';
 import { Producto, Combo } from '../../models/producto';
+import { Auth } from '../../services/auth';
+import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
   selector: 'app-candy-bar-admin',
@@ -16,7 +18,8 @@ export class CandyBarAdminComponent implements OnInit {
   productos = signal<Producto[]>([]);
   combos = signal<Combo[]>([]);
   cargando = signal<boolean>(true);
-
+  private auth = inject(Auth);
+private supabase = inject(SupabaseService).client;
   async ngOnInit() {
     await this.cargarDatos();
   }
@@ -81,6 +84,14 @@ export class CandyBarAdminComponent implements OnInit {
         lista.map(p => p.id === producto.id ? { ...p, precio: nuevoPrecio } : p)
       );
     }
+    const user = await this.auth.getCurrentUser();
+    await this.supabase.from('logs_actividad').insert({
+      usuario: user?.email || 'admin@cinenova.com',
+      accion: 'Modificó Precio Producto',
+      entidad_afectada: 'productos',
+      detalle: `${producto.nombre}: de $${producto.precio} a $${nuevoPrecio}`
+    });
+
   }
 
   async modificarPrecioCombo(combo: Combo) {

@@ -2,6 +2,8 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MoviesService } from '../../services/movies.service';
+import { SupabaseService } from '../../services/supabase.service';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-peliculas-admin',
@@ -12,6 +14,8 @@ import { MoviesService } from '../../services/movies.service';
 })
 export class PeliculasAdminComponent implements OnInit {
   private moviesService = inject(MoviesService);
+  private supabase = inject(SupabaseService).client;
+  private auth = inject(Auth);
 
   peliculas = signal<any[]>([]);
   generos = signal<{ id: number; nombre: string }[]>([]);
@@ -62,6 +66,7 @@ export class PeliculasAdminComponent implements OnInit {
   abrirModal() {
     this.nuevoTitulo.set('');
     this.nuevaDuracion.set(120);
+    this.nuevaSinopsis.set('');
     this.generosSeleccionados.set([]);
     this.mostrarModal.set(true);
   }
@@ -71,27 +76,27 @@ export class PeliculasAdminComponent implements OnInit {
   }
 
   async guardarPelicula() {
-    if (!this.nuevoTitulo().trim()) {
+    const titulo = this.nuevoTitulo().trim();
+    if (!titulo) {
       alert('Ingresá el título de la película');
       return;
     }
 
     const duracion = Number(this.nuevaDuracion());
-
-    // Rango razonable: entre 45 minutos y 300 minutos (5 horas)
     if (isNaN(duracion) || duracion < 45 || duracion > 300) {
       alert('La duración debe estar dentro de un rango razonable (entre 45 y 300 minutos).');
       return;
     }
 
     const nueva = {
-      titulo: this.nuevoTitulo().trim(),
+      titulo: titulo,
       duracion_minutos: duracion,
-      formato: '2D', // Formato inicial de compatibilidad
+      formato: '2D',
       restriccion_edad: this.nuevaRestriccion(),
       idioma: this.nuevoIdioma(),
       sinopsis: this.nuevaSinopsis().trim() || 'Sin sinopsis registrada',
-      imagen_url: this.nuevaImagen().trim()
+      imagen_url: this.nuevaImagen().trim(),
+      activa: true
     };
 
     const exito = await this.moviesService.agregarPeliculaConGeneros(
@@ -100,6 +105,15 @@ export class PeliculasAdminComponent implements OnInit {
     );
 
     if (exito) {
+      // Auditoría en logs_actividad
+      const user = await this.auth.getCurrentUser();
+      await this.supabase.from('logs_actividad').insert({
+        usuario: user?.email || 'admin@cinenova.com',
+        accion: 'Alta de Película',
+        entidad_afectada: 'peliculas',
+        detalle: `Título: ${titulo} (${duracion} min)`
+      });
+
       await this.cargarPeliculas();
       this.cerrarModal();
     } else {
@@ -107,33 +121,26 @@ export class PeliculasAdminComponent implements OnInit {
     }
   }
 
-  async eliminarPelicula(id: number) {
-    const confirmar = confirm('¿Eliminar esta película? Si tiene funciones o ventas asociadas, Supabase rechazará el borrado por seguridad.');
-    if (!confirmar) return;
-
-    const ok = await this.moviesService.eliminarPelicula(id);
-    if (ok) {
-      this.peliculas.update(lista => lista.filter(p => p.id !== id));
-    } else {
-      alert('No se pudo eliminar la película. Ya cuenta con funciones asignadas o historial de entradas.');
-    }
-  }
-
-  // En componentes/peliculas-admin/peliculas-admin.component.ts
-
   async toggleEstadoPelicula(pelicula: any) {
     const accion = pelicula.activa ? 'desactivar' : 'habilitar';
     const confirmar = confirm(`¿Estás seguro de que querés ${accion} "${pelicula.titulo}"?`);
     if (!confirmar) return;
 
-    // Llama al método que definiste en el service
     const exito = await this.moviesService.toggleEstadoPelicula(pelicula.id, pelicula.activa);
 
     if (exito) {
-      // Actualiza la señal reactiva en la vista
       this.peliculas.update(lista =>
         lista.map(p => p.id === pelicula.id ? { ...p, activa: !p.activa } : p)
       );
+
+      // Auditoría en logs_actividad
+      const user = await this.auth.getCurrentUser();
+      await this.supabase.from('logs_actividad').insert({
+        usuario: user?.email || 'admin@cinenova.com',
+        accion: pelicula.activa ? 'Desactivó Película' : 'Habilitó Película',
+        entidad_afectada: 'peliculas',
+        detalle: `Película: ${pelicula.titulo} (ID: ${pelicula.id})`
+      });
     } else {
       alert('No se pudo actualizar el estado de la película.');
     }

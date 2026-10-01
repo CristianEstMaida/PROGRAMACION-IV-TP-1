@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChartAdminComponent } from '../char-admin/char-admin.component';
 import { SupabaseService } from '../../services/supabase.service';
@@ -17,16 +17,25 @@ export class ReportesAdminComponent implements OnInit {
   private supabase = inject(SupabaseService).client;
 
   cargando = signal<boolean>(true);
-
   peliculasLabels = signal<string[]>([]);
   peliculasData = signal<number[]>([]);
-
   candyLabels = signal<string[]>([]);
   candyData = signal<number[]>([]);
-
   facturacionLabels = signal<string[]>([]);
   facturacionData = signal<number[]>([]);
+  periodoPeliculas = signal<'historico' | 'mes' | 'semana'>('historico');
 
+  topCandyProducto = computed(() => {
+    const labels = this.candyLabels();
+    const data = this.candyData();
+    if (data.length === 0) return null;
+
+    let maxIdx = 0;
+    for (let i = 1; i < data.length; i++) {
+      if (data[i] > data[maxIdx]) maxIdx = i;
+    }
+    return { nombre: labels[maxIdx], cantidad: data[maxIdx] };
+  });
   async ngOnInit() {
     await this.cargarReportes();
   }
@@ -41,7 +50,11 @@ export class ReportesAdminComponent implements OnInit {
     this.cargando.set(false);
   }
 
-  // 1. Entradas vendidas agrupadas por Película
+  async cambiarPeriodo(periodo: 'historico' | 'mes' | 'semana') {
+    this.periodoPeliculas.set(periodo);
+    await this.cargarVentasPeliculas();
+  }
+
   private async cargarVentasPeliculas() {
     const { data, error } = await this.supabase
       .from('entradas')
@@ -49,25 +62,59 @@ export class ReportesAdminComponent implements OnInit {
         id,
         estado,
         funciones (
-          peliculas (
-            titulo
-          )
+          fecha_hora,
+          peliculas ( titulo )
         )
       `)
       .neq('estado', 'cancelada');
 
-    if (error || !data) return;
+    if (error) {
+      console.error('Error al cargar ventas de películas:', error.message);
+      return;
+    }
 
+    if (!data || data.length === 0) {
+      this.peliculasLabels.set([]);
+      this.peliculasData.set([]);
+      return;
+    }
+
+    const ahora = new Date().getTime();
+    const periodo = this.periodoPeliculas();
+    // Filtrar entradas en memoria según el período
+    const entradasFiltradas = data.filter((item: any) => {
+      if (periodo === 'historico') return true;
+
+      const fechaItemStr = item.funciones?.fecha_hora;
+      if (!fechaItemStr) return true;
+
+      const fechaItem = new Date(fechaItemStr).getTime();
+      const diffDias = Math.abs(ahora - fechaItem) / (1000 * 60 * 60 * 24);
+
+      if (periodo === 'semana') return diffDias <= 7;
+      if (periodo === 'mes') return diffDias <= 30;
+      return true;
+    });
     const contador: Record<string, number> = {};
-    for (const item of data) {
-      const titulo = (item.funciones as any)?.peliculas?.titulo || 'Desconocida';
+    for (const item of entradasFiltradas) {
+      const titulo = (item.funciones as any)?.peliculas?.titulo || 'Película sin título';
       contador[titulo] = (contador[titulo] || 0) + 1;
     }
 
-    this.peliculasLabels.set(Object.keys(contador));
-    this.peliculasData.set(Object.values(contador));
+    const labels = Object.keys(contador);
+    const valores = Object.values(contador);
+
+    if (labels.length === 0) {
+      this.peliculasLabels.set(['Sin funciones vendidas']);
+      this.peliculasData.set([0]);
+    } else {
+      this.peliculasLabels.set(labels);
+      this.peliculasData.set(valores);
+    }
   }
 
+  // 1. Entradas vendidas agrupadas por Película
+  
   // 2. Unidades de Candy Bar vendidas por producto
   private async cargarVentasCandy() {
     const { data, error } = await this.supabase
@@ -113,7 +160,7 @@ export class ReportesAdminComponent implements OnInit {
     this.facturacionLabels.set(Object.keys(agrupado));
     this.facturacionData.set(Object.values(agrupado));
   }
-
+  
   // Exportar a PDF con datos reales
   exportToPDF() {
     const doc = new jsPDF();

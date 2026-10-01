@@ -24,12 +24,13 @@
           <th>Idioma</th>
           <th>Duración</th>
           <th>Edad</th>
+          <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         @for (p of peliculasFiltradas(); track p.id) {
-          <tr>
+          <tr [class.fila-inactiva]="!p.activa">
             <td>{{ p.id }}</td>
             <td><strong>{{ p.titulo }}</strong></td>
             <td>
@@ -58,7 +59,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="7" class="text-center">No se encontraron películas.</td>
+            <td colspan="8" class="text-center">No se encontraron películas.</td>
           </tr>
         }
       </tbody>
@@ -72,7 +73,11 @@
         <h3>Agregar Nueva Película</h3>
 
         <label>Título:</label>
-        <input type="text" [ngModel]="nuevoTitulo()" (ngModelChange)="nuevoTitulo.set($event)" placeholder="Ej: Gladiador 2" />
+        <input 
+          type="text" 
+          [ngModel]="nuevoTitulo()" 
+          (ngModelChange)="nuevoTitulo.set($event)" 
+          placeholder="Ej: Gladiador 2" />
 
         <div class="form-row">
           <div>
@@ -80,7 +85,7 @@
             <input 
               type="number" 
               [ngModel]="nuevaDuracion()" 
-              (ngModelChange)="nuevaDuracion.set($event)" 
+              (ngModelChange)="nuevaDuracion.set(+$event)" 
               min="45" 
               max="300" 
               placeholder="Ej: 120"
@@ -120,10 +125,17 @@
         </div>
 
         <label>URL del Póster:</label>
-        <input type="text" [ngModel]="nuevaImagen()" (ngModelChange)="nuevaImagen.set($event)" />
+        <input 
+          type="text" 
+          [ngModel]="nuevaImagen()" 
+          (ngModelChange)="nuevaImagen.set($event)" />
 
         <label>Sinopsis:</label>
-        <textarea rows="3" [ngModel]="nuevaSinopsis()" (ngModelChange)="nuevaSinopsis.set($event)" placeholder="Descripción de la película..."></textarea>
+        <textarea 
+          rows="3" 
+          [ngModel]="nuevaSinopsis()" 
+          (ngModelChange)="nuevaSinopsis.set($event)" 
+          placeholder="Descripción de la película..."></textarea>
 
         <div class="modal-actions">
           <button type="button" class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
