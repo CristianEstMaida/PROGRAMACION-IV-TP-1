@@ -259,3 +259,50 @@
   font-weight: 700;
   cursor: pointer;
 }
+tr.fila-inactiva {
+  opacity: 0.6;
+  filter: grayscale(30%);
+}
+
+.badge-activa {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-inactiva {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.btn-action {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.15s ease;
+
+  &.btn-desactivar {
+    background-color: #dc2626;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+    &:hover { background-color: #b91c1c; }
+  }
+
+  &.btn-activar {
+    background-color: #059669;
+    box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3);
+    &:hover { background-color: #047857; }
+  }
+}

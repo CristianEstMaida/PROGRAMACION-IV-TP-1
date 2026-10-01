@@ -119,6 +119,26 @@ export class PeliculasAdminComponent implements OnInit {
     }
   }
 
+  // En componentes/peliculas-admin/peliculas-admin.component.ts
+
+  async toggleEstadoPelicula(pelicula: any) {
+    const accion = pelicula.activa ? 'desactivar' : 'habilitar';
+    const confirmar = confirm(`¿Estás seguro de que querés ${accion} "${pelicula.titulo}"?`);
+    if (!confirmar) return;
+
+    // Llama al método que definiste en el service
+    const exito = await this.moviesService.toggleEstadoPelicula(pelicula.id, pelicula.activa);
+
+    if (exito) {
+      // Actualiza la señal reactiva en la vista
+      this.peliculas.update(lista =>
+        lista.map(p => p.id === pelicula.id ? { ...p, activa: !p.activa } : p)
+      );
+    } else {
+      alert('No se pudo actualizar el estado de la película.');
+    }
+  }
+
   extraerNombresGeneros(p: any): string {
     const lista = (p.pelicula_genero || [])
       .map((pg: any) => pg.generos?.nombre)

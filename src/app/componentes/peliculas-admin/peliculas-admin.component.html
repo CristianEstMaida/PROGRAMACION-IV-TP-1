@@ -39,7 +39,21 @@
             <td>{{ p.duracion_minutos }} min</td>
             <td><span class="rating-tag">{{ p.restriccion_edad }}</span></td>
             <td>
-              <button class="btn-delete" type="button" (click)="eliminarPelicula(p.id)">Eliminar</button>
+              @if (p.activa) {
+                <span class="badge badge-activa">Activa</span>
+              } @else {
+                <span class="badge badge-inactiva">Inactiva</span>
+              }
+            </td>
+            <td>
+              <button 
+                type="button" 
+                class="btn-action" 
+                [class.btn-desactivar]="p.activa"
+                [class.btn-activar]="!p.activa"
+                (click)="toggleEstadoPelicula(p)">
+                {{ p.activa ? 'Desactivar' : 'Habilitar' }}
+              </button>
             </td>
           </tr>
         } @empty {

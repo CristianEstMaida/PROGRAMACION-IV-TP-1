@@ -6,17 +6,6 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';  
 import { SupabaseService } from './supabase.service';
 
-// export interface PeliculaBD {
-//   id: number;
-//   titulo: string;
-//   sinopsis?: string;
-//   duracion_minutos: number;
-//   imagen_url?: string;
-//   formato: string;
-//   idioma: string;
-//   restriccion_edad: string;
-// }
-
 export interface PeliculaDB {
   id: number;
   titulo: string;
@@ -26,6 +15,7 @@ export interface PeliculaDB {
   idioma: string;
   sinopsis?: string;
   imagen_url?: string;
+  activa?: boolean; 
 }
 
 @Injectable({ providedIn: 'root' })
@@ -77,6 +67,7 @@ export class MoviesService {
       `)
       .gte('funciones.fecha_hora', ahora)
       .eq('funciones.estado', 'activa')
+      .eq('activa', true)
       .order('id', { ascending: true });
 
     if (error) {
@@ -264,4 +255,17 @@ async agregarPeliculaConGeneros(
 //   getRecommendations(userId: string) {
 //     return this.http.get<Movie[]>(`/api/recommendations/${userId}`);
 //   }
+// Alternar estado activa / inactiva
+  async toggleEstadoPelicula(id: number, estadoActual: boolean): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('peliculas')
+      .update({ activa: !estadoActual })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al actualizar estado de película:', error.message);
+      return false;
+    }
+    return true;
+  }
 }
