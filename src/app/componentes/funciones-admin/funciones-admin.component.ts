@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-funciones-admin',
@@ -12,7 +13,7 @@ import { SupabaseService } from '../../services/supabase.service';
 })
 export class FuncionesAdminComponent {
   private supabase = inject(SupabaseService).client;
-
+  private auth = inject(Auth);
   funciones = signal<any[]>([]);
   peliculas = signal<any[]>([]);
   salas = signal<any[]>([]);
@@ -176,10 +177,15 @@ export class FuncionesAdminComponent {
 
     if (!error) {
       this.mensajeExito.set(`¡Función creada con éxito! El sistema asignó automáticamente la: ${salaAsignadaNombre}.`);
+      
+      const currentUser = await this.auth.getCurrentUser();
+      const operadorEmail = currentUser?.email || 'admin@cinenova.com';
+      
       await this.supabase.from('logs_actividad').insert({
-        usuario: 'Admin',
-        accion: 'Asignación Automática Función',
-        detalle: `${peliElegida?.titulo} asignada a ${salaAsignadaNombre} (${fechaStr} ${horario} hs)`
+        usuario: operadorEmail,
+        accion: 'Creó función',
+        entidad_afectada: 'funciones',
+        detalle: `${peliElegida?.titulo} (${formato || '2D'}) en ${salaAsignadaNombre} el ${fechaStr} a las ${horario} hs`
       });
       await this.cargarFunciones();
     } else {
@@ -188,7 +194,24 @@ export class FuncionesAdminComponent {
   }
 
   async eliminarFuncion(id: number) {
-    await this.supabase.from('funciones').delete().eq('id', id);
-    await this.cargarFunciones();
+    const funcionAEliminar = this.funciones().find(f => f.id === id);
+    const confirmar = confirm(`¿Estás seguro de cancelar/eliminar la función de "${funcionAEliminar?.pelicula || 'esta película'}"?`);
+    if (!confirmar) return;
+
+    const { error } = await this.supabase.from('funciones').delete().eq('id', id);
+    if (!error) {
+      // Auditoría de eliminación
+      const currentUser = await this.auth.getCurrentUser();
+      await this.supabase.from('logs_actividad').insert({
+        usuario: currentUser?.email || 'admin@cinenova.com',
+        accion: 'Eliminó Función',
+        entidad_afectada: 'funciones',
+        detalle: `Función #${id}: ${funcionAEliminar?.pelicula} (${funcionAEliminar?.sala} - ${funcionAEliminar?.fecha} ${funcionAEliminar?.horario} hs)`
+      });
+
+      await this.cargarFunciones();
+    } else {
+      alert('No se pudo eliminar la función: ' + error.message);
+    }
   }
 }
