@@ -178,20 +178,65 @@ async activarAlerta(peliculaId: number, usuarioId: string) {
   return data || [];
 }
 
-// 2. POST: Insertar película
-  async agregarPelicula(nueva: Omit<PeliculaDB, 'id'>): Promise<PeliculaDB | null> {
-    const { data, error } = await this.supabase
-      .from('peliculas')
-      .insert(nueva)
-      .select()
-      .single();
 
-    if (error) {
-      console.error('Error al insertar película:', error.message);
-      return null;
-    }
-    return data;
+// Traer el catálogo de géneros para el formulario
+async getGeneros(): Promise<{ id: number; nombre: string }[]> {
+  const { data, error } = await this.supabase
+    .from('generos')
+    .select('id, nombre')
+    .order('nombre', { ascending: true });
+  if (error) return [];
+  return data || [];
+}
+
+// Crear película e insertar sus géneros en pelicula_genero
+async agregarPeliculaConGeneros(
+  nueva: Omit<PeliculaDB, 'id'>, 
+  generosIds: number[]
+): Promise<boolean> {
+  const { data: peliCreada, error: errPeli } = await this.supabase
+    .from('peliculas')
+    .insert(nueva)
+    .select()
+    .single();
+
+  if (errPeli || !peliCreada) {
+    console.error('Error al insertar película:', errPeli?.message);
+    return false;
   }
+
+  if (generosIds.length > 0) {
+    const filasPivote = generosIds.map(gId => ({
+      pelicula_id: peliCreada.id,
+      genero_id: gId
+    }));
+
+    const { error: errGen } = await this.supabase
+      .from('pelicula_genero')
+      .insert(filasPivote);
+
+    if (errGen) {
+      console.error('Error al asociar géneros:', errGen.message);
+    }
+  }
+
+  return true;
+}
+
+// 2. POST: Insertar película
+  // async agregarPelicula(nueva: Omit<PeliculaDB, 'id'>): Promise<PeliculaDB | null> {
+  //   const { data, error } = await this.supabase
+  //     .from('peliculas')
+  //     .insert(nueva)
+  //     .select()
+  //     .single();
+
+  //   if (error) {
+  //     console.error('Error al insertar película:', error.message);
+  //     return null;
+  //   }
+  //   return data;
+  // }
 
   // 3. DELETE: Eliminar película
   async eliminarPelicula(id: number): Promise<boolean> {

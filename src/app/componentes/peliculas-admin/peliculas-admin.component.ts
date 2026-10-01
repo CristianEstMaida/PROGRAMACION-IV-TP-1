@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MoviesService, PeliculaDB } from '../../services/movies.service';
+import { MoviesService } from '../../services/movies.service';
 
 @Component({
   selector: 'app-peliculas-admin',
@@ -13,12 +13,21 @@ import { MoviesService, PeliculaDB } from '../../services/movies.service';
 export class PeliculasAdminComponent implements OnInit {
   private moviesService = inject(MoviesService);
 
-  // Estados reactivos con Signals
-  peliculas = signal<PeliculaDB[]>([]);
+  peliculas = signal<any[]>([]);
+  generos = signal<{ id: number; nombre: string }[]>([]);
   filtro = signal<string>('');
   cargando = signal<boolean>(true);
+  mostrarModal = signal<boolean>(false);
 
-  // Filtro reactivo computado
+  // Formulario de nueva película
+  nuevoTitulo = signal<string>('');
+  nuevaDuracion = signal<number>(120);
+  nuevoIdioma = signal<string>('Castellano');
+  nuevaRestriccion = signal<string>('ATP');
+  nuevaSinopsis = signal<string>('');
+  nuevaImagen = signal<string>('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500');
+  generosSeleccionados = signal<number[]>([]);
+
   peliculasFiltradas = computed(() => {
     const query = this.filtro().toLowerCase().trim();
     if (!query) return this.peliculas();
@@ -26,7 +35,15 @@ export class PeliculasAdminComponent implements OnInit {
   });
 
   async ngOnInit() {
-    await this.cargarPeliculas();
+    await Promise.all([
+      this.cargarPeliculas(),
+      this.cargarGeneros()
+    ]);
+  }
+
+  async cargarGeneros() {
+    const data = await this.moviesService.getGeneros();
+    this.generos.set(data);
   }
 
   async cargarPeliculas() {
@@ -36,35 +53,76 @@ export class PeliculasAdminComponent implements OnInit {
     this.cargando.set(false);
   }
 
-  async agregarPelicula() {
-    const nuevaPelicula = {
-      titulo: 'Nueva Película Estreno',
-      duracion_minutos: 120,
-      formato: '2D',
-      restriccion_edad: '+13',
-      idioma: 'Castellano',
-      sinopsis: 'Sinopsis de prueba',
-      imagen_url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500'
+  toggleGenero(generoId: number) {
+    this.generosSeleccionados.update(ids => 
+      ids.includes(generoId) ? ids.filter(id => id !== generoId) : [...ids, generoId]
+    );
+  }
+
+  abrirModal() {
+    this.nuevoTitulo.set('');
+    this.nuevaDuracion.set(120);
+    this.generosSeleccionados.set([]);
+    this.mostrarModal.set(true);
+  }
+
+  cerrarModal() {
+    this.mostrarModal.set(false);
+  }
+
+  async guardarPelicula() {
+    if (!this.nuevoTitulo().trim()) {
+      alert('Ingresá el título de la película');
+      return;
+    }
+
+    const duracion = Number(this.nuevaDuracion());
+
+    // Rango razonable: entre 45 minutos y 300 minutos (5 horas)
+    if (isNaN(duracion) || duracion < 45 || duracion > 300) {
+      alert('La duración debe estar dentro de un rango razonable (entre 45 y 300 minutos).');
+      return;
+    }
+
+    const nueva = {
+      titulo: this.nuevoTitulo().trim(),
+      duracion_minutos: duracion,
+      formato: '2D', // Formato inicial de compatibilidad
+      restriccion_edad: this.nuevaRestriccion(),
+      idioma: this.nuevoIdioma(),
+      sinopsis: this.nuevaSinopsis().trim() || 'Sin sinopsis registrada',
+      imagen_url: this.nuevaImagen().trim()
     };
 
-    const creada = await this.moviesService.agregarPelicula(nuevaPelicula);
-    if (creada) {
-      // Se agrega al inicio de la lista reactiva
-      this.peliculas.update(lista => [creada, ...lista]);
+    const exito = await this.moviesService.agregarPeliculaConGeneros(
+      nueva, 
+      this.generosSeleccionados()
+    );
+
+    if (exito) {
+      await this.cargarPeliculas();
+      this.cerrarModal();
     } else {
-      alert('Error al guardar la película en Supabase');
+      alert('Error al guardar la película en Supabase.');
     }
   }
 
   async eliminarPelicula(id: number) {
-    const confirmar = confirm('¿Estás seguro de eliminar esta película?');
+    const confirmar = confirm('¿Eliminar esta película? Si tiene funciones o ventas asociadas, Supabase rechazará el borrado por seguridad.');
     if (!confirmar) return;
 
     const ok = await this.moviesService.eliminarPelicula(id);
     if (ok) {
       this.peliculas.update(lista => lista.filter(p => p.id !== id));
     } else {
-      alert('No se pudo eliminar la película (verificá si ya tiene funciones asociadas).');
+      alert('No se pudo eliminar la película. Ya cuenta con funciones asignadas o historial de entradas.');
     }
+  }
+
+  extraerNombresGeneros(p: any): string {
+    const lista = (p.pelicula_genero || [])
+      .map((pg: any) => pg.generos?.nombre)
+      .filter(Boolean);
+    return lista.length > 0 ? lista.join(', ') : 'Sin género';
   }
 }

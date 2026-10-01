@@ -1,7 +1,7 @@
 <section class="admin-container">
   <div class="header-bar">
-    <h2>🎬 Administración de Películas</h2>
-    <button class="btn-create" (click)="agregarPelicula()">➕ Nueva Película</button>
+    <h2>Administración de Películas</h2>
+    <button class="btn-create" type="button" (click)="abrirModal()">+ Nueva Película</button>
   </div>
 
   <div class="search-box">
@@ -20,7 +20,7 @@
         <tr>
           <th>ID</th>
           <th>Título</th>
-          <th>Formato</th>
+          <th>Géneros</th>
           <th>Idioma</th>
           <th>Duración</th>
           <th>Edad</th>
@@ -32,12 +32,14 @@
           <tr>
             <td>{{ p.id }}</td>
             <td><strong>{{ p.titulo }}</strong></td>
-            <td><span class="badge">{{ p.formato }}</span></td>
+            <td>
+              <span class="genero-tag">{{ extraerNombresGeneros(p) }}</span>
+            </td>
             <td>{{ p.idioma }}</td>
             <td>{{ p.duracion_minutos }} min</td>
             <td><span class="rating-tag">{{ p.restriccion_edad }}</span></td>
             <td>
-              <button class="btn-delete" (click)="eliminarPelicula(p.id)">🗑️ Eliminar</button>
+              <button class="btn-delete" type="button" (click)="eliminarPelicula(p.id)">Eliminar</button>
             </td>
           </tr>
         } @empty {
@@ -47,5 +49,73 @@
         }
       </tbody>
     </table>
+  }
+
+  <!-- Modal de Creación -->
+  @if (mostrarModal()) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <h3>Agregar Nueva Película</h3>
+
+        <label>Título:</label>
+        <input type="text" [ngModel]="nuevoTitulo()" (ngModelChange)="nuevoTitulo.set($event)" placeholder="Ej: Gladiador 2" />
+
+        <div class="form-row">
+          <div>
+            <label>Duración (min):</label>
+            <input 
+              type="number" 
+              [ngModel]="nuevaDuracion()" 
+              (ngModelChange)="nuevaDuracion.set($event)" 
+              min="45" 
+              max="300" 
+              placeholder="Ej: 120"
+              required />
+            <small style="color: #94a3b8; font-size: 0.75rem;">(Entre 45 y 300 min)</small>
+          </div>
+          <div>
+            <label>Clasificación:</label>
+            <select [ngModel]="nuevaRestriccion()" (ngModelChange)="nuevaRestriccion.set($event)">
+              <option value="ATP">ATP</option>
+              <option value="+13">+13</option>
+              <option value="+16">+16</option>
+              <option value="+18">+18</option>
+            </select>
+          </div>
+          <div>
+            <label>Idioma:</label>
+            <select [ngModel]="nuevoIdioma()" (ngModelChange)="nuevoIdioma.set($event)">
+              <option value="Castellano">Castellano</option>
+              <option value="Subtitulado">Subtitulado</option>
+              <option value="Doblada">Doblada</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Géneros:</label>
+        <div class="generos-checkbox-grid">
+          @for (g of generos(); track g.id) {
+            <label class="check-item">
+              <input 
+                type="checkbox" 
+                [checked]="generosSeleccionados().includes(g.id)" 
+                (change)="toggleGenero(g.id)" />
+              {{ g.nombre }}
+            </label>
+          }
+        </div>
+
+        <label>URL del Póster:</label>
+        <input type="text" [ngModel]="nuevaImagen()" (ngModelChange)="nuevaImagen.set($event)" />
+
+        <label>Sinopsis:</label>
+        <textarea rows="3" [ngModel]="nuevaSinopsis()" (ngModelChange)="nuevaSinopsis.set($event)" placeholder="Descripción de la película..."></textarea>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
+          <button type="button" class="btn-submit" (click)="guardarPelicula()">Guardar Película</button>
+        </div>
+      </div>
+    </div>
   }
 </section>

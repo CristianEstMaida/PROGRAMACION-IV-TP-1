@@ -113,22 +113,28 @@
         <p class="section-subtitle">Consultá los detalles y opiniones antes de reservar tus butacas</p>
       </div>
 
-      <div class="filter-pills" style="margin-top: 0.8rem;display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-        <span style="align-self: center; font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Género:</span>
+      <!-- Fila 1: Filtro por Formato de proyección -->
+      <div class="filter-pills" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+        <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600; min-width: 65px;">Formato:</span>
+        <button type="button" class="pill" [class.active]="filtroFormato() === 'Todas'" (click)="setFiltro('Todas')">Todas</button>
+        <button type="button" class="pill" [class.active]="filtroFormato() === '2D'" (click)="setFiltro('2D')">2D</button>
+        <button type="button" class="pill" [class.active]="filtroFormato() === '3D'" (click)="setFiltro('3D')">3D</button>
+        <button type="button" class="pill" [class.active]="filtroFormato() === '4D'" (click)="setFiltro('4D')">4D</button>
+        <button type="button" class="pill" [class.active]="filtroFormato() === '5D'" (click)="setFiltro('5D')">5D</button>
+      </div>
+
+      <!-- Fila 2: Filtro por Género cinematográfico -->
+      <div class="filter-pills" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+        <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600; min-width: 65px;">Género:</span>
         @for (gen of generosDisponibles(); track gen) {
           <button 
-            type="button"
+            type="button" 
             class="pill" 
             [class.active]="filtroGenero() === gen" 
             (click)="setFiltroGenero(gen)">
             {{ gen }}
           </button>
         }
-        <button class="pill" [class.active]="filtroFormato() === 'Todas'" (click)="setFiltro('Todas')">Todas</button>
-        <button class="pill" [class.active]="filtroFormato() === '2D'" (click)="setFiltro('2D')">2D</button>
-        <button class="pill" [class.active]="filtroFormato() === '3D'" (click)="setFiltro('3D')">3D</button>
-        <button class="pill" [class.active]="filtroFormato() === '4D'" (click)="setFiltro('4D')">4D</button>
-        <button class="pill" [class.active]="filtroFormato() === '5D'" (click)="setFiltro('5D')">5D</button>
       </div>
     </div>
 
