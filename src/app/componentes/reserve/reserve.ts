@@ -39,6 +39,7 @@ export interface ProductoCandy {
   categoria: string;
   precio: number;
   cantidad: number;
+  imagen_url?: string;
 }
 
 @Component({
@@ -283,6 +284,7 @@ export class Reserve implements OnInit, OnDestroy {
           nombre: p.nombre,
           categoria: p.categoria || 'Snacks',
           precio: Number(p.precio) || 0,
+          imagen_url: p.imagen_url || 'https://images.unsplash.com/photo-1572177191856-3cde618dee1f?w=300', // <-- Imagen mapeada con fallback
           cantidad: 0
         });
       });
@@ -295,6 +297,7 @@ export class Reserve implements OnInit, OnDestroy {
           nombre: c.nombre,
           categoria: 'Combos',
           precio: Number(c.precio) || 0,
+          imagen_url: c.imagen_url || 'https://images.unsplash.com/photo-1572177191856-3cde618dee1f?w=300',
           cantidad: 0
         });
       });

@@ -132,10 +132,16 @@
           <div class="candy-cards-grid">
             @for (p of candyItems(); track p.id) {
               <div class="candy-card">
-                <div class="candy-info">
-                  <strong>{{ p.nombre }}</strong>
-                  <span class="candy-cat">{{ p.categoria }}</span>
-                  <span class="candy-price">${{ p.precio | number:'1.0-0' }}</span>
+                <div class="candy-media" style="display: flex; align-items: center; gap: 0.8rem;">
+                  <img 
+                    [src]="p.imagen_url || 'https://images.unsplash.com/photo-1572177191856-3cde618dee1f?w=300'" 
+                    alt="{{ p.nombre }}" 
+                    class="candy-thumb" />
+                  <div class="candy-info">
+                    <strong>{{ p.nombre }}</strong>
+                    <span class="candy-cat">{{ p.categoria }}</span>
+                    <span class="candy-price">${{ p.precio | number:'1.0-0' }}</span>
+                  </div>
                 </div>
                 <div class="qty-selector">
                   <button type="button" (click)="decrementCandy(p)">-</button>
