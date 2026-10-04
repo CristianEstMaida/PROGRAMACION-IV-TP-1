@@ -1,8 +1,30 @@
 <section class="validador-panel">
   <div class="validador-header">
     <h2>Control de Acceso y Validación de Entradas</h2>
-    <p>Ingresá el código alfanumérico del ticket o escanealo con el lector</p>
+    <p>Escaneá el código QR con la cámara del dispositivo o ingresalo manualmente</p>
   </div>
+
+  <!-- Botón de apertura de cámara -->
+  <div style="margin-bottom: 1.5rem; text-align: center;">
+    <button 
+      type="button" 
+      class="btn-camera"
+      [class.active]="escanerActivo()" 
+      (click)="toggleCamara()">
+      📷 {{ escanerActivo() ? 'Cerrar Cámara' : 'Escanear con Cámara' }}
+    </button>
+  </div>
+
+  <!-- Visor de la Cámara en vivo -->
+  @if (escanerActivo()) {
+    <div class="camera-wrapper">
+      <zxing-scanner
+        [formats]="formatosPermitidos"
+        (scanSuccess)="onScanSuccess($event)">
+      </zxing-scanner>
+      <p class="scan-hint">Apuntá al código QR del ticket</p>
+    </div>
+  }
 
   <form (submit)="$event.preventDefault(); validarCodigo()" class="search-form">
     <div class="input-wrap">

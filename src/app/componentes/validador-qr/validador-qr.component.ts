@@ -1,13 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { SupabaseService } from '../../services/supabase.service';
 import { Auth } from '../../services/auth';
+import { BarcodeFormat } from '@zxing/library';
 
 @Component({
   selector: 'app-validador-qr',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ZXingScannerModule],
   templateUrl: './validador-qr.component.html',
   styleUrls: ['./validador-qr.component.css']
 })
@@ -19,6 +21,26 @@ export class ValidadorQrComponent {
   resultado = signal<any | null>(null);
   mensajeError = signal<string | null>(null);
   cargando = signal<boolean>(false);
+
+  // Estados del escáner de cámara
+  escanerActivo = signal<boolean>(false);
+  formatosPermitidos = [BarcodeFormat.QR_CODE];
+
+  toggleCamara() {
+    this.escanerActivo.update(activo => !activo);
+  }
+
+  // Cuando la cámara detecta con éxito un código QR en pantalla o papel
+  onScanSuccess(codigoEscaneado: string) {
+    if (!codigoEscaneado || this.cargando()) return;
+    
+    // Apagar la cámara tras lectura exitosa
+    this.escanerActivo.set(false);
+    
+    // Cargar el texto y disparar la validación automáticamente
+    this.codigoEntrada.set(codigoEscaneado.trim());
+    this.validarCodigo();
+  }
 
   async validarCodigo() {
     const raw = this.codigoEntrada().trim();
@@ -102,7 +124,7 @@ export class ValidadorQrComponent {
       });
 
       this.resultado.set(entrada);
-      this.codigoEntrada.set('');
+      // this.codigoEntrada.set('');
 
     } catch (err: any) {
       console.error('Error durante la validación:', err);
