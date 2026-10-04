@@ -106,7 +106,7 @@
                 type="button" 
                 class="btn-edit" 
                 title="Editar porcentaje de descuento"
-                (click)="editarPorcentaje(c)">
+                (click)="abrirModalEdicion(c)">
                 ✏️ Modificar
               </button>
 
@@ -126,5 +126,37 @@
         }
       </tbody>
     </table>
+  }
+  <!-- Modal para Modificar Porcentaje -->
+  @if (mostrarModalEdicion() && cuponEnEdicion(); as cupon) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <h3>Modificar Descuento</h3>
+        <p class="cupon-info">
+          Cupón: <strong>{{ cupon.codigo }}</strong><br>
+          Descuento actual: <strong>{{ cupon.descuento_porcentaje }}%</strong>
+        </p>
+
+        <label>Nuevo porcentaje de descuento (%):</label>
+        <input 
+          type="number" 
+          min="1" 
+          max="100" 
+          [ngModel]="nuevoPorcentaje()" 
+          (ngModelChange)="nuevoPorcentaje.set(+$event)" 
+          [disabled]="guardandoEdicion()" 
+          autofocus 
+          required />
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cerrarModalEdicion()" [disabled]="guardandoEdicion()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-submit" (click)="confirmarEdicion()" [disabled]="guardandoEdicion() || nuevoPorcentaje() <= 0 || nuevoPorcentaje() > 100">
+            {{ guardandoEdicion() ? 'Actualizando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </div>
+    </div>
   }
 </section>

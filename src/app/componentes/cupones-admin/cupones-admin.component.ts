@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
+import { Auth } from '../../services/auth';
 
 export interface Cupon {
   id: number;
@@ -21,6 +22,7 @@ export interface Cupon {
 })
 export class CuponesAdminComponent implements OnInit {
   private supabase = inject(SupabaseService).client;
+  private auth = inject(Auth);
 
   cupones = signal<Cupon[]>([]);
   filtro = signal<string>('');
@@ -34,6 +36,12 @@ export class CuponesAdminComponent implements OnInit {
     edad_minima: 0,
     activo: true
   });
+
+  // Control del Modal de Edición
+  mostrarModalEdicion = signal<boolean>(false);
+  guardandoEdicion = signal<boolean>(false);
+  cuponEnEdicion = signal<Cupon | null>(null);
+  nuevoPorcentaje = signal<number>(10);
 
   cuponesFiltrados = computed(() => {
     const q = this.filtro().toUpperCase().trim();
@@ -96,6 +104,14 @@ export class CuponesAdminComponent implements OnInit {
 
     if (data) {
       this.cupones.update(lista => [data, ...lista]);
+      
+      const user = await this.auth.getCurrentUser();
+      await this.supabase.from('logs_actividad').insert({
+        usuario: user?.email || 'admin@cinenova.com',
+        accion: 'Creó Cupón',
+        entidad_afectada: 'cupones',
+        detalle: `Cupón ${codigoLimpio} (${model.descuento_porcentaje}% OFF)`
+      });
       // Reset del formulario
       this.nuevoCupon.set({
         codigo: '',
@@ -125,6 +141,14 @@ export class CuponesAdminComponent implements OnInit {
     this.cupones.update(lista =>
       lista.map(c => c.id === cupon.id ? { ...c, activo: nuevoEstado } : c)
     );
+
+    const user = await this.auth.getCurrentUser();
+    await this.supabase.from('logs_actividad').insert({
+      usuario: user?.email || 'admin@cinenova.com',
+      accion: nuevoEstado ? 'Activó Cupón' : 'Pausó Cupón',
+      entidad_afectada: 'cupones',
+      detalle: `Cupón: ${cupon.codigo}`
+    });
   }
 
   // 4. DELETE: Eliminar cupón
@@ -146,28 +170,60 @@ export class CuponesAdminComponent implements OnInit {
     this.cupones.update(lista => lista.filter(c => c.id !== id));
   }
 
-  async editarPorcentaje(cupon: Cupon) {
-    const nuevoPorcentajeStr = prompt(`Nuevo porcentaje de descuento para ${cupon.codigo}:`, cupon.descuento_porcentaje.toString());
-    if (!nuevoPorcentajeStr) return;
+  abrirModalEdicion(cupon: Cupon) {
+    this.cuponEnEdicion.set(cupon);
+    this.nuevoPorcentaje.set(cupon.descuento_porcentaje);
+    this.mostrarModalEdicion.set(true);
+  }
 
-    const nuevoPorcentaje = parseInt(nuevoPorcentajeStr, 10);
-    if (isNaN(nuevoPorcentaje) || nuevoPorcentaje <= 0 || nuevoPorcentaje > 100) {
-      alert('Ingresá un valor entre 1 y 100.');
+  cerrarModalEdicion() {
+    if (this.guardandoEdicion()) return;
+    this.mostrarModalEdicion.set(false);
+    this.cuponEnEdicion.set(null);
+  }
+
+  async confirmarEdicion() {
+    const cupon = this.cuponEnEdicion();
+    const porcentaje = Number(this.nuevoPorcentaje());
+    
+    if (!cupon) return;
+    if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 100) {
+      alert('El porcentaje debe estar comprendido entre 1 y 100.');
       return;
     }
 
-    const { error } = await this.supabase
-      .from('cupones')
-      .update({ descuento_porcentaje: nuevoPorcentaje })
-      .eq('id', cupon.id);
+    this.guardandoEdicion.set(true);
+    const porcentajeAnterior = cupon.descuento_porcentaje;
+    try {
+      const { error } = await this.supabase
+        .from('cupones')
+        .update({ descuento_porcentaje: porcentaje })
+        .eq('id', cupon.id);
 
-    if (error) {
-      alert('Error al actualizar el cupón: ' + error.message);
-      return;
+      if (error) {
+        alert('Error al actualizar el cupón: ' + error.message);
+        return;
+      }
+
+      this.cupones.update(lista =>
+        lista.map(c => c.id === cupon.id ? { ...c, descuento_porcentaje: porcentaje } : c)
+      );
+
+      const user = await this.auth.getCurrentUser();
+      await this.supabase.from('logs_actividad').insert({
+        usuario: user?.email || 'admin@cinenova.com',
+        accion: 'Modificó Descuento Cupón',
+        entidad_afectada: 'cupones',
+        detalle: `${cupon.codigo}: de ${porcentajeAnterior}% a ${porcentaje}% OFF`
+      });
+        
+      this.cerrarModalEdicion();
+    } catch (err: any) {
+      console.error('Error al actualizar el cupón:', err);
+      alert('Error al actualizar el cupón: ' + (err.message || err));
     }
-
-    this.cupones.update(lista =>
-      lista.map(c => c.id === cupon.id ? { ...c, descuento_porcentaje: nuevoPorcentaje } : c)
-    );
+    finally {
+      this.guardandoEdicion.set(false);
+    }
   }
 }
