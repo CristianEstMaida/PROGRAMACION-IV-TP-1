@@ -123,7 +123,7 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
 
   // 3. POST: Crear sala y sus 518 butacas asociadas
  async confirmarAgregarSala() {
-    const nombre = prompt('Ingresá el nombre de la sala (ej: Sala 6 - IMAX):');
+    const nombre = this.nombreSala().trim();
     if (!nombre) {
       alert('Ingresá un nombre identificador para la sala (ej: Sala 4 - Dolby Atmos).');
       return;
