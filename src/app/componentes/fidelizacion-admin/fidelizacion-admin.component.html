@@ -52,10 +52,10 @@
             <td><span class="badge points">⭐ {{ c.puntos || 0 }} pts</span></td>
             <td><span class="badge credit">${{ c.credito || 0 | number:'1.0-0' }} ARS</span></td>
             <td class="actions-col">
-              <button type="button" class="btn-action pts" (click)="ajustarPuntos(c)">
+              <button type="button" class="btn-action pts" (click)="abrirModalAjuste(c, 'puntos')">
                 Ajustar Puntos
               </button>
-              <button type="button" class="btn-action crd" (click)="ajustarCredito(c)">
+              <button type="button" class="btn-action crd" (click)="abrirModalAjuste(c, 'credito')">
                 Ajustar Crédito
               </button>
             </td>
@@ -67,5 +67,58 @@
         }
       </tbody>
     </table>
+  }
+
+  <!-- Modal Unificado de Ajuste -->
+  @if (mostrarModal() && clienteSeleccionado(); as cliente) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <h3>Ajustar {{ tipoAjuste() === 'puntos' ? 'Puntos' : 'Crédito' }}</h3>
+        <p class="cliente-info">
+          Cliente: <strong>{{ cliente.nombre }} {{ cliente.apellido || '' }}</strong><br>
+          Saldo actual: 
+          <strong>
+            {{ tipoAjuste() === 'puntos' ? (cliente.puntos || 0) + ' pts' : '$' + (cliente.credito || 0) + ' ARS' }}
+          </strong>
+        </p>
+
+        <label>Operación a realizar:</label>
+        <div class="operacion-toggle">
+          <button 
+            type="button" 
+            class="toggle-btn"
+            [class.active-sumar]="operacion() === 'sumar'" 
+            (click)="operacion.set('sumar')">
+            ➕ Sumar / Bonificar
+          </button>
+          <button 
+            type="button" 
+            class="toggle-btn"
+            [class.active-restar]="operacion() === 'restar'" 
+            (click)="operacion.set('restar')">
+            ➖ Restar / Descontar
+          </button>
+        </div>
+
+        <label>Cantidad a {{ operacion() }}:</label>
+        <input 
+          type="number" 
+          min="1" 
+          [ngModel]="montoAjuste()" 
+          (ngModelChange)="montoAjuste.set(+$event)" 
+          [placeholder]="tipoAjuste() === 'puntos' ? 'Ej: 100' : 'Ej: 1500'" 
+          [disabled]="guardandoAjuste()" 
+          required />
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cerrarModal()" [disabled]="guardandoAjuste()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-submit" (click)="confirmarAjuste()" [disabled]="guardandoAjuste() || montoAjuste() <= 0">
+            {{ guardandoAjuste() ? 'Guardando...' : 'Aplicar Ajuste' }}
+          </button>
+        </div>
+      </div>
+    </div>
   }
 </section>

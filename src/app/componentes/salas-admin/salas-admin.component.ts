@@ -132,6 +132,7 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
     this.creandoSala.set(true);
     // Fijamos el tipo como Estándar / Multipropósito automáticamente
     const tipo = 'Estándar';
+    //const tipo = this.tipoSala();
 
     // Capacidad útil vendible según consigna
     const capacidadOficial = 518;

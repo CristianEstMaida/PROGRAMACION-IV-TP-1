@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
 import { Perfil } from '../../models/perfil';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-fidelizacion-admin',
@@ -13,10 +14,19 @@ import { Perfil } from '../../models/perfil';
 })
 export class FidelizacionAdminComponent implements OnInit {
   private supabase = inject(SupabaseService).client;
+  private auth = inject(Auth);
 
   clientes = signal<Perfil[]>([]);
   filtro = signal<string>('');
   cargando = signal<boolean>(true);
+
+  // Control del Modal de Ajuste
+  mostrarModal = signal<boolean>(false);
+  guardandoAjuste = signal<boolean>(false);
+  clienteSeleccionado = signal<Perfil | null>(null);
+  tipoAjuste = signal<'puntos' | 'credito'>('puntos');
+  operacion = signal<'sumar' | 'restar'>('sumar');
+  montoAjuste = signal<number>(100);
 
   // Totales acumulados calculados con computed
   totalPuntosEmitidos = computed(() => 
@@ -58,53 +68,82 @@ export class FidelizacionAdminComponent implements OnInit {
     this.cargando.set(false);
   }
 
-  // 2. UPDATE: Ajustar puntos a un cliente
-  async ajustarPuntos(cliente: Perfil) {
-    const deltaStr = prompt(`Sumar o restar puntos para ${cliente.nombre} (ej: 100 o -50):`);
-    if (!deltaStr) return;
-
-    const delta = parseInt(deltaStr, 10);
-    if (isNaN(delta) || delta === 0) return;
-
-    const nuevosPuntos = Math.max(0, (cliente.puntos || 0) + delta);
-
-    const { error } = await this.supabase
-      .from('perfiles')
-      .update({ puntos: nuevosPuntos })
-      .eq('id', cliente.id);
-
-    if (error) {
-      alert('Error al actualizar los puntos.');
-      return;
-    }
-
-    this.clientes.update(lista =>
-      lista.map(c => c.id === cliente.id ? { ...c, puntos: nuevosPuntos } : c)
-    );
+  abrirModalAjuste(cliente: Perfil, tipo: 'puntos' | 'credito') {
+    this.clienteSeleccionado.set(cliente);
+    this.tipoAjuste.set(tipo);
+    this.operacion.set('sumar');
+    this.montoAjuste.set(tipo === 'puntos' ? 100 : 1000);
+    this.mostrarModal.set(true);
   }
 
-  // 3. UPDATE: Bonificar o ajustar crédito disponible
-  async ajustarCredito(cliente: Perfil) {
-    const montoStr = prompt(`Ingresá el monto de crédito a sumar o restar a ${cliente.nombre} en $ ARS:`);
-    if (!montoStr) return;
+  cerrarModal() {
+    if (this.guardandoAjuste()) return;
+    this.mostrarModal.set(false);
+    this.clienteSeleccionado.set(null);
+  }
 
-    const monto = parseFloat(montoStr);
-    if (isNaN(monto) || monto === 0) return;
+  async confirmarAjuste() {
+    const cliente = this.clienteSeleccionado();
+    const valor = Number(this.montoAjuste());
 
-    const nuevoCredito = Math.max(0, (cliente.credito || 0) + monto);
-
-    const { error } = await this.supabase
-      .from('perfiles')
-      .update({ credito: nuevoCredito })
-      .eq('id', cliente.id);
-
-    if (error) {
-      alert('Error al actualizar el crédito.');
+    if (!cliente || isNaN(valor) || valor <= 0) {
+      alert('Ingresá un monto o valor válido mayor a 0.');
       return;
     }
 
-    this.clientes.update(lista =>
-      lista.map(c => c.id === cliente.id ? { ...c, credito: nuevoCredito } : c)
-    );
+    this.guardandoAjuste.set(true);
+    const delta = this.operacion() === 'sumar' ? valor : -valor;
+
+    try {
+      const user = await this.auth.getCurrentUser();
+      const operadorEmail = user?.email || 'admin@cinenova.com';
+
+      if (this.tipoAjuste() === 'puntos') {
+        const nuevosPuntos = Math.max(0, (cliente.puntos || 0) + delta);
+        const { error } = await this.supabase
+          .from('perfiles')
+          .update({ puntos: nuevosPuntos })
+          .eq('id', cliente.id);
+
+        if (error) throw error;
+
+        this.clientes.update(lista =>
+          lista.map(c => c.id === cliente.id ? { ...c, puntos: nuevosPuntos } : c)
+        );
+
+        await this.supabase.from('logs_actividad').insert({
+          usuario: operadorEmail,
+          accion: 'Ajustó Puntos Fidelización',
+          entidad_afectada: 'perfiles',
+          detalle: `${this.operacion() === 'sumar' ? '+' : '-'}${valor} pts a ${cliente.nombre} (Total: ${nuevosPuntos})`
+        });
+      } else {
+        const nuevoCredito = Math.max(0, (cliente.credito || 0) + delta);
+        const { error } = await this.supabase
+          .from('perfiles')
+          .update({ credito: nuevoCredito })
+          .eq('id', cliente.id);
+
+        if (error) throw error;
+
+        this.clientes.update(lista =>
+          lista.map(c => c.id === cliente.id ? { ...c, credito: nuevoCredito } : c)
+        );
+
+        await this.supabase.from('logs_actividad').insert({
+          usuario: operadorEmail,
+          accion: 'Ajustó Crédito a Favor',
+          entidad_afectada: 'perfiles',
+          detalle: `${this.operacion() === 'sumar' ? '+' : '-'}$${valor} ARS a ${cliente.nombre} (Saldo: $${nuevoCredito})`
+        });
+      }
+
+      this.cerrarModal();
+    } catch (err: any) {
+      console.error(err);
+      alert('Error al actualizar en Supabase: ' + (err.message || 'Error desconocido'));
+    } finally {
+      this.guardandoAjuste.set(false);
+    }
   }
 }
