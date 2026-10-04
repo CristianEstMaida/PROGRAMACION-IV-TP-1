@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
 import { Sala } from '../../models/sala';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-salas-admin',
@@ -14,10 +15,17 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 })
 export class SalasAdminComponent implements OnInit, OnDestroy {
   private supabase = inject(SupabaseService).client;
+  private auth = inject(Auth);
   private realtimeSalas: RealtimeChannel | null = null;
 
   salas = signal<Sala[]>([]);
   cargando = signal<boolean>(true);
+
+  // Control del modal de creación
+  mostrarModal = signal<boolean>(false);
+  creandoSala = signal<boolean>(false);
+  nombreSala = signal<string>('');
+  tipoSala = signal<string>('Estándar');
 
   async ngOnInit() {
     await this.cargarSalas();
@@ -38,6 +46,17 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
       this.salas.set(data as Sala[]);
     }
     this.cargando.set(false);
+  }
+
+  abrirModal() {
+    this.nombreSala.set('');
+    this.tipoSala.set('Estándar');
+    this.mostrarModal.set(true);
+  }
+
+  cerrarModal() {
+    if (this.creandoSala()) return;
+    this.mostrarModal.set(false);
   }
 
   async toggleEstadoSala(sala: Sala) {
@@ -61,6 +80,15 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
     this.salas.update(lista =>
       lista.map(s => s.id === sala.id ? { ...s, activa: nuevoEstado } : s)
     );
+
+    // Auditoría
+    const user = await this.auth.getCurrentUser();
+    await this.supabase.from('logs_actividad').insert({
+      usuario: user?.email || 'admin@cinenova.com',
+      accion: nuevoEstado ? 'Habilitó Sala' : 'Desactivó Sala',
+      entidad_afectada: 'salas',
+      detalle: `Sala ${sala.nombre} (ID: ${sala.id})`
+    });
   }
 
   // 2. REALTIME: Escuchar cambios externos de otras pestañas o usuarios
@@ -94,16 +122,21 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
   }
 
   // 3. POST: Crear sala y sus 518 butacas asociadas
- async agregarSala() {
+ async confirmarAgregarSala() {
     const nombre = prompt('Ingresá el nombre de la sala (ej: Sala 6 - IMAX):');
-    if (!nombre || !nombre.trim()) return;
+    if (!nombre) {
+      alert('Ingresá un nombre identificador para la sala (ej: Sala 4 - Dolby Atmos).');
+      return;
+    }
 
+    this.creandoSala.set(true);
     // Fijamos el tipo como Estándar / Multipropósito automáticamente
     const tipo = 'Estándar';
 
     // Capacidad útil vendible según consigna
     const capacidadOficial = 518;
 
+    try {
     const { data: nuevaSala, error: errSala } = await this.supabase
       .from('salas')
       .insert({
@@ -180,6 +213,23 @@ export class SalasAdminComponent implements OnInit, OnDestroy {
       alert('Error al insertar las butacas: ' + errButacas.message);
     } else {
       alert(`Sala creada con éxito: 560 posiciones generadas (518 activas, 42 pasillos).`);
+    }
+
+    // 3. Auditoría
+      const user = await this.auth.getCurrentUser();
+      await this.supabase.from('logs_actividad').insert({
+        usuario: user?.email || 'admin@cinenova.com',
+        accion: 'Creó Sala',
+        entidad_afectada: 'salas',
+        detalle: `${nombre} (${tipo}) - 518 butacas activas generadas`
+      });
+
+      this.cerrarModal();
+      } catch (err: any) {
+      console.error(err);
+      alert('Ocurrió un error inesperado al dar de alta la sala.');
+    } finally {
+      this.creandoSala.set(false);
     }
   }
 

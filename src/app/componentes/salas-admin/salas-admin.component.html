@@ -1,6 +1,6 @@
 <section class="salas-admin">
   <h2>Gestión de Salas</h2>
-  <button type="button" (click)="agregarSala()">➕ Agregar Sala</button>
+  <button type="button" (click)="abrirModal()">➕ Agregar Sala</button>
 
   @if (cargando()) {
     <p>Consultando salas en Supabase...</p>
@@ -48,5 +48,48 @@
         }
       </tbody>
     </table>
+  }
+
+  <!-- Modal para Agregar Sala -->
+  @if (mostrarModal()) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <h3>Agregar Nueva Sala</h3>
+        
+        <label>Nombre de la sala:</label>
+        <input 
+          type="text" 
+          [ngModel]="nombreSala()" 
+          (ngModelChange)="nombreSala.set($event)"
+          placeholder="Ej: Sala 4 - Atmos" 
+          [disabled]="creandoSala()"
+          autofocus />
+
+        <label>Tipo de proyección / Tecnología:</label>
+        <select 
+          [ngModel]="tipoSala()" 
+          (ngModelChange)="tipoSala.set($event)"
+          [disabled]="creandoSala()">
+          <option value="Estándar">Estándar</option>
+          <option value="3D Láser">3D Láser</option>
+          <option value="4D E-Motion">4D E-Motion</option>
+          <option value="IMAX">IMAX</option>
+          <option value="VIP">VIP</option>
+        </select>
+
+        <p style="font-size: 0.8rem; color: #94a3b8; margin: 0.5rem 0 0;">
+          ℹ️ Se generará la matriz estándar de <strong>560 posiciones</strong> (518 activas, filas VIP R-S-T y accesibles en fila J).
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cerrarModal()" [disabled]="creandoSala()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-submit" (click)="confirmarAgregarSala()" [disabled]="creandoSala() || !nombreSala().trim()">
+            {{ creandoSala() ? 'Generando butacas...' : 'Crear Sala' }}
+          </button>
+        </div>
+      </div>
+    </div>
   }
 </section>
