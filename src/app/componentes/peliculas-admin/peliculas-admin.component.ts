@@ -23,6 +23,10 @@ export class PeliculasAdminComponent implements OnInit {
   cargando = signal<boolean>(true);
   mostrarModal = signal<boolean>(false);
 
+// Control de modo: alta vs edición
+  modoEdicion = signal<boolean>(false);
+  peliculaIdEnEdicion = signal<number | null>(null);
+
   // Formulario de nueva película
   nuevoTitulo = signal<string>('');
   nuevaDuracion = signal<number>(120);
@@ -64,6 +68,8 @@ export class PeliculasAdminComponent implements OnInit {
   }
 
   abrirModal() {
+    this.modoEdicion.set(false);
+    this.peliculaIdEnEdicion.set(null);
     this.nuevoTitulo.set('');
     this.nuevaDuracion.set(120);
     this.nuevaSinopsis.set('');
@@ -71,8 +77,29 @@ export class PeliculasAdminComponent implements OnInit {
     this.mostrarModal.set(true);
   }
 
+
+
   cerrarModal() {
     this.mostrarModal.set(false);
+  }
+
+  abrirModalEdicion(pelicula: any) {
+    this.modoEdicion.set(true);
+    this.peliculaIdEnEdicion.set(pelicula.id);
+    this.nuevoTitulo.set(pelicula.titulo || '');
+    this.nuevaDuracion.set(pelicula.duracion_minutos || 120);
+    this.nuevoIdioma.set(pelicula.idioma || 'Castellano');
+    this.nuevaRestriccion.set(pelicula.restriccion_edad || 'ATP');
+    this.nuevaSinopsis.set(pelicula.sinopsis || '');
+    this.nuevaImagen.set(pelicula.imagen_url || '');
+
+    // Extraer IDs de los géneros vinculados actualmente
+    const idsVinculados = (pelicula.pelicula_genero || [])
+      .map((pg: any) => pg.generos?.id)
+      .filter((id: any) => typeof id === 'number');
+
+    this.generosSeleccionados.set(idsVinculados);
+    this.mostrarModal.set(true);
   }
 
   async guardarPelicula() {
@@ -88,36 +115,66 @@ export class PeliculasAdminComponent implements OnInit {
       return;
     }
 
-    const nueva = {
+    const datos = {
       titulo: titulo,
       duracion_minutos: duracion,
-      formato: '2D',
       restriccion_edad: this.nuevaRestriccion(),
       idioma: this.nuevoIdioma(),
       sinopsis: this.nuevaSinopsis().trim() || 'Sin sinopsis registrada',
-      imagen_url: this.nuevaImagen().trim(),
-      activa: true
+      imagen_url: this.nuevaImagen().trim()
     };
 
-    const exito = await this.moviesService.agregarPeliculaConGeneros(
-      nueva, 
-      this.generosSeleccionados()
-    );
+    const user = await this.auth.getCurrentUser();
+    const operadorEmail = user?.email || 'admin@cinenova.com';
 
-    if (exito) {
-      // Auditoría en logs_actividad
-      const user = await this.auth.getCurrentUser();
-      await this.supabase.from('logs_actividad').insert({
-        usuario: user?.email || 'admin@cinenova.com',
-        accion: 'Alta de Película',
-        entidad_afectada: 'peliculas',
-        detalle: `Título: ${titulo} (${duracion} min)`
-      });
+    if (this.modoEdicion()) {
+      const id = this.peliculaIdEnEdicion();
+      if (!id) return;
 
-      await this.cargarPeliculas();
-      this.cerrarModal();
-    } else {
-      alert('Error al guardar la película en Supabase.');
+      const exito = await this.moviesService.actualizarPeliculaConGeneros(
+        id,
+        datos,
+        this.generosSeleccionados()
+      );
+
+      if (exito) {
+        await this.supabase.from('logs_actividad').insert({
+          usuario: operadorEmail,
+          accion: 'Modificó Película',
+          entidad_afectada: 'peliculas',
+          detalle: `Película #${id}: ${titulo} (${duracion} min)`
+        });
+
+        await this.cargarPeliculas();
+        this.cerrarModal();
+      } else {
+        alert('Error al actualizar la película en Supabase.');
+      }
+    }else {
+      const nueva = {
+        ...datos,
+        formato: '2D',
+        activa: true
+      };
+
+      const exito = await this.moviesService.agregarPeliculaConGeneros(
+        nueva,
+        this.generosSeleccionados()
+      );
+
+      if (exito) {
+        await this.supabase.from('logs_actividad').insert({
+          usuario: operadorEmail,
+          accion: 'Alta de Película',
+          entidad_afectada: 'peliculas',
+          detalle: `Título: ${titulo} (${duracion} min)`
+        });
+
+        await this.cargarPeliculas();
+        this.cerrarModal();
+      } else {
+        alert('Error al guardar la película en Supabase.');
+      }
     }
   }
 

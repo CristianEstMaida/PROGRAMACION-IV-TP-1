@@ -214,6 +214,52 @@ async agregarPeliculaConGeneros(
   return true;
 }
 
+// Actualizar película y sincronizar sus géneros en pelicula_genero
+async actualizarPeliculaConGeneros(
+  id: number,
+  datos: Partial<PeliculaDB>,
+  generosIds: number[]
+): Promise<boolean> {
+  // 1. Actualizar datos base en la tabla peliculas
+  const { error: errPeli } = await this.supabase
+    .from('peliculas')
+    .update(datos)
+    .eq('id', id);
+
+  if (errPeli) {
+    console.error('Error al actualizar película:', errPeli.message);
+    return false;
+  }
+
+  // 2. Limpiar géneros anteriores de esta película
+  const { error: errDeleteGen } = await this.supabase
+    .from('pelicula_genero')
+    .delete()
+    .eq('pelicula_id', id);
+
+  if (errDeleteGen) {
+    console.error('Error al limpiar géneros previos:', errDeleteGen.message);
+  }
+
+  // 3. Insertar las nuevas asociaciones de géneros
+  if (generosIds.length > 0) {
+    const filasPivote = generosIds.map(gId => ({
+      pelicula_id: id,
+      genero_id: gId
+    }));
+
+    const { error: errInsertGen } = await this.supabase
+      .from('pelicula_genero')
+      .insert(filasPivote);
+
+    if (errInsertGen) {
+      console.error('Error al actualizar géneros asociados:', errInsertGen.message);
+    }
+  }
+
+  return true;
+}
+
 // 2. POST: Insertar película
   // async agregarPelicula(nueva: Omit<PeliculaDB, 'id'>): Promise<PeliculaDB | null> {
   //   const { data, error } = await this.supabase
