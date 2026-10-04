@@ -98,4 +98,18 @@ export class CandyService {
       .eq('id', id);
     return !error;
   }
+
+  // Actualizar todos los campos de un producto
+  async actualizarProductoCompleto(id: number, datos: Partial<Producto>): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('productos')
+      .update(datos)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error al actualizar producto:', error.message);
+      return false;
+    }
+    return true;
+  }
 }

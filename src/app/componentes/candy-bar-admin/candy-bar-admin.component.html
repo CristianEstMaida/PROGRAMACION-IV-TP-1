@@ -1,7 +1,7 @@
 <section class="candy-bar-admin">
   <div class="header-section">
     <h2>🍿 Gestión de Candy Bar</h2>
-    <button class="btn-primary" (click)="agregarProducto()">➕ Nuevo Producto</button>
+    <button class="btn-primary" (click)="abrirModalNuevo()">➕ Nuevo Producto</button>
   </div>
 
   @if (cargando()) {
@@ -27,7 +27,14 @@
           <tbody>
             @for (p of productos(); track p.id) {
               <tr>
-                <td class="cell-name">{{ p.nombre }}</td>
+                <td class="cell-name">
+                  <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    @if (p.imagen_url) {
+                      <img [src]="p.imagen_url" [alt]="p.nombre" class="candy-mini-thumb" />
+                    }
+                    <strong>{{ p.nombre }}</strong>
+                  </div>
+                </td>
                 <td><span class="badge">{{ p.categoria || 'Snacks' }}</span></td>
                 <td class="cell-price">${{ p.precio | number:'1.0-0' }}</td>
                 <td class="cell-stock">
@@ -37,10 +44,13 @@
                   <button class="btn-sm" (click)="actualizarStock(p, 5)" title="Sumar 5 unidades">+5</button>
                   <button class="btn-sm" (click)="actualizarStock(p, -5)" [disabled]="p.stock <= 0" title="Restar 5 unidades">-5</button>
                 </td>
-                <td class="cell-actions">
-                  <button class="btn-sm btn-price" (click)="actualizarPrecio(p, p.precio + 500)">+$500</button>
-                  <button class="btn-sm btn-price" (click)="actualizarPrecio(p, p.precio - 500)" [disabled]="p.precio <= 500">-$500</button>
-                  <button class="btn-sm btn-delete" (click)="eliminarProducto(p.id)" title="Eliminar producto">🗑️</button>
+                <td class="cell-actions" style="display: flex; gap: 0.35rem; align-items: center;">
+                  <button type="button" class="btn-sm btn-edit-candy" (click)="abrirModalEdicion(p)">
+                    Editar
+                  </button>
+                  <button type="button" class="btn-sm btn-delete" (click)="eliminarProducto(p.id)" title="Desactivar producto">
+                    Desactivar
+                  </button>
                 </td>
               </tr>
             } @empty {
@@ -69,5 +79,69 @@
         }
       </div>
     </section>
+  }
+  <!-- Modal de Creación / Edición de Producto -->
+  @if (mostrarModal()) {
+    <div class="modal-backdrop">
+      <div class="modal-card">
+        <h3>{{ modoEdicion() ? 'Modificar Producto' : 'Nuevo Producto Candy Bar' }}</h3>
+
+        <label>Nombre del producto:</label>
+        <input 
+          type="text" 
+          [ngModel]="formNombre()" 
+          (ngModelChange)="formNombre.set($event)" 
+          placeholder="Ej: Nachos con Queso" 
+          [disabled]="guardandoProducto()" 
+          autofocus />
+
+        <div class="form-row">
+          <div>
+            <label>Categoría:</label>
+            <select [ngModel]="formCategoria()" (ngModelChange)="formCategoria.set($event)" [disabled]="guardandoProducto()">
+              <option value="Snacks">Snacks</option>
+              <option value="Bebidas">Bebidas</option>
+              <option value="Pochoclos">Pochoclos</option>
+              <option value="Dulces">Dulces</option>
+            </select>
+          </div>
+          <div>
+            <label>Precio ($):</label>
+            <input 
+              type="number" 
+              min="1" 
+              [ngModel]="formPrecio()" 
+              (ngModelChange)="formPrecio.set(+$event)" 
+              [disabled]="guardandoProducto()" />
+          </div>
+          <div>
+            <label>Stock inicial / actual:</label>
+            <input 
+              type="number" 
+              min="0" 
+              [ngModel]="formStock()" 
+              (ngModelChange)="formStock.set(+$event)" 
+              [disabled]="guardandoProducto()" />
+          </div>
+        </div>
+
+        <label>URL de Imagen:</label>
+        <input 
+          type="text" 
+          [ngModel]="formImagen()" 
+          (ngModelChange)="formImagen.set($event)" 
+          placeholder="https://..." 
+          [disabled]="guardandoProducto()" />
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cerrarModal()" [disabled]="guardandoProducto()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-submit" (click)="guardarProducto()" [disabled]="guardandoProducto() || !formNombre().trim()">
+            {{ guardandoProducto() ? 'Guardando...' : (modoEdicion() ? 'Guardar Cambios' : 'Crear Producto') }}
+          </button>
+        </div>
+      </div>
+    </div>
   }
 </section>
