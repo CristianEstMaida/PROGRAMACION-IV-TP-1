@@ -35,4 +35,5 @@ export interface MovieDetailModel {
   duration: number;
   synopsis: string;
   trailerUrl: string;
+  fecha_estreno?: string;
 }

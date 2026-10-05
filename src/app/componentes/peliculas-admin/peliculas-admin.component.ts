@@ -36,6 +36,10 @@ export class PeliculasAdminComponent implements OnInit {
   nuevaImagen = signal<string>('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500');
   generosSeleccionados = signal<number[]>([]);
 
+  // En peliculas-admin.component.ts
+  nuevaFechaEstreno = signal<string>('');
+  nuevoDescuentoPreventa = signal<number>(20); // 20% por defecto
+
   peliculasFiltradas = computed(() => {
     const query = this.filtro().toLowerCase().trim();
     if (!query) return this.peliculas();
@@ -92,6 +96,8 @@ export class PeliculasAdminComponent implements OnInit {
     this.nuevaRestriccion.set(pelicula.restriccion_edad || 'ATP');
     this.nuevaSinopsis.set(pelicula.sinopsis || '');
     this.nuevaImagen.set(pelicula.imagen_url || '');
+    this.nuevaFechaEstreno.set(pelicula.fecha_estreno || '');
+    this.nuevoDescuentoPreventa.set(pelicula.descuento_preventa ?? 20);
 
     // Extraer IDs de los géneros vinculados actualmente
     const idsVinculados = (pelicula.pelicula_genero || [])
@@ -121,7 +127,9 @@ export class PeliculasAdminComponent implements OnInit {
       restriccion_edad: this.nuevaRestriccion(),
       idioma: this.nuevoIdioma(),
       sinopsis: this.nuevaSinopsis().trim() || 'Sin sinopsis registrada',
-      imagen_url: this.nuevaImagen().trim()
+      imagen_url: this.nuevaImagen().trim(),
+      fecha_estreno: this.nuevaFechaEstreno() || null,
+      descuento_preventa: this.nuevoDescuentoPreventa() || 0
     };
 
     const user = await this.auth.getCurrentUser();

@@ -21,7 +21,12 @@
                 class="showtime-card"
                 [class.active]="selectedShowtime()?.id === st.id"
                 (click)="selectShowtime(st)">
-                <span class="badge">{{ st.format }}</span>
+                <div style="display: flex; gap: 0.4rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                  <span class="badge">{{ st.format }}</span>
+                  @if (st.esPreventa) {
+                    <span class="badge-preventa">PREVENTA 20% OFF</span>
+                  }
+                </div>
                 <span class="room">{{ st.roomName }}</span>
                 
                 <!-- Día y Fecha de la función -->
@@ -30,7 +35,12 @@
                 </span>
 
                 <span class="time">{{ st.startTime }} hs</span>
-                <span class="price">${{ st.price | number:'1.0-0' }}</span>
+                <div class="price-container">
+                  @if (st.esPreventa) {
+                    <span class="old-price">${{ st.precioOriginal | number:'1.0-0' }}</span>
+                  }
+                  <span class="price">${{ st.price | number:'1.0-0' }}</span>
+                </div>
               </button>
             }
           </div>

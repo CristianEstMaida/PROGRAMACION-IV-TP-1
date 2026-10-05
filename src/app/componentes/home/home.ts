@@ -188,6 +188,20 @@ export class Home implements OnInit {
     document.getElementById('cartelera')?.scrollIntoView({ behavior: 'smooth' });
   }
 
+
+  esPeriodoPreventa(fechaEstrenoStr?: string): boolean {
+    if (!fechaEstrenoStr) return false;
+    
+    const ahora = new Date().getTime();
+    const fechaEstreno = new Date(fechaEstrenoStr).getTime();
+    
+    // Diferencia en días hacia el futuro
+    const diffDias = (fechaEstreno - ahora) / (1000 * 60 * 60 * 24);
+    
+    // Está en preventa si faltan 7 días o menos pero todavía no se estrenó (>= 0)
+    return diffDias >= 0 && diffDias <= 7;
+  }
+
   async suscribirAlerta(peliculaId: number) {
     const user = await this.auth.getCurrentUser();
     

@@ -117,6 +117,28 @@
           </div>
         </div>
 
+        <!-- Fila 2: Configuración de Estreno y Preventa (ACÁ VA) -->
+        <div class="form-row-2">
+          <div>
+            <label>Fecha de Estreno Oficial:</label>
+            <input 
+              type="date" 
+              [ngModel]="nuevaFechaEstreno()" 
+              (ngModelChange)="nuevaFechaEstreno.set($event)" />
+          </div>
+          <div>
+            <label>Descuento Preventa (%):</label>
+            <input 
+              type="number" 
+              min="0" 
+              max="100" 
+              [ngModel]="nuevoDescuentoPreventa()" 
+              (ngModelChange)="nuevoDescuentoPreventa.set(+$event)" 
+              placeholder="Ej: 20" />
+            <small style="color: #94a3b8; font-size: 0.75rem;">(7 días antes a este % OFF)</small>
+          </div>
+        </div>
+
         <label>Géneros:</label>
         <div class="generos-checkbox-grid">
           @for (g of generos(); track g.id) {

@@ -31,6 +31,8 @@ export interface ShowTime {
   startTime: string;
   endTime?: string;
   price: number;
+  precioOriginal?: number; // <-- Precio normal antes de preventa
+  esPreventa?: boolean;    // <-- Bandera que indica si aplica precio preventa
 }
 
 export interface ProductoCandy {
@@ -80,6 +82,9 @@ export class Reserve implements OnInit, OnDestroy {
   creditoDisponible = signal<number>(0);
   usarCredito = signal<boolean>(false);
 
+  fechaEstrenoPelicula = signal<string | null>(null);
+  descuentoPreventaPelicula = signal<number>(20); 
+
   // Precios y totales blindados contra NaN
   selectedSeats = computed(() => this.seats().filter(s => s.selected));
 
@@ -125,8 +130,6 @@ export class Reserve implements OnInit, OnDestroy {
   });
 
   cuponSugerido = signal<{ codigo: string; porcentaje: number; motivo: string } | null>(null);
-  
-  
 
   aplicarCuponDirecto(codigo: string) {
     this.codigoCuponInput.set(codigo);
@@ -141,6 +144,9 @@ export class Reserve implements OnInit, OnDestroy {
     const movieData = await this.moviesService.getMovieById(movieId);
     if (!movieData) return;
 
+    this.fechaEstrenoPelicula.set((movieData as any).fecha_estreno || null);
+    this.descuentoPreventaPelicula.set(Number((movieData as any).descuento_preventa) || 20);
+
     this.movie.set({
       id: movieData.id,
       title: movieData.titulo,
@@ -149,7 +155,7 @@ export class Reserve implements OnInit, OnDestroy {
       rating: movieData.restriccion_edad || 'ATP',
       poster: movieData.imagen_url || '/assets/img/butacas-cine.jpg',
       synopsis: movieData.sinopsis || '',
-      trailerUrl: ''
+      trailerUrl: '',
     });
 
     await Promise.all([
@@ -332,7 +338,12 @@ export class Reserve implements OnInit, OnDestroy {
 
 
     const duracionMin = Number(this.movie()?.duration) || 120;
-      const list: ShowTime[] = data.map(f => {
+    const fechaEstrenoRaw = this.fechaEstrenoPelicula()
+    const descuentoConfigurado = this.descuentoPreventaPelicula();
+    const fechaEstreno = fechaEstrenoRaw ? new Date(fechaEstrenoRaw).getTime() : null;
+    const sieteDiasMs = 7 * 24 * 60 * 60 * 1000;
+
+    const list: ShowTime[] = data.map(f => {
         const inicio = new Date(f.fecha_hora);
         const fin = new Date(inicio.getTime() + duracionMin * 60000);
 
@@ -347,7 +358,21 @@ export class Reserve implements OnInit, OnDestroy {
           ? `Hoy (${diaMes})` 
           : `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} ${diaMes}`;
 
-        const rawP = Number(f.precio);
+        const rawP = Number(f.precio) > 0 ? Number(f.precio) : 4500;
+        let esPreventa = false;
+        let precioCalculado = rawP;
+
+        if (fechaEstreno && descuentoConfigurado > 0) {
+          const tiempoFuncion = inicio.getTime();
+          const inicioVentana = fechaEstreno - sieteDiasMs;
+
+          if (tiempoFuncion >= inicioVentana && tiempoFuncion < fechaEstreno) {
+            esPreventa = true;
+            const multiplicador = (100 - descuentoConfigurado) / 100;
+            precioCalculado = Math.round((rawP * multiplicador) / 100) * 100;
+          }
+        }
+
         return {
           id: f.id,
           salaId: f.sala_id,
@@ -356,7 +381,9 @@ export class Reserve implements OnInit, OnDestroy {
           dateStr: displayFecha, // <-- agregás esta propiedad
           startTime: formatPad(inicio),
           endTime: formatPad(fin),
-          price: rawP > 0 ? rawP : 4500
+          price: precioCalculado,
+          precioOriginal: rawP,
+          esPreventa: esPreventa
         };
       });
 
