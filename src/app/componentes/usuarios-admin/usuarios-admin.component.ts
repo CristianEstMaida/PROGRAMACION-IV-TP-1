@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConfirmDeleteDirective } from '../../directivas/confirm-delete.directive';
 import { SupabaseService } from '../../services/supabase.service';
+import { Auth } from '../../services/auth';
 import { Perfil } from '../../models/perfil';
 
 @Component({
@@ -13,6 +14,7 @@ import { Perfil } from '../../models/perfil';
 })
 export class UsuariosAdminComponent implements OnInit {
   private supabase = inject(SupabaseService).client;
+  private auth = inject(Auth);
 
   usuarios = signal<Perfil[]>([]);
   cargando = signal<boolean>(true);
@@ -40,6 +42,7 @@ export class UsuariosAdminComponent implements OnInit {
   // 2. UPDATE: Cambiar rol en Supabase
   async cambiarRol(usuario: Perfil, nuevoRol: string) {
     if (usuario.rol === nuevoRol) return;
+    const rolAnterior = usuario.rol;
 
     const { error } = await this.supabase
       .from('perfiles')
@@ -55,6 +58,15 @@ export class UsuariosAdminComponent implements OnInit {
     this.usuarios.update(lista =>
       lista.map(u => (u.id === usuario.id ? { ...u, rol: nuevoRol as any } : u))
     );
+
+    // Auditoría de cambio de rol
+    const user = await this.auth.getCurrentUser();
+    await this.supabase.from('logs_actividad').insert({
+      usuario: user?.email || 'admin@cinenova.com',
+      accion: 'Modificó Rol de Usuario',
+      entidad_afectada: 'perfiles',
+      detalle: `${usuario.email || usuario.nombre}: ${rolAnterior} -> ${nuevoRol}`
+    });
   }
 
   // Ahora recibe Perfil directamente
@@ -81,10 +93,20 @@ export class UsuariosAdminComponent implements OnInit {
     this.usuarios.update(lista =>
       lista.map(u => (u.id === usuario.id ? { ...u, activo: nuevoEstado } : u))
     );
+
+    // Auditoría de activación / suspensión
+    const user = await this.auth.getCurrentUser();
+    await this.supabase.from('logs_actividad').insert({
+      usuario: user?.email || 'admin@cinenova.com',
+      accion: nuevoEstado ? 'Activó Usuario' : 'Suspendió Usuario',
+      entidad_afectada: 'perfiles',
+      detalle: `Usuario: ${usuario.email || usuario.nombre}`
+    });
   }
 
   // 4. DELETE: Eliminar perfil
   async eliminarUsuario(id: string) {
+    const usuarioAEliminar = this.usuarios().find(u => u.id === id);
     const { error } = await this.supabase
       .from('perfiles')
       .delete()
@@ -97,5 +119,14 @@ export class UsuariosAdminComponent implements OnInit {
     }
 
     this.usuarios.update(lista => lista.filter(u => u.id !== id));
+
+    // Auditoría de baja
+    const user = await this.auth.getCurrentUser();
+    await this.supabase.from('logs_actividad').insert({
+      usuario: user?.email || 'admin@cinenova.com',
+      accion: 'Eliminó Usuario',
+      entidad_afectada: 'perfiles',
+      detalle: `Usuario eliminado: ${usuarioAEliminar?.email || id}`
+    });
   }
 }
