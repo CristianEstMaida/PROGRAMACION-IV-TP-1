@@ -72,7 +72,7 @@
             <h4>{{ combo.nombre }}</h4>
             <p class="combo-desc">{{ combo.descripcion }}</p>
             <span class="combo-price">${{ combo.precio | number:'1.0-0' }}</span>
-            <button type="button" class="btn-sm" (click)="modificarPrecioCombo(combo)">Cambiar Precio</button>
+            <button type="button" class="btn-sm" (click)="abrirModalPrecioCombo(combo)">Cambiar Precio</button>
           </div>
         } @empty {
           <p>No hay combos promocionales configurados.</p>
@@ -139,6 +139,41 @@
           </button>
           <button type="button" class="btn-submit" (click)="guardarProducto()" [disabled]="guardandoProducto() || !formNombre().trim()">
             {{ guardandoProducto() ? 'Guardando...' : (modoEdicion() ? 'Guardar Cambios' : 'Crear Producto') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+  <!-- Modal para Cambiar Precio de Combo -->
+  @if (mostrarModalCombo() && comboEnEdicion(); as combo) {
+    <div class="modal-backdrop">
+      <div class="modal-card" style="max-width: 420px;">
+        <h3>Modificar Precio de Combo</h3>
+        <p style="font-size: 0.9rem; color: #94a3b8; background: #111a28; padding: 0.7rem 0.9rem; border-radius: 8px; border: 1px solid #1c2b42; margin: 0;">
+          Combo: <strong style="color: #fff;">{{ combo.nombre }}</strong><br>
+          Precio actual: <strong style="color: #22c55e;">${{ combo.precio | number:'1.0-0' }}</strong>
+        </p>
+
+        <label>Nuevo Precio ($):</label>
+        <input 
+          type="number" 
+          min="1" 
+          [ngModel]="nuevoPrecioCombo()" 
+          (ngModelChange)="nuevoPrecioCombo.set(+$event)" 
+          [disabled]="guardandoCombo()" 
+          autofocus 
+          required />
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="cerrarModalCombo()" [disabled]="guardandoCombo()">
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            class="btn-submit" 
+            (click)="confirmarPrecioCombo()" 
+            [disabled]="guardandoCombo() || nuevoPrecioCombo() <= 0">
+            {{ guardandoCombo() ? 'Actualizando...' : 'Guardar Precio' }}
           </button>
         </div>
       </div>

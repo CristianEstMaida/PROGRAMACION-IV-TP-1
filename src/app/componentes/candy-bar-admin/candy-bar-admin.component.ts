@@ -28,6 +28,12 @@ export class CandyBarAdminComponent implements OnInit {
   modoEdicion = signal<boolean>(false);
   productoIdEnEdicion = signal<number | null>(null);
 
+  // Control del Modal de Precio de Combo
+  mostrarModalCombo = signal<boolean>(false);
+  guardandoCombo = signal<boolean>(false);
+  comboEnEdicion = signal<Combo | null>(null);
+  nuevoPrecioCombo = signal<number>(0);
+
   // Campos del formulario
   formNombre = signal<string>('');
   formCategoria = signal<string>('Snacks');
@@ -234,23 +240,55 @@ export class CandyBarAdminComponent implements OnInit {
 
   }
 
-  async modificarPrecioCombo(combo: Combo) {
-    const nuevo = prompt(`Ingresá el nuevo precio para ${combo.nombre}:`, combo.precio.toString());
-    if (!nuevo) return;
-    const precio = parseFloat(nuevo);
-    if (isNaN(precio) || precio <= 0) return;
+  abrirModalPrecioCombo(combo: Combo) {
+    this.comboEnEdicion.set(combo);
+    this.nuevoPrecioCombo.set(combo.precio);
+    this.mostrarModalCombo.set(true);
+  }
 
-    const ok = await this.candyService.actualizarPrecioCombo(combo.id, precio);
-    if (ok) {
-      this.combos.update(list => list.map(c => c.id === combo.id ? { ...c, precio } : c));
-      
-      const user = await this.auth.getCurrentUser();
-      await this.supabase.from('logs_actividad').insert({
-        usuario: user?.email || 'admin@cinenova.com',
-        accion: 'Modificó Precio Combo',
-        entidad_afectada: 'combos',
-        detalle: `${combo.nombre}: de $${combo.precio} a $${precio}`
-      });
+  cerrarModalCombo() {
+    if (this.guardandoCombo()) return;
+    this.mostrarModalCombo.set(false);
+    this.comboEnEdicion.set(null);
+  }
+
+  async confirmarPrecioCombo() {
+    const combo = this.comboEnEdicion();
+    const precio = Number(this.nuevoPrecioCombo());
+
+    if (!combo) return;
+    if (isNaN(precio) || precio <= 0) {
+      alert('Ingresá un precio numérico mayor a 0.');
+      return;
+    }
+
+    this.guardandoCombo.set(true);
+    const precioAnterior = combo.precio;
+
+    try {
+      const ok = await this.candyService.actualizarPrecioCombo(combo.id, precio);
+      if (ok) {
+        this.combos.update(list =>
+          list.map(c => c.id === combo.id ? { ...c, precio } : c)
+        );
+
+        const user = await this.auth.getCurrentUser();
+        await this.supabase.from('logs_actividad').insert({
+          usuario: user?.email || 'admin@cinenova.com',
+          accion: 'Modificó Precio Combo',
+          entidad_afectada: 'combos',
+          detalle: `${combo.nombre}: de $${precioAnterior} a $${precio}`
+        });
+
+        this.cerrarModalCombo();
+      } else {
+        alert('No se pudo actualizar el precio del combo.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Ocurrió un error inesperado al actualizar el combo.');
+    } finally {
+      this.guardandoCombo.set(false);
     }
   }
 }
