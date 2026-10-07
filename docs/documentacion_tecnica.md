@@ -81,3 +81,19 @@ CineNova es una aplicación web progresiva orientada al sector cinematográfico 
 * **Sprint 6 – Panel Operativo y Auditoría:** Terminal de validación de entradas para operadores, quema definitiva de QR consumidos y log de auditoría en base de datos.
 * **Sprint 7 – Cancelaciones y Fidelización:** Sección "Mis Películas" con balance de puntos (+1 por peso), historial visual y cancelación con devolución de crédito si faltan 2 horas o más.
 * **Sprint 8 – Administración, Métricas y PWA:** Asignación automática de salas con ventana de limpieza, exportación de reportes a PDF y Excel, y configuración del Service Worker para despliegue productivo.
+
+---
+
+## 7. Matriz de Datos del Usuario (Registro Excéntrico)
+
+Para dar estricto cumplimiento a la solicitud de recopilación no invasiva exigida en el correo del 01/01/2020, la entidad `perfiles` almacena:
+1. `nombre` y `apellido`
+2. `email` (vínculo Auth)
+3. `fecha_nacimiento` (para control de restricciones ATP/+13/+18 y cupones +50)
+4. `tipo_sangre` (A+, A-, B+, B-, AB+, AB-, O+, O-)
+5. `color_ojos` (Marrones, Azules, Verdes, Miel, Negros)
+6. `dias_vacaciones` (Valor entero anual)
+7. `credito` (Saldo acumulado por cancelaciones)
+8. `puntos` (Balance de fidelización)
+---
+
