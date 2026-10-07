@@ -1,4 +1,5 @@
 :root {
+  /* Variables activas en Login / Register / Sidebar */
   --accent: #e45b2f;
   --accent-dark: #ba4320;
   --text: #1d2433;
@@ -29,7 +30,6 @@
   --shadow-button-focus: 0 0 0 4px rgba(47, 102, 255, 0.22);
   --transition-base: 0.2s ease;
 
-   /* 🎨 Paleta principal */
   --color-bg: #121212;
   --color-surface: #1E1E1E;
   --color-sidebar: #1A1A1A;
@@ -39,13 +39,57 @@
   --color-text: #FFFFFF;
   --color-text-muted: #CCCCCC;
 
-  /* 🌟 Sombras y bordes */
   --shadow-default: 0 2px 6px rgba(0,0,0,0.4);
   --radius-default: 8px;
 
-  /* 🔤 Tipografía */
-  --font-family: 'Roboto', sans-serif;
-  --font-size-base: 16px;
+  --font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
   --font-size-title: 1.2rem;
   --font-size-heading: 1.5rem;
+
+  /* Tokens Dark Cinema (Figma / CineNova) */
+  --bg-main: #080c14;
+  --bg-card: #0d1522;
+  --bg-card-hover: #121c2d;
+  --bg-elevated: #141f30;
+  --border-subtle: #1c2b42;
+  --border-strong: #283b58;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --color-gold: #f59e0b;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Modales Globales Homogéneos (Figma Cinema Backoffice) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-card {
+  background-color: var(--bg-card) !important;
+  border: 1.5px solid var(--border-strong) !important;
+  border-radius: 14px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.8) !important;
+}
+
+.modal-card input,
+.modal-card select,
+.modal-card textarea {
+  background-color: var(--bg-elevated) !important;
+  border: 1px solid var(--border-strong) !important;
+  color: var(--text-primary) !important;
 }
