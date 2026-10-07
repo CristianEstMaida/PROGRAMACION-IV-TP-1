@@ -18,4 +18,29 @@
       </tr>
     </tbody>
   </table>
+
+    <!-- Controles de Paginación debajo de la tabla -->
+  <div class="paginacion-container">
+    <button 
+      type="button" 
+      class="btn-pag" 
+      (click)="paginaAnterior()" 
+      [disabled]="paginaActual() === 0 || cargandoLogs()">
+      ← Anterior
+    </button>
+
+    <span class="info-pag">
+      Página {{ paginaActual() + 1 }} de {{ totalPaginas() }}
+      <small>({{ totalLogs() }} registros)</small>
+    </span>
+
+    <button 
+      type="button" 
+      class="btn-pag" 
+      (click)="paginaSiguiente()" 
+      [disabled]="paginaActual() + 1 >= totalPaginas() || cargandoLogs()">
+      Siguiente →
+    </button>
+  </div>
 </section>
+

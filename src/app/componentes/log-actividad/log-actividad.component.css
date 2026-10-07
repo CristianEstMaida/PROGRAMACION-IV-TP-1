@@ -71,3 +71,40 @@ td:nth-child(3) {
 td:nth-child(4) {
   color: #cbd5e1;
 }
+
+.paginacion-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #111a28;
+  border: 1px solid #1c2b42;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+
+  .btn-pag {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover:not(:disabled) {
+      background: #334155;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  .info-pag small {
+    color: #64748b;
+    margin-left: 4px;
+  }
+}

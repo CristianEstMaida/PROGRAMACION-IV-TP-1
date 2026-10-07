@@ -1,13 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupabaseService } from '../../services/supabase.service';
 
-interface LogEntry {
-  fecha: string;
-  usuario: string;
-  accion: string;
-  detalle: string;
-}
+// interface LogEntry {
+//   fecha: string;
+//   usuario: string;
+//   accion: string;
+//   detalle: string;
+// }
 
 @Component({
   selector: 'app-log-actividad',
@@ -17,28 +17,59 @@ interface LogEntry {
   styleUrls: ['./log-actividad.component.css']
 })
 export class LogActividadComponent implements OnInit{
-//   logs: LogEntry[] = [
-//     { fecha: '2026-09-15 10:30', usuario: 'Admin', accion: 'Creó función', detalle: 'Avatar 2 - Sala 1 - 20:00' },
-//     { fecha: '2026-09-15 11:00', usuario: 'Operador', accion: 'Validó QR', detalle: 'Entrada #12345' },
-//     { fecha: '2026-09-15 12:15', usuario: 'Admin', accion: 'Modificó precio', detalle: 'Pochoclos Grandes $1500' },
-//     { fecha: '2026-09-15 13:00', usuario: 'Operador', accion: 'Registró usuario', detalle: 'Juan Pérez - fidelización' }
-//   ];
 
+  paginaActual = signal<number>(0);
+  tamanioPagina = 10;
+  totalLogs = signal<number>(0);
+  cargandoLogs = signal<boolean>(false);
   private supabase = inject(SupabaseService).client;
   logs = signal<any[]>([]);
+
+  totalPaginas = computed(() => {
+    return Math.ceil(this.totalLogs() / this.tamanioPagina) || 1;
+  });
 
   async ngOnInit() {
     await this.cargarLogs();
   }
 
   async cargarLogs() {
-    const { data } = await this.supabase
-      .from('logs_actividad')
-      .select('*')
-      .order('fecha', { ascending: false });
+   this.cargandoLogs.set(true);
+    const from = this.paginaActual() * this.tamanioPagina;
+    const to = from + this.tamanioPagina - 1;
 
-    if (data) {
-      this.logs.set(data);
+    try {
+      const { data, count, error } = await this.supabase
+        .from('logs_actividad')
+        .select('*', { count: 'exact' })
+        .order('fecha', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      this.logs.set(data || []);
+      if (count !== null) {
+        this.totalLogs.set(count);
+      }
+    } catch (err) {
+      console.error('Error cargando logs:', err);
+    } finally {
+      this.cargandoLogs.set(false);
+    }
+  }
+
+  paginaSiguiente() {
+    const maxPaginas = Math.ceil(this.totalLogs() / this.tamanioPagina);
+    if (this.paginaActual() + 1 < maxPaginas) {
+      this.paginaActual.update(p => p + 1);
+      this.cargarLogs();
+    }
+  }
+
+  paginaAnterior() {
+    if (this.paginaActual() > 0) {
+      this.paginaActual.update(p => p - 1);
+      this.cargarLogs();
     }
   }
 }
