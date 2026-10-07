@@ -157,3 +157,47 @@
   letter-spacing: 1px;
   margin-left: 0.2rem;
 }
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 68px !important;
+    min-width: 68px !important;
+    padding: 0.8rem 0.2rem !important;
+    box-sizing: border-box;
+  }
+
+  /* Oculta los textos para dejar solo los íconos */
+  .sidebar .logo span,
+  .sidebar .logo b,
+  .sidebar .menu a span {
+    display: none !important;
+  }
+
+  /* Centra los íconos en el riel lateral */
+  .sidebar .logo {
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+  }
+
+  .sidebar .menu {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sidebar .menu a {
+    justify-content: center !important;
+    padding: 0.7rem !important;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+  }
+
+  .sidebar .menu mat-icon {
+    margin: 0 !important;
+    font-size: 22px;
+  }
+}

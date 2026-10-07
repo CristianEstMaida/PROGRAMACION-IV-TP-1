@@ -4,7 +4,7 @@
   </div>
 
   <ul class="menu">
-    <li *ngFor="let item of menuItems" routerLinkActive="active">
+    <li *ngFor="let item of menuItems()" routerLinkActive="active">
       <a [routerLink]="item.route">
         <mat-icon>{{ item.icon }}</mat-icon>
         <span>{{ item.label }}</span>
