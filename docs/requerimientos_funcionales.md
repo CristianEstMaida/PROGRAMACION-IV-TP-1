@@ -48,19 +48,6 @@ El presente documento consolida la totalidad de requerimientos funcionales, regl
 
 ---
 
-## 4. Matriz de Datos del Usuario (Registro Excéntrico)
-
-Para dar estricto cumplimiento a la solicitud de recopilación no invasiva exigida en el correo del 01/01/2020, la entidad `perfiles` almacena:
-1. `nombre` y `apellido`
-2. `email` (vínculo Auth)
-3. `fecha_nacimiento` (para control de restricciones ATP/+13/+18 y cupones +50)
-4. `tipo_sangre` (A+, A-, B+, B-, AB+, AB-, O+, O-)
-5. `color_ojos` (Marrones, Azules, Verdes, Miel, Negros)
-6. `dias_vacaciones` (Valor entero anual)
-7. `credito` (Saldo acumulado por cancelaciones)
-8. `puntos` (Balance de fidelización)
----
-
 ## 5. Casos de Uso y Flujos de Negocio
 
 ### CU01 - Adquisición de Entradas y Candy Bar (Cliente / Anónimo)
