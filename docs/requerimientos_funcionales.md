@@ -1,18 +1,22 @@
-# Documento de Especificación de Requerimientos - CineApp (CineNova)
+# Documento de Especificación de Requerimientos del Sistema (SRS) - CineNova
 
-## 1. Introducción y Objetivos
-El presente documento consolida la totalidad de requerimientos funcionales, reglas de negocio y restricciones técnicas solicitadas por el cliente a través del intercambio de correspondencia formal para el desarrollo del sistema cinematográfico **CineNova**.
+## 1. Introducción y Alcance
+El presente documento consolida la totalidad de los requerimientos de negocio, funcionales y operativos del sistema cinematográfico CineNova, formalizados a través de los requerimientos enviados por el cliente entre el 01/01/2020 y el 10/03/2020.
+
+El sistema comprende una plataforma web integral orientada tanto al cliente final (compra de entradas, preventa, confitería y beneficios) como al personal operativo y de administración (control de salas, auditoría, validación de acceso y reportes de gestión).
 
 ---
 
 ## 2. Requerimientos Funcionales (RF)
 
-### Módulo Clientes y Cartelera
-- **RF01 - Visualización de Cartelera:** Listar películas en exhibición con filtro dinámico por formato (2D, 3D, 4D, 5D) y buscador por texto en tiempo real.
-- **RF02 - Podio Top 3:** Destacar en la portada las 3 películas con mayor cantidad de entradas vendidas históricas.
-- **RF03 - Próximos Estrenos y Alertas:** Listar lanzamientos futuros permitiendo a los clientes registrados suscribir recordatorios de preventa.
-- **RF04 - Sistema de Reseñas Pre-Reserva:** Permitir consultar sinopsis, ficha técnica y opiniones con calificación de 1 a 5 estrellas antes de avanzar a la compra. Los usuarios logueados pueden emitir comentarios.
-- **RF05 - Venta Anónima y Registrada:** Permitir comprar entradas a usuarios anónimos y a usuarios autenticados.
+### Módulo Clientes, Búsqueda y Películas
+- **RF01 - Portada y Podio Top 3:** La pantalla principal debe destacar en primer lugar las 3 películas históricamente más vendidas del complejo.
+- **RF02 - Visualización y Formatos de Cartelera** Mostrar el listado completo de películas en cartelera con filtros dinámicos por tecnología/formato (2D, 3D, 4D y 5D) e idioma (Castellano / Subtitulada).
+- **RF03 - Buscador y Filtro Multigénero:** Buscador en tiempo real por título y filtro combinable por géneros cinematográficos. El sistema debe admitir que una misma película posea múltiples géneros (ej: Acción + Ciencia Ficción).
+- **RF04 - Sección Próximamente y Suscripción a Alertas:** Catálogo de películas a estrenarse en las próximas semanas, permitiendo a los clientes registrados activar una alerta para recibir una notificación cuando se habiliten las funciones para la venta.
+- **RF05 - Motor de Preventa (7 Días):** Habilitar la venta anticipada de entradas con hasta 7 días de antelación al estreno oficial con un precio diferencial de preventa. Cumplido el plazo de preventa, el precio debe retornar de forma automática al valor regular de la entrada. Esta regla es configurable de forma individual película por película.
+
+- **RF06 - Ficha Técnica y Sistema de Reseñas Pre-Reserva: ** Cada película debe exhibir póster, duración, sinopsis, clasificación etaria y la puntuación promedio en estrellas. El usuario debe poder consultar opiniones y calificaciones de otros clientes antes de iniciar la compra. Los usuarios autenticados pueden calificar (1 a 5 estrellas) y publicar comentarios breves.
 
 ### Módulo de Reserva y Transacción
 - **RF06 - Mapa de Butacas Físico:** Renderizar 20 filas (A-T) con división de 3 columnas (4 - 20 - 4).
@@ -48,20 +52,7 @@ El presente documento consolida la totalidad de requerimientos funcionales, regl
 
 ---
 
-## 4. Matriz de Datos del Usuario (Registro Excéntrico)
-
-Para dar estricto cumplimiento a la solicitud de recopilación no invasiva exigida en el correo del 01/01/2020, la entidad `perfiles` almacena:
-1. `nombre` y `apellido`
-2. `email` (vínculo Auth)
-3. `fecha_nacimiento` (para control de restricciones ATP/+13/+18 y cupones +50)
-4. `tipo_sangre` (A+, A-, B+, B-, AB+, AB-, O+, O-)
-5. `color_ojos` (Marrones, Azules, Verdes, Miel, Negros)
-6. `dias_vacaciones` (Valor entero anual)
-7. `credito` (Saldo acumulado por cancelaciones)
-8. `puntos` (Balance de fidelización)
----
-
-## 5. Casos de Uso y Flujos de Negocio
+## 4. Casos de Uso y Flujos de Negocio
 
 ### CU01 - Adquisición de Entradas y Candy Bar (Cliente / Anónimo)
 * **Actor:** Cliente autenticado o Usuario anónimo.
@@ -123,14 +114,3 @@ Para dar estricto cumplimiento a la solicitud de recopilación no invasiva exigi
   * Si ninguna sala tiene espacio en esa franja horaria respetando los 30 minutos de limpieza, el alta es rechazada indicando conflicto de disponibilidad.
 
 ---
-
-## 6. Sprints de Desarrollo e Integración
-
-* **Sprint 1 – Identidad y Acceso:** Setup de Angular, arquitectura de componentes standalone, sistema de login/registro con persistencia de campos extendidos (sangre, ojos, vacaciones) en Supabase Auth y perfiles.
-* **Sprint 2 – Cartelera, Top de Ventas y Búsqueda:** Home interactivo con filtros reactivos por formato (2D a 5D), buscador en tiempo real mediante Signals y cálculo de películas más vendidas.
-* **Sprint 3 – Detalle y Reseñas:** Ficha técnica pre-reserva, cálculo dinámico de puntuación en estrellas y persistencia de comentarios en base de datos.
-* **Sprint 4 – Motor de Salas y Reserva:** Renderizado geométrico de la sala (20 filas x 28 butacas con distribución 4-20-4), marcado de asientos adaptados (J, K) y butacas VIP (+30% en filas R, S, T) con control de ocupación.
-* **Sprint 5 – Checkout Unificado (Candy Bar + Cupones):** Catálogo de confitería integrado en la orden, motor de validación de cupones (bienvenida y mayores de 50 años), emisión de PDF con `jspdf` y renderizado de QR único.
-* **Sprint 6 – Panel Operativo y Auditoría:** Terminal de validación de entradas para operadores, quema definitiva de QR consumidos y log de auditoría en base de datos.
-* **Sprint 7 – Cancelaciones y Fidelización:** Sección "Mis Películas" con balance de puntos (+1 por peso), historial visual y cancelación con devolución de crédito si faltan 2 horas o más.
-* **Sprint 8 – Administración, Métricas y PWA:** Asignación automática de salas con ventana de limpieza, exportación de reportes a PDF y Excel, y configuración del Service Worker para despliegue productivo.
