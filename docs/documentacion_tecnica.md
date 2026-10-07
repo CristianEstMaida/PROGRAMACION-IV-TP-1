@@ -26,24 +26,6 @@ CineNova es una aplicación web progresiva orientada al sector cinematográfico 
 
 ---
 
-## 3. Matriz de Requerimientos y Cumplimiento
-
-| Requerimiento (Correos del Cliente) | Estado | Implementación Técnica |
-| :--- | :---: | :--- |
-| **Campos de Registro Excéntricos** (01/01/2020) | ✅ | Formulario en `Register` que persiste `tipo_sangre`, `color_ojos` y `dias_vacaciones` en tabla `perfiles`. |
-| **Venta Anónima y Registrada** (01/01/2020) | ✅ | En `Reserve`, la columna `usuario_id` en `entradas` es opcional (acepta nulos para compras sin sesión). |
-| **Distribución de Sala y Butacas VIP** (01/01 y 12/02) | ✅ | Sala de 20 filas (A-T) x 28 butacas (4-20-4). Filas J y K adaptadas para discapacidad. Filas R, S y T con recargo del +30%. |
-| **Reseñas y Calificaciones** (16/01/2020) | ✅ | En `MovieDetail`, lectura y carga de comentarios en tabla `resenas` calculando el promedio en estrellas. |
-| **Candy Bar Integrado y QR Único** (30/01/2020) | ✅ | Selección de combos en el checkout, persistencia en `compras_candy` y generación de PDF con un solo QR. |
-| **Cupones Dinámicos** (01/01 y 30/01) | ✅ | Descuento del 20% en primera compra (`BIENVENIDA20`) y 30% para clientes $\ge 50$ años (`SENIOR50`). |
-| **Asignación Automática de Salas** (06/02/2020) | ✅ | En `FuncionesAdmin`, el sistema busca sala libre validando solapamientos con duración + 30 min de limpieza. |
-| **Control de Acceso y Quema de Tickets** (06/02/2020) | ✅ | En `ValidadorQrComponent`, el operador valida el código; la entrada pasa a `usada` y queda invalidada. |
-| **Historial y Cancelaciones** (08/03 y 10/03) | ✅ | En `MisPeliculasComponent`, cancelación si faltan $\ge 2$ horas con acreditación del importe a saldo en cuenta (`credito`). |
-| **Fidelización por Puntos** (08/03/2020) | ✅ | Acreditación de 1 punto por cada peso abonado en compras realizadas por usuarios registrados. |
-| **Log de Auditoría** (10/03/2020) | ✅ | Tabla `logs_actividad` consultada en tiempo real ante eventos administrativos y validaciones de accesos. |
-
----
-
 ## 4. Estructura de la Base de Datos (Supabase)
 
 - **`perfiles`:** Datos extendidos del usuario (`nombre`, `apellido`, `tipo_sangre`, `color_ojos`, `dias_vacaciones`, `puntos`, `credito`, `rol`).
