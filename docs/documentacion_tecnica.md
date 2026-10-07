@@ -71,15 +71,13 @@ CineNova es una aplicación web progresiva orientada al sector cinematográfico 
 
 ---
 
-## 6. Instalación y Ejecución Local
+## 6. Sprints de Desarrollo e Integración
 
-```bash
-# 1. Clonar el repositorio
-git clone https://github.com/CristianEstMaida/Programacion-IV-TP-1.git
-cd Programacion-IV-TP-1
-
-# 2. Instalar dependencias
-npm install
-
-# 3. Iniciar entorno de desarrollo
-ng serve -o```
+* **Sprint 1 – Identidad y Acceso:** Setup de Angular, arquitectura de componentes standalone, sistema de login/registro con persistencia de campos extendidos (sangre, ojos, vacaciones) en Supabase Auth y perfiles.
+* **Sprint 2 – Cartelera, Top de Ventas y Búsqueda:** Home interactivo con filtros reactivos por formato (2D a 5D), buscador en tiempo real mediante Signals y cálculo de películas más vendidas.
+* **Sprint 3 – Detalle y Reseñas:** Ficha técnica pre-reserva, cálculo dinámico de puntuación en estrellas y persistencia de comentarios en base de datos.
+* **Sprint 4 – Motor de Salas y Reserva:** Renderizado geométrico de la sala (20 filas x 28 butacas con distribución 4-20-4), marcado de asientos adaptados (J, K) y butacas VIP (+30% en filas R, S, T) con control de ocupación.
+* **Sprint 5 – Checkout Unificado (Candy Bar + Cupones):** Catálogo de confitería integrado en la orden, motor de validación de cupones (bienvenida y mayores de 50 años), emisión de PDF con `jspdf` y renderizado de QR único.
+* **Sprint 6 – Panel Operativo y Auditoría:** Terminal de validación de entradas para operadores, quema definitiva de QR consumidos y log de auditoría en base de datos.
+* **Sprint 7 – Cancelaciones y Fidelización:** Sección "Mis Películas" con balance de puntos (+1 por peso), historial visual y cancelación con devolución de crédito si faltan 2 horas o más.
+* **Sprint 8 – Administración, Métricas y PWA:** Asignación automática de salas con ventana de limpieza, exportación de reportes a PDF y Excel, y configuración del Service Worker para despliegue productivo.
