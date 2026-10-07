@@ -35,7 +35,7 @@
         name="codigo"
         placeholder="Ej: TICKET-1-12-1695412345" 
         required 
-        autofocus />
+        appAutoFocus />
       <button type="submit" [disabled]="cargando() || !codigoEntrada().trim()">
         {{ cargando() ? 'Comprobando...' : 'Validar Ingreso' }}
       </button>
