@@ -26,7 +26,7 @@ CineNova es una aplicación web progresiva orientada al sector cinematográfico 
 
 ---
 
-## 4. Estructura de la Base de Datos (Supabase)
+## 3. Estructura de la Base de Datos (Supabase)
 
 - **`perfiles`:** Datos extendidos del usuario (`nombre`, `apellido`, `tipo_sangre`, `color_ojos`, `dias_vacaciones`, `puntos`, `credito`, `rol`).
 - **`peliculas`:** Títulos, sinopsis, duración, formato (2D, 3D, 4D, 5D), clasificación por edad y póster.
@@ -40,7 +40,7 @@ CineNova es una aplicación web progresiva orientada al sector cinematográfico 
 
 ---
 
-## 5. Reglas de Negocio Clave
+## 4. Reglas de Negocio Clave
 
 1. **Recargo VIP:** Las butacas de las filas R, S y T calculan automáticamente:  
    $$\text{Precio Final} = \text{Precio Base} \times 1.30$$
@@ -53,7 +53,7 @@ CineNova es una aplicación web progresiva orientada al sector cinematográfico 
 
 ---
 
-## 6. Sprints de Desarrollo e Integración
+## 5. Sprints de Desarrollo e Integración
 
 * **Sprint 1 – Identidad y Acceso:** Setup de Angular, arquitectura de componentes standalone, sistema de login/registro con persistencia de campos extendidos (sangre, ojos, vacaciones) en Supabase Auth y perfiles.
 * **Sprint 2 – Cartelera, Top de Ventas y Búsqueda:** Home interactivo con filtros reactivos por formato (2D a 5D), buscador en tiempo real mediante Signals y cálculo de películas más vendidas.
@@ -66,7 +66,7 @@ CineNova es una aplicación web progresiva orientada al sector cinematográfico 
 
 ---
 
-## 7. Matriz de Datos del Usuario (Registro Excéntrico)
+## 6. Matriz de Datos del Usuario (Registro Excéntrico)
 
 Para dar estricto cumplimiento a la solicitud de recopilación no invasiva exigida en el correo del 01/01/2020, la entidad `perfiles` almacena:
 1. `nombre` y `apellido`
@@ -79,7 +79,7 @@ Para dar estricto cumplimiento a la solicitud de recopilación no invasiva exigi
 8. `puntos` (Balance de fidelización)
 ---
 
-## 8. Matriz de Requerimientos y Cumplimiento
+## 7. Matriz de Requerimientos y Cumplimiento
 
 | Requerimiento (Correos del Cliente) | Estado | Implementación Técnica |
 | :--- | :---: | :--- |
