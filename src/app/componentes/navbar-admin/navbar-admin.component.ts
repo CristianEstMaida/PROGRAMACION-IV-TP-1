@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Auth } from '../../services/auth';
 import { Router, RouterLink } from '@angular/router';
@@ -15,7 +15,23 @@ export class NavbarAdminComponent {
   @Input() adminName: string = 'Admin';
 
   private auth = inject(Auth);
-   private router = inject(Router);
+  private router = inject(Router);
+
+  usuarioLabel = signal<string>('Personal');
+
+  async ngOnInit() {
+    const user = await this.auth.getCurrentUser();
+    if (user) {
+      const rol = await this.auth.getUserRole(user.id);
+      if (rol === 'admin') {
+        this.usuarioLabel.set('Administrador');
+      } else if (rol === 'operador') {
+        this.usuarioLabel.set('Operador');
+      } else {
+        this.usuarioLabel.set(user.email?.split('@')[0] || 'Usuario');
+      }
+    }
+  }
 
   async logout() {
     try {
