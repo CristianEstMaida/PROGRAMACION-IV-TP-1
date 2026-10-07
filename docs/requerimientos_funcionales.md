@@ -34,12 +34,9 @@ El sistema comprende una plataforma web integral orientada tanto al cliente fina
 - **RF12 - Sección "Mis Películas" y Cancelaciones a Crédito: ** 
   - Historial visual de funciones a las que asistió el usuario, exhibiendo pósters, fechas y su propia calificación emitida.
   - Cancelación con Reintegro a Saldo: El cliente puede anular una entrada hasta 2 horas antes de la hora de inicio de la función. El sistema no realiza devolución monetaria tradicional, sino que acredita el 100% del importe en la billetera virtual (crédito en cuenta) del usuario para consumirlo en compras futuras. Si restan menos de 2 horas, la opción se deshabilita.
-### Sala, Butacas y Candy Bar
-- **RF12 - Validador de QR y Código:** Terminal operativa para validar el ingreso a sala y entrega de Candy Bar mediante escaneo o ingreso manual del código.
-- **RF13 - Invalidation (Quema) de Ticket:** Al validar, el sistema marca el ticket como usado impidiendo cualquier reutilización posterior.
 
 ### Sala, Butacas y Candy Bar
-- **RF14 - Topología de Salas y Butacas Adaptadas: ** 
+- **RF13 - Topología de Salas y Butacas Adaptadas: ** 
   - Estructura estándar de sala: 20 filas (letras A a T) divididas en 3 bloques de 4, 20 y 4 butacas.
   - Espacio Accesible (Movilidad Reducida): Las filas centrales J y K se reemplazan por una disposición adaptada con distribución de menor densidad: 2, 10 y 2 butacas, destacadas visualmente en el plano.
   - Sector VIP: Las últimas tres filas de la sala (R, S y T) se clasifican como butacas VIP, con un recargo automático del 30% sobre el precio base de la entrada y señalización diferenciada en el mapa.
