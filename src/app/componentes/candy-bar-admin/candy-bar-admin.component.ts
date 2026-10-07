@@ -40,6 +40,7 @@ export class CandyBarAdminComponent implements OnInit {
   formPrecio = signal<number>(1500);
   formStock = signal<number>(20);
   formImagen = signal<string>('https://images.unsplash.com/photo-1572177191856-3cde618dee1f?w=300');
+  nuevaImagenCombo = signal<string>('');
   
   async ngOnInit() {
     await this.cargarDatos();
@@ -243,6 +244,7 @@ export class CandyBarAdminComponent implements OnInit {
   abrirModalPrecioCombo(combo: Combo) {
     this.comboEnEdicion.set(combo);
     this.nuevoPrecioCombo.set(combo.precio);
+    this.nuevaImagenCombo.set(combo.imagen_url || '');
     this.mostrarModalCombo.set(true);
   }
 
@@ -255,6 +257,7 @@ export class CandyBarAdminComponent implements OnInit {
   async confirmarPrecioCombo() {
     const combo = this.comboEnEdicion();
     const precio = Number(this.nuevoPrecioCombo());
+    const imagenUrl = (combo?.imagen_url || '').trim();
 
     if (!combo) return;
     if (isNaN(precio) || precio <= 0) {
@@ -266,18 +269,18 @@ export class CandyBarAdminComponent implements OnInit {
     const precioAnterior = combo.precio;
 
     try {
-      const ok = await this.candyService.actualizarPrecioCombo(combo.id, precio);
+      const ok = await this.candyService.actualizarCombo(combo.id, precio, imagenUrl);
       if (ok) {
         this.combos.update(list =>
-          list.map(c => c.id === combo.id ? { ...c, precio } : c)
+          list.map(c => c.id === combo.id ? { ...c, precio, imagen_url: imagenUrl } : c)
         );
 
         const user = await this.auth.getCurrentUser();
         await this.supabase.from('logs_actividad').insert({
           usuario: user?.email || 'admin@cinenova.com',
-          accion: 'Modificó Precio Combo',
+          accion: 'Modificó Combo',
           entidad_afectada: 'combos',
-          detalle: `${combo.nombre}: de $${precioAnterior} a $${precio}`
+          detalle: `${combo.nombre}: Precio $${precioAnterior} -> $${precio}, Imagen actualizada`
         });
 
         this.cerrarModalCombo();

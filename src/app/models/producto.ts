@@ -18,4 +18,5 @@ export interface Combo {
   descripcion: string;
   precio: number;
   activo?: boolean;
+  imagen_url?: string;
 }

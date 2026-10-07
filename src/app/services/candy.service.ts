@@ -91,12 +91,32 @@ export class CandyService {
     return true;
   }
 
-  async actualizarPrecioCombo(id: number, nuevoPrecio: number): Promise<boolean> {
-    const { error } = await this.supabase
-      .from('combos')
-      .update({ precio: nuevoPrecio })
-      .eq('id', id);
-    return !error;
+  async actualizarCombo(id: number | string, precio: number, imagenUrl?: string): Promise<boolean> {
+    try {
+      console.log('Datos que van a Supabase:', { id, precio, imagenUrl });
+      const updateData: any = { precio };
+      if (imagenUrl !== undefined) {
+        // Ojo: revisá si en tu tabla la columna se llama 'imagen_url', 'imagen' o 'url'
+        updateData.imagen_url = imagenUrl;
+      }
+
+      const {data, error } = await this.supabase
+        .from('combos') // o 'productos' según tu tabla
+        .update(updateData)
+        .eq('id', id)
+        .select();
+
+        console.log('Respuesta de Supabase:', { data, error });
+
+      if (error) {
+        console.error('Error al actualizar combo:', error);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.error('Error inesperado en servicio:', err);
+      return false;
+    }
   }
 
   // Actualizar todos los campos de un producto

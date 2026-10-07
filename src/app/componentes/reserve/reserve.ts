@@ -42,6 +42,7 @@ export interface ProductoCandy {
   precio: number;
   cantidad: number;
   imagen_url?: string;
+  descripcion?: string;
 }
 
 @Component({
@@ -291,7 +292,8 @@ export class Reserve implements OnInit, OnDestroy {
           categoria: p.categoria || 'Snacks',
           precio: Number(p.precio) || 0,
           imagen_url: p.imagen_url || 'https://images.unsplash.com/photo-1572177191856-3cde618dee1f?w=300', // <-- Imagen mapeada con fallback
-          cantidad: 0
+          cantidad: 0,
+          descripcion: p.descripcion || 'Delicioso snack para disfrutar durante la función'
         });
       });
     }
@@ -304,7 +306,8 @@ export class Reserve implements OnInit, OnDestroy {
           categoria: 'Combos',
           precio: Number(c.precio) || 0,
           imagen_url: c.imagen_url || 'https://images.unsplash.com/photo-1572177191856-3cde618dee1f?w=300',
-          cantidad: 0
+          cantidad: 0,
+          descripcion: c.descripcion || 'Delicioso snack para disfrutar durante la función'
         });
       });
     }

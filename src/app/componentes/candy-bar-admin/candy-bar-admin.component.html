@@ -72,7 +72,7 @@
             <h4>{{ combo.nombre }}</h4>
             <p class="combo-desc">{{ combo.descripcion }}</p>
             <span class="combo-price">${{ combo.precio | number:'1.0-0' }}</span>
-            <button type="button" class="btn-sm" (click)="abrirModalPrecioCombo(combo)">Cambiar Precio</button>
+            <button type="button" class="btn-sm" (click)="abrirModalPrecioCombo(combo)">Editar Combo</button>
           </div>
         } @empty {
           <p>No hay combos promocionales configurados.</p>
@@ -148,7 +148,7 @@
   @if (mostrarModalCombo() && comboEnEdicion(); as combo) {
     <div class="modal-backdrop">
       <div class="modal-card" style="max-width: 420px;">
-        <h3>Modificar Precio de Combo</h3>
+        <h3>Editar {{ combo.nombre }}</h3>
         <p style="font-size: 0.9rem; color: #94a3b8; background: #111a28; padding: 0.7rem 0.9rem; border-radius: 8px; border: 1px solid #1c2b42; margin: 0;">
           Combo: <strong style="color: #fff;">{{ combo.nombre }}</strong><br>
           Precio actual: <strong style="color: #22c55e;">${{ combo.precio | number:'1.0-0' }}</strong>
@@ -164,6 +164,13 @@
           autofocus 
           required />
 
+          <label>URL de la Imagen:</label>
+          <input type="text" [(ngModel)]="combo.imagen_url" placeholder="https://..." />
+
+          <div class="preview" *ngIf="combo.imagen_url">
+            <img [src]="combo.imagen_url" alt="Vista previa" style="max-height: 80px;" />
+          </div>
+
         <div class="modal-actions">
           <button type="button" class="btn-cancel" (click)="cerrarModalCombo()" [disabled]="guardandoCombo()">
             Cancelar
@@ -173,7 +180,7 @@
             class="btn-submit" 
             (click)="confirmarPrecioCombo()" 
             [disabled]="guardandoCombo() || nuevoPrecioCombo() <= 0">
-            {{ guardandoCombo() ? 'Actualizando...' : 'Guardar Precio' }}
+            {{ guardandoCombo() ? 'Actualizando...' : 'Guardar Cambios' }}
           </button>
         </div>
       </div>

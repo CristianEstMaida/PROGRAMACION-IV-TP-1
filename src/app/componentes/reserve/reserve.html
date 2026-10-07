@@ -149,6 +149,7 @@
                     class="candy-thumb" />
                   <div class="candy-info">
                     <strong>{{ p.nombre }}</strong>
+                    <span class="candy-desc">{{ p.descripcion || 'Delicioso snack para disfrutar durante la función' }}</span>
                     <span class="candy-cat">{{ p.categoria }}</span>
                     <span class="candy-price">${{ p.precio | number:'1.0-0' }}</span>
                   </div>
