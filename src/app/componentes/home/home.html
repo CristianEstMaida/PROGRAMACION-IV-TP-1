@@ -49,19 +49,20 @@
   </header>
 
   <!-- Hero Destacado -->
-  <section class="hero-banner">
+  <section 
+    *ngIf="peliculaDestacada() as peli"
+    class="hero-banner">
+
     <div class="hero-overlay"></div>
     <div class="hero-content">
       <span class="hero-badge">ESTRENO DE LA SEMANA</span>
-      <h1 class="hero-title">Avatar: El Sentido del Agua</h1>
-      <p class="hero-desc">
-        Ambientada más de una década después de los acontecimientos de la primera película, cuenta la historia de la familia Sully.
-      </p>
+      <h1 class="hero-title">{{ peli.titulo }}</h1>
+    <p class="hero-desc">{{ peli.sinopsis }}</p>
       <div class="hero-actions">
         <button type="button" class="btn-primary" (click)="scrollToCartelera()">
           <mat-icon>theaters</mat-icon> Ver Cartelera
         </button>
-        <a [routerLink]="['/movie', 1]" class="btn-secondary">
+        <a [routerLink]="['/movie', peli.id]" class="btn-secondary">
           <mat-icon>visibility</mat-icon> Ver Ficha y Reseñas
         </a>
       </div>

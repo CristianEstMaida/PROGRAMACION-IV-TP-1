@@ -50,8 +50,9 @@ export class Home implements OnInit {
   busqueda = signal<string>('');
   filtroFormato = signal<string>('Todas');
 
-  // 2. En la clase Home:
   filtroGenero = signal<string>('Todos');
+
+  peliculaDestacada = signal<any | null>(null);
 
   // Lista reactiva de géneros únicos disponibles en la cartelera actual
   generosDisponibles = computed(() => {
@@ -101,7 +102,8 @@ export class Home implements OnInit {
 
   async cargarCartelera() {
     const data = await this.moviesService.getCartelera();
-    this.cartelera.set((data || []).map((p: any) => {
+    
+    const peliculasMapeadas = (data || []).map((p: any) => {
       // 1. Extraer los formatos y forzar tipado string
       const listaFormatos: string[] = Array.isArray(p.funciones) 
         ? p.funciones.map((f: any) => String(f.tipo_funcion || '')).filter(Boolean)
@@ -120,16 +122,28 @@ export class Home implements OnInit {
       return {
         id: p.id,
         titulo: p.titulo,
+        sinopsis: p.sinopsis || '',
         duracion_minutos: p.duracion_minutos,
         formato: formatoFinal,
-        formatos: tipos, // Ahora TypeScript sabe que es estrictamente string[]
+        formatos: tipos,
         generos: listaGeneros,
         restriccion_edad: p.restriccion_edad || 'ATP',
         poster: p.imagen_url || '/assets/img/butacas-cine.jpg',
+        banner: p.imagen_banner || p.imagen_url || '/assets/img/butacas-cine.jpg',
         precio: 4500,
         promedio_estrellas: 4.8
       };
-    }));   
+    });
+
+    // Guardamos la lista en el signal de cartelera
+    this.cartelera.set(peliculasMapeadas);
+
+    // Asignamos la primera película directamente sin consultas extra
+    if (peliculasMapeadas.length > 0) {
+      this.peliculaDestacada.set(peliculasMapeadas[0]);
+    } else {
+      this.peliculaDestacada.set(null);
+    }
   }
   setFiltroGenero(genero: string) {
     this.filtroGenero.set(genero);
