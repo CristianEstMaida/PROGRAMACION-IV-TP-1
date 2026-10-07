@@ -5,11 +5,16 @@
   </div>
 
   <div class="navbar-actions">
-    <a routerLink="/home" class="btn-home-link" style="display: inline-flex; align-items: center; gap: 0.4rem; color: #cbd5e1; text-decoration: none; font-weight: 600; font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);">
-      <mat-icon style="font-size: 18px; width: 18px; height: 18px;">theaters</mat-icon>
+    <a routerLink="/home" class="btn-nav">
+      <mat-icon>theaters</mat-icon>
       <span>Ir a Cartelera</span>
     </a>
-    
+
+    <a class="btn-nav" routerLink="/mis-peliculas">
+      <mat-icon>confirmation_number</mat-icon>
+      <span>Mis Películas</span>
+    </a>
+
     <div class="user-profile">
       <mat-icon>account_circle</mat-icon>
       <span>{{ usuarioLabel() }}</span>

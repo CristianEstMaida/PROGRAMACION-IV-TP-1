@@ -94,6 +94,33 @@
   transform: translateY(0);
 }
 
+.btn-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: transparent;
+  border: 1px solid #1c2b42; /* Mismo borde exacto para ambos */
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-nav:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: #283b58;
+  color: #ffffff;
+}
+
+.btn-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 @media (max-width: 768px) {
   .navbar-admin {
     padding: 0.6rem 1rem !important;

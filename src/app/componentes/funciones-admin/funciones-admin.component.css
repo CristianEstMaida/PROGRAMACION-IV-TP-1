@@ -187,3 +187,55 @@ td button:active {
   font-weight: 700;
   font-size: 0.85rem;
 }
+
+.custom-date-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.date-sub-input {
+  background-color: #141f30;
+  border: 1.5px solid #283b58;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 0.6rem 0.5rem;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.date-sub-input:focus {
+  border-color: #ff334b;
+  box-shadow: 0 0 0 2px rgba(255, 51, 75, 0.25);
+}
+
+.date-sub-input.dia {
+  width: 65px;
+  text-align: center;
+}
+
+.date-sub-input.mes {
+  width: 120px;
+}
+
+.date-sub-input.mes option {
+  background-color: #0d1624;
+  color: #ffffff;
+}
+
+.date-sub-input.anio {
+  width: 75px;
+  text-align: center;
+}
+
+/* Oculta las flechas del input number para que parezca un campo limpio */
+.date-sub-input::-webkit-inner-spin-button,
+.date-sub-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.date-sub-input[type=number] {
+  -moz-appearance: textfield;
+}

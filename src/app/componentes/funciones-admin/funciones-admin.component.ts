@@ -20,6 +20,11 @@ export class FuncionesAdminComponent {
   mensajeError = signal<string | null>(null);
   mensajeExito = signal<string | null>(null);
 
+  // Variables enlazadas a los 3 inputs
+  funcionDia: string = '';
+  funcionMes: string = '';
+  funcionAnio: number = new Date().getFullYear();
+
   private getFechaLocal(d = new Date()): string {
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -32,17 +37,26 @@ export class FuncionesAdminComponent {
 
   // Fecha de hoy en formato YYYY-MM-DD para el atributo [min] del HTML
 
-  obtenerHoraMinima(fechaSeleccionada: string): string {
-    if (!fechaSeleccionada) return '00:00';
-    
-    // Usar el método local en lugar de toISOString()
-    const hoyStr = this.getFechaLocal();
-    if (fechaSeleccionada === hoyStr) {
-      const ahora = new Date();
-      const h = String(ahora.getHours()).padStart(2, '0');
-      const m = String(ahora.getMinutes()).padStart(2, '0');
-      return `${h}:${m}`;
+  obtenerHoraMinima(dia: string | number, mes: string, anio: string | number): string {
+    if (!dia || !mes || !anio) return '00:00';
+
+    const diaStr = String(dia).padStart(2, '0');
+    const fechaIngresada = `${anio}-${mes}-${diaStr}`;
+
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const fechaHoy = `${yyyy}-${mm}-${dd}`;
+
+    // Si la fecha elegida es hoy, la hora mínima es la hora actual redondeada
+    if (fechaIngresada === fechaHoy) {
+      const hh = String(hoy.getHours()).padStart(2, '0');
+      const min = String(hoy.getMinutes()).padStart(2, '0');
+      return `${hh}:${min}`;
     }
+
+    // Si es un día futuro, puede empezar desde las 00:00
     return '00:00';
   }
 
@@ -86,14 +100,25 @@ export class FuncionesAdminComponent {
     }
   }
 
-  async agregarFuncion(peliculaIdStr: string, fechaStr: string, horario: string, formato: string, precio: number) {
+  async agregarFuncion(peliculaIdStr: string, horario: string, formato: string, precio: number) {
     this.mensajeError.set(null);
     this.mensajeExito.set(null);
 
-    if (!peliculaIdStr || !fechaStr || !horario || !precio) {
-      this.mensajeError.set('Completá todos los campos.');
+      // 0. Validar los 3 campos de fecha
+    if (!this.funcionDia || !this.funcionMes || !this.funcionAnio) {
+      this.mensajeError.set('Completá día, mes y año de la función.');
       return;
     }
+
+    // 2. Validar el resto de los campos
+    if (!peliculaIdStr || !horario || !precio) {
+      this.mensajeError.set('Completá todos los campos obligatorios.');
+      return;
+    }
+
+    // 3. Formatear la fecha a YYYY-MM-DD
+    const diaPadded = String(this.funcionDia).padStart(2, '0');
+    const fechaStr = `${this.funcionAnio}-${this.funcionMes}-${diaPadded}`;
 
     const peliculaId = Number(peliculaIdStr);
     const peliElegida = this.peliculas().find(p => p.id === peliculaId);
