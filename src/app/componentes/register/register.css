@@ -1,15 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
 
 :host {
-  --bg-start: #f6efe8;
-  --bg-end: #f5f8ff;
-  
+  /* Variables de color adaptadas a Dark Cinema */
+  --bg-start: #080c14;
+  --bg-end: #0d1624;
+  --surface: #0d1624;        /* Antes #ffffff (hacía blanca la tarjeta) */
+  --text: #e2e8f0;           /* Antes #1d2433 (hacía invisibles las letras) */
+  --border: #283b58;         /* Antes #dbe0eb */
+  --placeholder: #64748b;
+
   --error-shadow: rgba(217, 48, 37, 0.25);
   --pending-shadow: rgba(138, 43, 226, 0.25);
   --valid-shadow: rgba(40, 167, 69, 0.25);
-
   font-family: 'Outfit', 'Segoe UI', sans-serif;
-  
+
   --padding-input: 0.8rem 2.5rem 0.8rem 0.95rem; /* Espacio a la derecha para los emojis */
   --padding-form: 1.8rem;
   --padding-form-mobile: 1.2rem;
@@ -122,8 +126,8 @@
   border-radius: var(--radius);
   padding: var(--padding-input);
   font-size: var(--font-size-base);
-  color: var(--text);
-  background-color: #fff;
+  color: #ffffff;             /* Antes var(--text) */
+  background-color: #141f30;  /* Antes #fff */
   box-sizing: border-box;
   transition: color var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
 }
@@ -224,7 +228,7 @@
 /* Botón */
 .register form button {
   margin-top: var(--gap-button);
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius);
   padding: var(--padding-button);
   font-size: var(--font-size-base);
@@ -232,16 +236,25 @@
   letter-spacing: var(--letter-spacing-button);
   color: #fff;
   cursor: pointer;
-  background: #ff6a00;
-  /* background: linear-gradient(135deg, #ff6a00, #e45b2f, #0e1d33); */
-  box-shadow: var(--shadow-button);
+  background: linear-gradient(180deg, #d32f2f 0%, #8e0000 100%);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.35),
+    0 4px 14px rgba(211, 47, 47, 0.45);
   transition: transform var(--transition-base), box-shadow var(--transition-base), filter var(--transition-base);
 }
 
 .register form button:hover:enabled {
-  transform: translateY(var(--transform-button-hover));
-  box-shadow: var(--shadow-button-hover);
-  filter: saturate(1.08);
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+}
+
+.register form button:disabled {
+  cursor: not-allowed;
+  background: #1e293b;
+  color: #64748b;
+  border: 1px solid #283b58;
+  box-shadow: none;
+  transform: none;
 }
 
 .register form button:active:enabled {
@@ -249,14 +262,6 @@
   box-shadow: var(--shadow-button-active);
 }
 
-.register form button:disabled {
-  cursor: not-allowed;
-  background: var(--disabled-bg);
-  color: var(--disabled-text);
-  box-shadow: none;
-  transform: none;
-  filter: none;
-}
 
 .register form button:focus-visible {
   outline: none;
@@ -282,7 +287,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  color: #1e293b;
+  color: #e2e8f0; /* Antes tenía #1e293b */
   font-weight: 600;
   font-size: 0.9rem;
   width: 100%;
