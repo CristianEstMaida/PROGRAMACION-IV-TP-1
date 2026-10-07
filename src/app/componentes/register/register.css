@@ -70,11 +70,18 @@
   z-index: 1;
 }
 
-.register .logo {
-  font-size: clamp(1.2rem, 2vw, 1.6rem);
-  font-weight: 700;
-  margin-bottom: 0.8rem;
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 800;
   text-align: center;
+  margin-bottom: 0.8rem;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.logo b {
+  color: #ff334b; /* El rojo característico de CineNova */
 }
 
 .register h2 + p {
@@ -301,16 +308,26 @@
 }
 
 .date-part-input {
-  min-width: 0; /* Clave para que no desborde la tarjeta */
+  min-width: 0;
   padding: 0.75rem 0.5rem;
   font-size: 0.9rem;
-  border: 1px solid #cbd5e1;
+  border: 1.5px solid #283b58;
   border-radius: 8px;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #141f30;
+  color: #ffffff;
   box-sizing: border-box;
+  outline: none;
 }
 
+.date-part-input:focus {
+  border-color: #ff334b;
+  box-shadow: 0 0 0 2px rgba(255, 51, 75, 0.25);
+}
+
+.date-part-input option {
+  background-color: #0d1624;
+  color: #ffffff;
+}
 /* Proporciones: día chico, mes más ancho, año mediano */
 .date-part-input[name="dia"] {
   flex: 1.2;
