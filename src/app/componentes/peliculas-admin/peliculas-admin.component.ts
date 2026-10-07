@@ -78,6 +78,9 @@ export class PeliculasAdminComponent implements OnInit {
     this.nuevaDuracion.set(120);
     this.nuevaSinopsis.set('');
     this.generosSeleccionados.set([]);
+    // Resetear preventa:
+    this.nuevaFechaEstreno.set('');
+    this.nuevoDescuentoPreventa.set(20);
     this.mostrarModal.set(true);
   }
 
