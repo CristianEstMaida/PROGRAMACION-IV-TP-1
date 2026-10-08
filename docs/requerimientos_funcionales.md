@@ -15,31 +15,51 @@ El sistema comprende una plataforma web integral orientada tanto al cliente fina
 - **RF03 - Buscador y Filtro Multigénero:** Buscador en tiempo real por título y filtro combinable por géneros cinematográficos. El sistema debe admitir que una misma película posea múltiples géneros (ej: Acción + Ciencia Ficción).
 - **RF04 - Sección Próximamente y Suscripción a Alertas:** Catálogo de películas a estrenarse en las próximas semanas, permitiendo a los clientes registrados activar una alerta para recibir una notificación cuando se habiliten las funciones para la venta.
 - **RF05 - Motor de Preventa (7 Días):** Habilitar la venta anticipada de entradas con hasta 7 días de antelación al estreno oficial con un precio diferencial de preventa. Cumplido el plazo de preventa, el precio debe retornar de forma automática al valor regular de la entrada. Esta regla es configurable de forma individual película por película.
-
 - **RF06 - Ficha Técnica y Sistema de Reseñas Pre-Reserva: ** Cada película debe exhibir póster, duración, sinopsis, clasificación etaria y la puntuación promedio en estrellas. El usuario debe poder consultar opiniones y calificaciones de otros clientes antes de iniciar la compra. Los usuarios autenticados pueden calificar (1 a 5 estrellas) y publicar comentarios breves.
 
-### Módulo de Reserva y Transacción
-- **RF06 - Mapa de Butacas Físico:** Renderizar 20 filas (A-T) con división de 3 columnas (4 - 20 - 4).
-  - Resaltar visualmente butacas adaptadas para personas con discapacidad en filas J y K.
-  - Resaltar butacas VIP en las últimas tres filas (R, S, T) aplicando un recargo del 30%.
-  - Ocupación en tiempo real: bloquear selección de asientos previamente vendidos.
-- **RF07 - Integración de Candy Bar:** Permitir agregar alimentos, bebidas y combos a la orden antes del pago.
-- **RF08 - Motor de Cupones:** 
-  - Validar cupón de bienvenida (20%) solo si el usuario no posee compras previas.
-  - Validar cupones de adultos mayores validando si el cliente tiene $\ge 50$ años.
-- **RF09 - Emisión de Ticket PDF y QR:** Descarga automática de un comprobante en PDF con datos de función, asientos, lista de Candy Bar y un código QR único para todo el pedido.
-- **RF10 - Cancelación de Entradas:** El usuario puede cancelar su entrada desde "Mis Películas" hasta 2 horas antes de la función. El importe se abona automáticamente como crédito en su perfil.
-- **RF11 - Programa de Puntos:** Acreditar 1 punto por cada peso abonado a clientes registrados.
+### Usuarios, Registro y Beneficios
+- **RF07 - Venta Anónima y Venta Registrada:** El flujo de compra debe permitir operar tanto a usuarios anónimos (sin requerir autenticación previa) como a usuarios registrados.
+- **RF08 - Formulario de Registro con Perfil Extendido: ** Captura no invasiva de datos personales exigidos por el negocio: Nombre, Apellido, Email, Fecha de Nacimiento, Tipo de Sangre (A+, A-, B+, etc.), Color de Ojos y Cantidad de Días de Vacaciones anuales.
+- **RF09 - Control de Restricción Etaria: ** 
+  - Validación automática de edad según fecha de nacimiento para películas con clasificación (+13 y +18). Si el usuario logueado no cumple la edad mínima, la compra queda bloqueada.
+  - Para compras anónimas, el sistema debe solicitar confirmación obligatoria de presencia de adulto responsable.
+  - Todo comprobante o entrada emitida para estas funciones debe incluir obligatoriamente la leyenda: "Debe asistir acompañado por un adulto responsable".
+- **RF10 - Cupones Dinámicos de Descuento: **
+  - Cupón de Bienvenida: Descuento configurable (inicialmente 20%) aplicable de forma automática o mediante código únicamente en la primera compra de un usuario registrado.
+  - Cupones Senior (+50 años): Motor de cupones parametrizables aplicables exclusivamente a clientes con edad igual o superior a 50 años.
+- **RF11 - Programa de Fidelización y Puntos (a completar): ** 
+  - Acumulación de 1 punto por cada $1 (peso) abonado en transacciones de usuarios registrados. Los puntos son personales e intransferibles.
+  - Catálogo de Canjes: Sección en el perfil del cliente donde se pueden canjear puntos acumulados por entradas gratuitas o productos/combos del Candy Bar.
+  - Historial de Puntos: Consulta del saldo total acumulado y registro cronológico de canjes efectuados.
+- **RF12 - Sección "Mis Películas" y Cancelaciones a Crédito: ** 
+  - Historial visual de funciones a las que asistió el usuario, exhibiendo pósters, fechas y su propia calificación emitida.
+  - Cancelación con Reintegro a Saldo: El cliente puede anular una entrada hasta 2 horas antes de la hora de inicio de la función. El sistema no realiza devolución monetaria tradicional, sino que acredita el 100% del importe en la billetera virtual (crédito en cuenta) del usuario para consumirlo en compras futuras. Si restan menos de 2 horas, la opción se deshabilita.
 
-### Módulo de Operadores y Empleados
-- **RF12 - Validador de QR y Código:** Terminal operativa para validar el ingreso a sala y entrega de Candy Bar mediante escaneo o ingreso manual del código.
-- **RF13 - Invalidation (Quema) de Ticket:** Al validar, el sistema marca el ticket como usado impidiendo cualquier reutilización posterior.
+### Sala, Butacas y Candy Bar
+- **RF13 - Topología de Salas y Butacas Adaptadas: ** 
+  - Estructura estándar de sala: 20 filas (letras A a T) divididas en 3 bloques de 4, 20 y 4 butacas.
+  - Espacio Accesible (Movilidad Reducida): Las filas centrales J y K se reemplazan por una disposición adaptada con distribución de menor densidad: 2, 10 y 2 butacas, destacadas visualmente en el plano.
+  - Sector VIP: Las últimas tres filas de la sala (R, S y T) se clasifican como butacas VIP, con un recargo automático del 30% sobre el precio base de la entrada y señalización diferenciada en el mapa.
+  - Visualización en Tiempo Real: Bloqueo y actualización visual inmediata de butacas ocupadas para impedir colisiones o compras duplicadas simultáneas.
+- **RF14 - Integración de Candy Bar en Checkout: ** 
+  - Catálogo categorizado de confitería (pochoclos, bebidas, golosinas, snacks y combos).
+  - Posibilidad de añadir alimentos y bebidas a la misma orden antes de finalizar el pago.
+- **RF15 - Combos Especiales (Entrada + Candy):** Configuración de paquetes cerrados promocionales compuestos por Entrada + Pochoclos + Bebida a precio fijo preestablecido.
+- **RF16 - Comprobante Unificado con QR: ** Generación y descarga en formato PDF del comprobante que contiene el desglose de entradas, butacas, artículos de Candy Bar y un único código QR consolidado para todo el pedido.
 
-### Módulo de Administración
-- **RF14 - Asignación Automática de Salas:** Al dar de alta una función (película, fecha, horario), el sistema verifica automáticamente la disponibilidad de salas garantizando una ventana de descanso y limpieza de al menos 30 minutos tras finalizar la proyección anterior.
-- **RF15 - ABM de Recursos:** Administración de películas, salas, productos de Candy Bar y cupones de descuento.
-- **RF16 - Reportes y Gráficos:** Visualización de métricas de facturación diaria, películas más vistas y productos de confitería con exportación a PDF y Excel.
-- **RF17 - Log de Auditoría:** Registro cronológico inmutable de todas las acciones administrativas (creación de funciones, modificación de precios, validación de accesos).
+### Operaciones y Control de Acceso
+- **RF17 - Terminal de Validación de Operador: (a completar)** Interfaz para que los empleados del cine verifiquen el ingreso a la sala y la entrega de productos de confitería mediante lector de QR o tipeo manual del código alfanumérico.
+- **RF18 - Quema Definitiva de Ticket: ** Al validar el ingreso o entregar los productos, el código QR y la entrada pasan a estado "Usada", impidiendo cualquier reutilización posterior y alertando en pantalla si se intenta un segundo ingreso fraudulento.
+
+### Administración y Métricas
+
+- **RF19 - Asignación Automatizada de Salas: ** Al dar de alta una función (película, día, horario, formato), el sistema asigna de forma autónoma una sala disponible garantizando una ventana técnica de descanso y limpieza de al menos 30 minutos posteriores al término de la función anterior. Si hay solapamiento, se notifica el conflicto de disponibilidad.
+- **RF20 - Gestión de Precios y Configuración de Recompensas: ** Administración de precios de entradas, porcentaje del cupón de bienvenida, cupones etarios, valor en puntos de las recompensas de fidelización y precios de combos.
+- **RF21 - Reportes de Facturación y Gráficos Estadísticos: **
+  - Reporte diario de facturación total y cantidad de tickets vendidos, con exportación a PDF y a Excel.
+  - Gráfico de las películas más vistas discriminadas por semana y por mes.
+  - Reporte estadístico del producto del Candy Bar con mayor volumen de ventas.
+- **RF22 - Log de Auditoría Operativa: ** Registro cronológico inmutable de eventos críticos administrativos (alta de funciones, modificación de precios, validación de accesos) registrando fecha, hora, usuario interviniente y detalle del cambio, con soporte de navegación paginada.
 
 ---
 

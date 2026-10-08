@@ -95,4 +95,3 @@ Para dar estricto cumplimiento a la solicitud de recopilación no invasiva exigi
 | **Fidelización por Puntos** (08/03/2020) | ✅ | Acreditación de 1 punto por cada peso abonado en compras realizadas por usuarios registrados. |
 | **Log de Auditoría** (10/03/2020) | ✅ | Tabla `logs_actividad` consultada en tiempo real ante eventos administrativos y validaciones de accesos. |
 
-
